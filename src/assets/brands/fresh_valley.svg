@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+  <defs>
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ade80" />
+      <stop offset="100%" stop-color="#16a34a" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="500" height="500" fill="transparent" />
+  
+  <g transform="translate(0, -30)">
+    <path d="M250 120 C 130 120, 80 260, 250 360 C 420 260, 370 120, 250 120 Z" fill="url(#leafGrad)" />
+    <path d="M250 120 Q 200 180 250 360" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" opacity="0.6" />
+    <circle cx="320" cy="160" r="24" fill="#facc15" />
+  </g>
+
+  <text x="250" y="400" font-family="'Inter', 'Segoe UI', sans-serif" font-weight="900" font-size="52" fill="#15803d" text-anchor="middle" letter-spacing="3">FRESH VALLEY</text>
+  <text x="250" y="440" font-family="'Inter', 'Segoe UI', sans-serif" font-weight="700" font-size="22" fill="#eab308" text-anchor="middle" letter-spacing="8">ORGANIC FARMS</text>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+  <rect width="400" height="200" fill="transparent"/>
+  <g transform="translate(0, -10)">
+    <path d="M 200 30 Q 230 80 200 120 Q 170 80 200 30 Z" fill="#eab308" />
+    <path d="M 170 50 Q 190 90 170 120 Q 150 90 170 50 Z" fill="#facc15" />
+    <path d="M 230 50 Q 250 90 230 120 Q 210 90 230 50 Z" fill="#facc15" />
+  </g>
+  <text x="200" y="160" font-family="Arial, sans-serif" font-weight="900" font-size="42" fill="#b91c1c" text-anchor="middle" letter-spacing="1">AASHIRVAAD</text>
+</svg>

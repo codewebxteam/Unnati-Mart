@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+  <rect width="400" height="200" fill="transparent"/>
+  <ellipse cx="200" cy="100" rx="140" ry="70" fill="none" stroke="#dc2626" stroke-width="6"/>
+  <ellipse cx="200" cy="100" rx="130" ry="60" fill="none" stroke="#dc2626" stroke-width="2"/>
+  <text x="200" y="120" font-family="'Arial Black', Impact, sans-serif" font-weight="900" font-size="72" fill="#dc2626" text-anchor="middle" letter-spacing="1">Amul</text>
+  <text x="200" y="155" font-family="'Trebuchet MS', Arial, sans-serif" font-weight="bold" font-size="14" fill="#1d4ed8" text-anchor="middle" letter-spacing="3">The Taste of India</text>
+</svg>

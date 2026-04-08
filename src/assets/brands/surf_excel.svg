@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+  <rect width="400" height="200" fill="transparent"/>
+  <path d="M 130 140 C 190 170, 260 170, 310 140 C 340 160, 200 210, 90 160 Z" fill="#f97316" />
+  <text x="170" y="120" font-family="'Arial Black', Impact, sans-serif" font-weight="900" font-size="64" fill="#1d4ed8" text-anchor="middle">Surf</text>
+  <text x="290" y="120" font-family="'Arial Black', Impact, sans-serif" font-weight="900" font-size="42" fill="#ea580c" text-anchor="middle">excel</text>
+</svg>
