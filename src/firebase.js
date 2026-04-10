@@ -1,8 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getDatabase } from "firebase/database"; // Realtime Database ke liye
-import { getAuth } from "firebase/auth"; // Authentication ke liye
+import { getDatabase } from "firebase/database"; 
+import { getAuth, GoogleAuthProvider } from "firebase/auth"; // GoogleAuthProvider import kiya
 
 // Environment variables setup for Vite
 const firebaseConfig = {
@@ -19,6 +19,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
-// Export instances to use in other files like OrderContext.jsx
+// Export instances to use in other files
 export const realtimeDb = getDatabase(app);
 export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider(); // Ye line add ki hai
