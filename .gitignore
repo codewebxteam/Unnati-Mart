@@ -24,4 +24,3 @@ dist-ssr
 *.sw?
 public/data/locations.json
 .env
-firebase.js
