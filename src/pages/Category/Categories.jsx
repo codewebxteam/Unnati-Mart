@@ -1,104 +1,218 @@
 import React from 'react';
-import { ChevronRight, X, LayoutGrid } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, Sparkles } from 'lucide-react';
 
 // Assets
-import catVeg from '../../assets/cat_veg_alt.png';
-import catFruits from '../../assets/cat_fruits_alt.png';
-import catMeat from '../../assets/cat_meat_alt.png';
-import catNuts from '../../assets/cat_nuts_alt.png';
-import catDairy from '../../assets/category_dairy.png';
-import catGrains from '../../assets/category_grains.png';
-import catRice from '../../assets/prod_rice.png';
-import catPulses from '../../assets/category_pulses.png';
-import catCereals from '../../assets/category_cereals.png';
-import catHygiene from '../../assets/category_hygiene.png';
-import catOils from '../../assets/category_oils.png';
-import catJuices from '../../assets/category_juices.png';
-import catSnacks from '../../assets/category_snacks.png';
+import vegImg from '../../assets/categories/vegetables.png';
+import fruitsImg from '../../assets/categories/fruits.png';
+import grainsImg from '../../assets/categories/grains.png';
+import meatImg from '../../assets/categories/meat.png';
+import fishImg from '../../assets/categories/fish.png';
+import nutsImg from '../../assets/categories/nuts.png';
+import dairyImg from '../../assets/categories/dairy.png';
+import babyImg from '../../assets/categories/baby.png';
+import snacksImg from '../../assets/categories/snacks.png';
+import beveragesImg from '../../assets/categories/beverages.png';
+import personalCareImg from '../../assets/categories/personal_care.png';
+import householdImg from '../../assets/categories/household.png';
+import wellnessImg from '../../assets/categories/wellness.png';
+const Categories = () => {
+    const navigate = useNavigate();
+    const [showAll, setShowAll] = React.useState(false);
 
-const Categories = ({ selectedCategory, onCategorySelect }) => {
-  const categories = [
-    { name: 'Vegetables', items: '45+ Products', img: catVeg, theme: 'bg-emerald-50 hover:bg-emerald-100/80 border-emerald-100/50' },
-    { name: 'Fruits', items: '32+ Products', img: catFruits, theme: 'bg-teal-50 hover:bg-teal-100/80 border-teal-100/50' },
-    { name: 'Pulses & Dal', items: '20+ Products', img: catPulses, theme: 'bg-orange-50 hover:bg-orange-100/80 border-orange-100/50' },
-    { name: 'Cooking Oils', items: '12+ Products', img: catOils, theme: 'bg-yellow-50 hover:bg-yellow-100/80 border-yellow-100/50' },
-    { name: 'Dairy & Eggs', items: '24+ Products', img: catDairy, theme: 'bg-orange-50 hover:bg-orange-100/80 border-orange-100/50' },
-    { name: 'Cereals', items: '15+ Products', img: catCereals, theme: 'bg-yellow-50 hover:bg-yellow-100/80 border-yellow-100/50' },
-    { name: 'Fresh Meat', items: '18+ Products', img: catMeat, theme: 'bg-amber-100/30 hover:bg-amber-100/60 border-amber-200/50' },
-    { name: 'Dry Fruits', items: '22+ Products', img: catNuts, theme: 'bg-rose-50 hover:bg-rose-100/80 border-rose-100/50' },
-    { name: 'Grains & Flour', items: '12+ Products', img: catRice, theme: 'bg-amber-50 hover:bg-amber-100/80 border-amber-100/50' },
-    { name: 'Juices', items: '10+ Products', img: catJuices, theme: 'bg-red-50 hover:bg-red-100/80 border-red-100/50' },
-    { name: 'Spices', items: '30+ Products', img: catGrains, theme: 'bg-indigo-50 hover:bg-indigo-100/80 border-indigo-100/50' },
-    { name: 'Home & Hygiene', items: '25+ Products', img: catHygiene, theme: 'bg-blue-50 hover:bg-blue-100/80 border-blue-100/50' },
-    { name: 'Organic Snacks', items: '18+ Products', img: catSnacks, theme: 'bg-violet-50 hover:bg-violet-100/80 border-violet-100/50' },
-  ];
+    const categories = [
+        {
+            id: 'grocery',
+            name: 'Grocery & Staples',
+            sub: 'Daily Essentials',
+            img: grainsImg,
+            path: '/grocery',
+            color: 'bg-amber-600',
+            textColor: 'text-white'
+        },
+        {
+            id: 'fruits',
+            name: 'Fresh Fruits',
+            sub: 'Nature\'s Sweetness',
+            img: fruitsImg,
+            path: '/fruits',
+            color: 'bg-orange-500',
+            textColor: 'text-white'
+        },
+        {
+            id: 'veg',
+            name: 'Vegetables',
+            sub: 'Farm Fresh',
+            img: vegImg,
+            path: '/vegetables',
+            color: 'bg-amber-600',
+            textColor: 'text-white'
+        },
+        {
+            id: 'dairy',
+            name: 'Dairy & Bakery',
+            sub: 'Freshly Baked',
+            img: dairyImg,
+            path: '/dairy',
+            color: 'bg-blue-500',
+            textColor: 'text-white'
+        },
+        {
+            id: 'snacks',
+            name: 'Packaged Food & Snacks',
+            sub: 'Quick Bites',
+            img: snacksImg,
+            path: '/snacks',
+            color: 'bg-amber-500',
+            textColor: 'text-white'
+        },
+        {
+            id: 'beverages',
+            name: 'Beverages',
+            sub: 'Cool & Refreshing',
+            img: beveragesImg,
+            path: '/beverages',
+            color: 'bg-cyan-500',
+            textColor: 'text-white'
+        },
+        {
+            id: 'personal_care',
+            name: 'Personal Care & Hygiene',
+            sub: 'Self Care',
+            img: personalCareImg,
+            path: '/personal-care',
+            color: 'bg-pink-500',
+            textColor: 'text-white'
+        },
+        {
+            id: 'household',
+            name: 'Household & Cleaning Products',
+            sub: 'Home Essentials',
+            img: householdImg,
+            path: '/household',
+            color: 'bg-indigo-500',
+            textColor: 'text-white'
+        },
+        {
+            id: 'wellness',
+            name: 'Health & Wellness',
+            sub: 'Stay Healthy',
+            img: wellnessImg,
+            path: '/wellness',
+            color: 'bg-teal-500',
+            textColor: 'text-white'
+        },
+        {
+            id: 'baby',
+            name: 'Baby Care Products',
+            sub: 'For Little Ones',
+            img: babyImg,
+            path: '/baby',
+            color: 'bg-purple-500',
+            textColor: 'text-white'
+        },
+        {
+            id: 'dry_fruits',
+            name: 'Dry Fruits & nuts',
+            sub: 'Healthy & Crunchy',
+            img: nutsImg,
+            path: '/dry-fruits',
+            color: 'bg-rose-500',
+            textColor: 'text-white'
+        }
+    ];
 
-  const handleCategoryClick = (categoryName) => {
-    if (selectedCategory === categoryName) {
-      onCategorySelect(null); // Clear selection if clicking the same category
-    } else {
-      onCategorySelect(categoryName);
-    }
-  };
+    const displayedCategories = showAll ? categories : categories.slice(0, 8);
 
-  return (
-    <section id="categories" className="py-16">
-      <div className="flex justify-between items-end mb-10">
-        <div>
-          <h2 className="text-3xl font-extrabold text-charcoal">
-            {selectedCategory ? `Browsing ${selectedCategory}` : "Popular Categories"}
-          </h2>
-          <p className="text-gray-500 font-medium">Explore our wide range of fresh products</p>
-        </div>
-        <button
-          onClick={() => onCategorySelect(null)}
-          className={`text-primary font-bold flex items-center gap-1 group transition-all ${selectedCategory ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        >
-          View All <X size={20} className="group-hover:rotate-90 transition-transform" />
-        </button>
-      </div>
+    return (
+        <div className="min-h-screen bg-white pt-28 pb-32 px-4 md:px-8">
+            <div className="max-w-7xl mx-auto">
+                <header className="mb-12">
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 text-slate-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-100 mb-4"
+                    >
+                        <Sparkles size={12} className="text-amber-500" />
+                        Unnati Mart Marketplace
+                    </motion.div>
+                    <motion.h1
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-none"
+                    >
+                        Explore <span className="text-amber-600 italic">Categories</span>
+                    </motion.h1>
+                </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-        {categories.map((cat, i) => {
-          const isActive = selectedCategory === cat.name;
-          const isExternal = typeof cat.img === 'string' && cat.img.startsWith('http');
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-12">
+                    <AnimatePresence mode="popLayout">
+                        {displayedCategories.map((cat, idx) => (
+                            <motion.div
+                                key={cat.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ 
+                                    opacity: { duration: 0.2 },
+                                    layout: { type: "spring", stiffness: 300, damping: 30 }
+                                }}
+                                whileHover={{ y: -8 }}
+                                onClick={() => navigate(cat.path)}
+                                className={`group relative aspect-[4/5] ${cat.color} rounded-[2.5rem] overflow-hidden cursor-pointer shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300 transition-all duration-500`}
+                            >
+                                {/* Text Header */}
+                                <div className="p-6 relative z-20">
+                                    <h3 className={`text-xl md:text-2xl font-black ${cat.textColor} tracking-tighter leading-[1.1] mb-1`}>
+                                        {cat.name}
+                                    </h3>
+                                    <p className={`text-[10px] font-bold ${cat.textColor} opacity-70 uppercase tracking-widest`}>
+                                        {cat.sub}
+                                    </p>
+                                </div>
 
-          return (
-            <div
-              key={i}
-              onClick={() => handleCategoryClick(cat.name)}
-              className={`${cat.theme} border rounded-[2.2rem] md:rounded-[3.5rem] p-3 md:p-8 pt-5 md:pt-10 text-center flex flex-col justify-between aspect-[0.75] md:aspect-auto md:h-[380px] overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl cursor-pointer group relative ${isActive ? 'ring-4 ring-offset-4 ring-primary' : ''}`}
-            >
-              <div>
-                <h3 className="text-[13px] md:text-2xl font-black text-charcoal mb-1 leading-tight">{cat.name}</h3>
-                <p className="text-[9px] md:text-sm text-gray-400 font-bold uppercase tracking-widest">{cat.items}</p>
-              </div>
-              <div className="w-full flex-1 mt-2 md:mt-6 flex items-end justify-center overflow-hidden relative">
-                <img
-                  src={cat.img}
-                  alt={cat.name}
-                  className={`w-[85%] h-[85%] md:w-full md:h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-110 
-                    ${isExternal ? 'contrast-[1.2] brightness-[1.05]' : 'contrast-[1.02] brightness-[1.0]'}`}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-                <div className="hidden absolute inset-0 items-center justify-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                  <LayoutGrid size={48} className="text-gray-300" />
+                                {/* Image at bottom */}
+                                <div className="absolute inset-x-0 bottom-0 p-4 h-1/2 flex items-end">
+                                    <motion.div 
+                                        whileHover={{ scale: 1.05, rotate: -2 }}
+                                        className="relative w-full aspect-square"
+                                    >
+                                        <img 
+                                            src={cat.img} 
+                                            alt={cat.name} 
+                                            className="w-full h-full object-cover rounded-[2rem] shadow-2xl transition-transform duration-700 group-hover:rotate-3" 
+                                        />
+                                    </motion.div>
+                                </div>
+
+                                {/* Subtle Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                                
+                                {/* Glow Effect on Hover */}
+                                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
-              </div>
-              {isActive && (
-                <div className="absolute top-4 right-4 bg-white/20 p-2 rounded-full backdrop-blur-sm">
-                  <X size={20} />
-                </div>
-              )}
+
+                {!showAll && categories.length > 8 && (
+                    <div className="flex justify-center mt-12 pb-12">
+                        <motion.button 
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setShowAll(true)}
+                            className="flex items-center gap-3 px-8 py-4 bg-white border border-slate-100 text-[12px] font-black uppercase tracking-widest text-slate-900 rounded-full shadow-lg shadow-slate-100/50 hover:bg-slate-900 hover:text-white transition-all group"
+                        >
+                            See All Categories <ChevronRight size={16} className="text-amber-600 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                        </motion.button>
+                    </div>
+                )}
             </div>
-          );
-        })}
-      </div>
-    </section>
-  );
+        </div>
+    );
 };
 
 export default Categories;

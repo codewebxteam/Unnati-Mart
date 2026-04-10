@@ -1,218 +1,123 @@
-import React, { useState, useEffect } from 'react';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 
 // Layout Components
-import Header from './components/Header';
-import Footer from './components/Footer';
-import BottomNav from './components/BottomNav';
-import Auth from './components/Auth';
+import Header from "./components/header";
+import Footer from "./components/Footer";
+import FloatingCartButton from "./components/common/FloatingCartButton";
+import Loader from "./components/common/Loader";
+import ToastContainer from "./components/common/ToastContainer";
 
-// Home Sections
-import Hero from './pages/Hero';
-import Categories from './pages/Category/Categories';
-import CategoryDetail from './pages/Category/CategoryDetail';
-import DealsPage from './pages/DealsPage';
-import CartPage from './pages/CartPage';
+// Pages
+import FoundationHome from "./pages/foundation/home";
+import Gallery from "./pages/Gallery";
+import CartPage from "./pages/cart/CartPage";
+import Dashboard from "./pages/profile/dashboard";
+import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
+import OrdersPage from "./pages/profile/OrdersPage";
+import WishlistPage from "./pages/profile/WishlistPage";
+import ProductDetail from "./components/product/ProductDetail";
+import Success from "./pages/Success";
+import Categories from "./pages/category/Categories";
+import Deals from "./pages/category/Deals";
+import CategoryProducts from "./pages/category/CategoryProducts";
 
-// New Professional Sections
-import PromoSlider from './pages/home/PromoSlider';
-import FlashDeals from './pages/home/FlashDeals';
-import BrandSpotlight from './pages/home/BrandSpotlight';
-import TrustBar from './pages/home/TrustBar';
-import Testimonials from './pages/home/Testimonials';
-import ContactUs from './pages/home/ContactUs';
 
-// Data
-import { products } from './data/products';
-function App() {
-  const [cartItems, setCartItems] = useState([]);
-  const [showCart, setShowCart] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
-  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
-  const [selectedCategory, setSelectedCategory] = useState(null);
+// Context Providers
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
 
-  useEffect(() => {
-    if (!selectedCategory && !showCart && !showAuth) {
-      const hash = window.location.hash;
-      if (hash) {
-        const element = document.querySelector(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-          return;
-        }
-      }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [selectedCategory, showCart, showAuth]);
+// Admin Pages
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminInventory from "./pages/admin/AdminInventory";
+import AdminPayments from "./pages/admin/AdminPayments";
+import AdminCustomers from "./pages/admin/AdminCustomers";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminSettings from "./pages/admin/AdminSettings";
 
-  const handleHomeNav = (hash) => {
-    setShowCart(false);
-    setShowAuth(false);
-    setSelectedCategory(null);
-    // Slight delay to ensure home sections are rendered before scrolling
-    setTimeout(() => {
-      if (hash) {
-        const element = document.querySelector(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }, 50);
-  };
+// Protect Admin Routes
+const AdminProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <Loader />;
+  if (!user || user.role !== 'admin') {
+    return <FoundationHome />;
+  }
+  return children;
+};
 
-  const handleAddToCart = (product) => {
-    setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
-  };
-
-  const handleRemoveFromCart = (productId) => {
-    setCartItems(prev => prev.filter(item => item.id !== productId));
-  };
-
-  const handleUpdateQuantity = (productId, delta) => {
-    setCartItems(prev => prev.map(item => {
-      if (item.id === productId) {
-        const newQty = Math.max(0, item.quantity + delta);
-        return newQty === 0 ? null : { ...item, quantity: newQty };
-      }
-      return item;
-    }).filter(Boolean));
-  };
-
-  // Logic to get a diverse, randomized mix of products for the homepage
-  const getFeaturedProducts = () => {
-    const categories = [...new Set(products.map(p => p.category))];
-    let diverseProducts = [];
-
-    // 1. Pick one random product from each category first to guarantee representation
-    categories.forEach(cat => {
-      const catProducts = products.filter(p => p.category === cat);
-      const randomProduct = catProducts[Math.floor(Math.random() * catProducts.length)];
-      if (randomProduct) diverseProducts.push(randomProduct);
-    });
-
-    // 2. Fill the remaining slots (up to 16) with other high-rated products
-    const remaining = products.filter(p => !diverseProducts.includes(p));
-    const sortedRemaining = [...remaining].sort((a, b) => b.rating - a.rating);
-    diverseProducts.push(...sortedRemaining.slice(0, 16 - diverseProducts.length));
-
-    // 3. Shuffle the final list so the order is different every time (Mosaic effect)
-    return diverseProducts.sort(() => Math.random() - 0.5).slice(0, 16);
-  };
-
-  const filteredProducts = selectedCategory
-    ? products.filter(p => p.category === selectedCategory)
-    : getFeaturedProducts();
-
-  const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+function AppContent() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
-    <div className="min-h-screen flex flex-col font-outfit bg-gray-50/30">
-      <Header
-        cartCount={totalCartCount}
-        onCartClick={() => {
-          setShowAuth(false);
-          setShowCart(true);
-        }}
-        onLogoClick={() => handleHomeNav()}
-        onUserClick={() => {
-          setShowCart(false);
-          setAuthMode('signup');
-          setShowAuth(true);
-        }}
-      />
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Global Header */}
+      {!isAdminRoute && <Header />}
 
-      {/* Auth Modal Overlay */}
-      <Auth 
-        isOpen={showAuth} 
-        onClose={() => setShowAuth(false)} 
-        initialMode={authMode} 
-      />
+      {/* Main Content */}
+      <main className="flex-grow">
+        <Routes>
+          {/* User Routes */}
+          <Route path="/" element={<FoundationHome />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<Dashboard />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/deals" element={<Deals />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/category/:categoryPath" element={<CategoryProducts />} />
+          {/* Support legacy paths used in Categories.jsx */}
+          <Route path="/grocery" element={<CategoryProducts />} />
+          <Route path="/fruits" element={<CategoryProducts />} />
+          <Route path="/vegetables" element={<CategoryProducts />} />
+          <Route path="/dairy" element={<CategoryProducts />} />
+          <Route path="/snacks" element={<CategoryProducts />} />
+          <Route path="/beverages" element={<CategoryProducts />} />
+          <Route path="/personal-care" element={<CategoryProducts />} />
+          <Route path="/household" element={<CategoryProducts />} />
+          <Route path="/wellness" element={<CategoryProducts />} />
+          <Route path="/baby" element={<CategoryProducts />} />
+          <Route path="/dry-fruits" element={<CategoryProducts />} />
+          <Route path="/success" element={<Success />} />
 
-      <main className="flex-1 w-full max-w-[1400px] mx-auto px-6 pb-24">
-        {showCart ? (
-          <CartPage
-            cartItems={cartItems}
-            onUpdateQuantity={handleUpdateQuantity}
-            onRemove={handleRemoveFromCart}
-            onClose={() => setShowCart(false)}
-            onAddToCart={handleAddToCart}
-          />
-        ) : selectedCategory === 'DEALS' ? (
-          <DealsPage
-            products={products}
-            onBack={() => setSelectedCategory(null)}
-            onAddToCart={handleAddToCart}
-          />
-        ) : selectedCategory ? (
-          <CategoryDetail
-            category={selectedCategory}
-            products={filteredProducts}
-            onBack={() => setSelectedCategory(null)}
-            onAddToCart={handleAddToCart}
-          />
-        ) : (
-          <>
-            <Hero />
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminProtectedRoute><AdminLayout /></AdminProtectedRoute>}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="reports" element={<AdminDashboard />} />
+            <Route path="inventory" element={<AdminInventory />} />
+            <Route path="payments" element={<AdminPayments />} />
+            <Route path="customers" element={<AdminCustomers />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="settings" element={<AdminSettings />} />
+            <Route path="*" element={<AdminDashboard />} />
+          </Route>
 
-            {/* New Professional Banner Section */}
-            <PromoSlider />
-
-            <Categories
-              selectedCategory={selectedCategory}
-              onCategorySelect={setSelectedCategory}
-            />
-
-            {/* New Flash Deals Section */}
-            <FlashDeals
-              products={products}
-              onAddToCart={handleAddToCart}
-              onViewAllDeals={() => setSelectedCategory('DEALS')}
-            />
-
-            {/* New Brand Spotlight */}
-            <BrandSpotlight />
-
-            {/* Customer Trust Indicators */}
-            <TrustBar />
-
-            {/* Contact Us Section */}
-            <ContactUs />
-
-            <Testimonials />
-          </>
-        )}
+          {/* Fallback Route */}
+          <Route path="*" element={<FoundationHome />} />
+        </Routes>
       </main>
 
-      <Footer 
-        onHomeClick={() => handleHomeNav()}
-        onDealsClick={() => {
-          setShowCart(false);
-          setShowAuth(false);
-          setSelectedCategory('DEALS');
-        }}
-      />
-
-      <BottomNav
-        onNavClick={handleHomeNav}
-        onDealsClick={() => {
-          setShowCart(false);
-          setShowAuth(false);
-          setSelectedCategory('DEALS');
-        }}
-      />
+      {/* Global Footer */}
+      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && <FloatingCartButton />}
+      <ToastContainer />
     </div>
   );
 }
 
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
+}
 export default App;
