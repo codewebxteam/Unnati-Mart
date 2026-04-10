@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 
 // Layout Components
-import Header from "./components/header";
+import Header from "./components/Header";
 import Footer from "./components/Footer";
 import FloatingCartButton from "./components/common/FloatingCartButton";
 import Loader from "./components/common/Loader";
