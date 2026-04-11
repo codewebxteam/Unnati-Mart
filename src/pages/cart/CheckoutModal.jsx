@@ -21,7 +21,7 @@ const CheckoutModal = ({ onClose }) => {
     const [settings, setSettings] = useState({});
     const [formData, setFormData] = useState({
         fullName: '', mobile: '', email: '',
-        pincode: '', locality: '', street: '', city: '', state: '', landmark: '', alternatePhone: '',
+        pincode: '', locality: '', street: '', city: '', state: 'Uttar Pradesh', landmark: '', alternatePhone: '',
         addressType: 'home',
         paymentMethod: 'cod',
         selectedBank: '',
@@ -352,10 +352,22 @@ Please send the QR code for payment.`;
                                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${error && (!formData.fullName?.trim() || !formData.mobile?.trim() || formData.mobile?.trim().length !== 10) && step === 1 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
                                     {error && (!formData.fullName?.trim() || !formData.mobile?.trim() || formData.mobile?.trim().length !== 10) && step === 1 ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
                                 </div>
-                                <div className="leading-tight">
+                                <div className="leading-tight flex-1 min-w-0">
                                     <p className="text-xs font-bold text-[#3a3f30]">Personal Details</p>
-                                    <p className="text-[10px] text-slate-400 font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">
+                                    <p className="text-[10px] text-slate-400 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
                                         {formData.fullName || "Name & contact info"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className={`p-5 rounded-3xl border flex items-center gap-4 transition-all ${step >= 2 ? 'border-[#f1efe1] bg-white/60 shadow-sm' : 'opacity-50 border-dashed border-slate-200 bg-slate-50/50'}`}>
+                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${step >= 2 ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-300'}`}>
+                                    <MapPin size={20} />
+                                </div>
+                                <div className="leading-tight flex-1 min-w-0">
+                                    <p className="text-xs font-bold text-[#3a3f30]">Delivery Address</p>
+                                    <p className="text-[10px] text-slate-400 font-medium truncate">
+                                        {formData.state ? `${formData.city || 'City'}${formData.city ? ',' : ''} ${formData.state}` : "Address details"}
                                     </p>
                                 </div>
                             </div>
@@ -532,45 +544,20 @@ Please send the QR code for payment.`;
                                                 <div className="relative">
                                                     <select
                                                         name="state" value={formData.state} onChange={handleChange}
-                                                        className={`w-full px-4 py-3.5 bg-white border border-[#e0e0e0] rounded-lg text-[16px] font-medium focus:outline-none focus:border-[#2874f0] transition-colors appearance-none cursor-pointer font-sans ${formData.state ? 'text-[#212121]' : 'text-[#878787] font-medium'}`}
+                                                        className={`w-full px-4 py-3.5 bg-white border-2 ${formData.state === 'Uttar Pradesh' ? 'border-amber-500' : 'border-[#e0e0e0]'} rounded-lg text-[16px] font-bold focus:outline-none focus:border-[#2874f0] transition-colors appearance-none cursor-pointer font-sans text-[#212121] active:scale-[0.99]`}
                                                     >
-                                                        <option value="" disabled className="text-[#878787] font-medium">Select State</option>
-                                                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-                                                        <option value="Andhra Pradesh">Andhra Pradesh</option>
-                                                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                                                        <option value="Assam">Assam</option>
-                                                        <option value="Bihar">Bihar</option>
-                                                        <option value="Chandigarh">Chandigarh</option>
-                                                        <option value="Chhattisgarh">Chhattisgarh</option>
-                                                        <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
-                                                        <option value="Delhi">Delhi</option>
-                                                        <option value="Goa">Goa</option>
-                                                        <option value="Gujarat">Gujarat</option>
-                                                        <option value="Haryana">Haryana</option>
-                                                        <option value="Himachal Pradesh">Himachal Pradesh</option>
-                                                        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-                                                        <option value="Jharkhand">Jharkhand</option>
-                                                        <option value="Karnataka">Karnataka</option>
-                                                        <option value="Kerala">Kerala</option>
-                                                        <option value="Ladakh">Ladakh</option>
-                                                        <option value="Lakshadweep">Lakshadweep</option>
-                                                        <option value="Madhya Pradesh">Madhya Pradesh</option>
-                                                        <option value="Maharashtra">Maharashtra</option>
-                                                        <option value="Manipur">Manipur</option>
-                                                        <option value="Meghalaya">Meghalaya</option>
-                                                        <option value="Mizoram">Mizoram</option>
-                                                        <option value="Nagaland">Nagaland</option>
-                                                        <option value="Odisha">Odisha</option>
-                                                        <option value="Puducherry">Puducherry</option>
-                                                        <option value="Punjab">Punjab</option>
-                                                        <option value="Rajasthan">Rajasthan</option>
-                                                        <option value="Sikkim">Sikkim</option>
-                                                        <option value="Tamil Nadu">Tamil Nadu</option>
-                                                        <option value="Telangana">Telangana</option>
-                                                        <option value="Tripura">Tripura</option>
-                                                        <option value="Uttar Pradesh">Uttar Pradesh</option>
-                                                        <option value="Uttarakhand">Uttarakhand</option>
-                                                        <option value="West Bengal">West Bengal</option>
+                                                        <option value="" disabled>Select State</option>
+                                                        <option value="Uttar Pradesh" className="font-bold text-amber-600 italic">Uttar Pradesh (Default)</option>
+                                                        {[
+                                                            "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", 
+                                                            "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa", 
+                                                            "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka", 
+                                                            "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", 
+                                                            "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", 
+                                                            "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttarakhand", "West Bengal"
+                                                        ].sort().map(state => (
+                                                            <option key={state} value={state}>{state}</option>
+                                                        ))}
                                                     </select>
                                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                                                         <ChevronRight size={14} className="rotate-90" />

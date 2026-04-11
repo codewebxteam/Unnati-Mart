@@ -20,7 +20,7 @@ const Success = () => {
     const street = orderDetails.address?.street || orderDetails.street || '12th Main, 4th Cross';
     const locality = orderDetails.address?.locality || orderDetails.locality || 'Indiranagar';
     const city = orderDetails.address?.city || orderDetails.city || 'Bengaluru';
-    const state = orderDetails.address?.state || orderDetails.state || 'Karnataka';
+    const state = orderDetails.address?.state || orderDetails.state || 'Uttar Pradesh';
     const pincode = orderDetails.address?.pincode || orderDetails.pincode || '560001';
     const mobile = orderDetails.address?.mobile || orderDetails.mobile || '9876543210';
 

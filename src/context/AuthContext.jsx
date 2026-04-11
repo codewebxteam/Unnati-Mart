@@ -45,7 +45,11 @@ export const AuthProvider = ({ children }) => {
                 // Persist user to Realtime Database for Admin Dashboard visibility
                 const userRef = ref(realtimeDb, `users/${currentUser.uid}`);
                 update(userRef, userData).catch(error => {
-                    console.error("Error persisting user to DB:", error);
+                    if (error.message.includes('permission_denied')) {
+                        console.warn("Firebase Permission Denied: Please update your Security Rules in the Firebase Console to allow writing to /users/.");
+                    } else {
+                        console.error("Error persisting user to DB:", error);
+                    }
                 });
             } else {
                 setUser(null);

@@ -69,57 +69,57 @@ const CartPage = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
-            className="flex flex-col sm:flex-row items-center gap-5 p-6 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/50 transition-all group relative"
+            className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5 p-4 sm:p-6 bg-white rounded-[2rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/50 transition-all group relative"
         >
             {/* Product Image */}
-            <div className="w-24 h-24 bg-slate-50 rounded-[1.8rem] overflow-hidden shrink-0 flex items-center justify-center border border-slate-100 group-hover:scale-105 transition-transform">
-                <img src={item.img} alt={item.name} className="w-full h-full object-contain p-3 drop-shadow-xl" />
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-slate-50 rounded-[1.5rem] sm:rounded-[1.8rem] overflow-hidden shrink-0 flex items-center justify-center border border-slate-100 group-hover:scale-105 transition-transform">
+                <img src={item.img} alt={item.name} className="w-full h-full object-contain p-2 sm:p-3 drop-shadow-xl" />
             </div>
 
             {/* Product Info */}
             <div className="flex-1 min-w-0 text-center sm:text-left">
-                <div className="flex flex-wrap items-center gap-2 mb-2 justify-center sm:justify-start">
-                    <span className="text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
+                <div className="flex flex-wrap items-center gap-2 mb-1 justify-center sm:justify-start">
+                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
                         {item.category || 'GROCERY'}
                     </span>
-                    <span className="text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full bg-slate-100 text-slate-500">
+                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-100 text-slate-500">
                         {item.tag}
                     </span>
                 </div>
-                <h4 className="text-xl font-black text-slate-900 tracking-tight leading-tight">{item.name}</h4>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">₹{item.price} / {item.unit}</p>
+                <h4 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-tight line-clamp-2">{item.name}</h4>
+                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">₹{item.price} / {item.unit}</p>
             </div>
 
             {/* Quantity & Price */}
-            <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-8 w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-100/60 flex-row">
-                <div className="flex items-center gap-3 bg-[#111827] rounded-full px-2 py-1.5 shadow-sm">
+            <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-8 w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-100/60">
+                <div className="flex items-center gap-2 sm:gap-3 bg-[#111827] rounded-full px-2 py-1 sm:py-1.5 shadow-sm">
                     <button
                         onClick={() => updateQuantity(item.id, item.category, item.quantity - 1)}
-                        className="w-8 h-8 flex items-center justify-center text-white hover:text-amber-500 transition-colors"
+                        className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-white hover:text-amber-500 transition-colors"
                     >
-                        <Minus size={14} />
+                        <Minus size={12} />
                     </button>
-                    <span className="text-sm font-black text-white min-w-[24px] text-center">{item.quantity}</span>
+                    <span className="text-xs sm:text-sm font-black text-white min-w-[20px] sm:min-w-[24px] text-center">{item.quantity}</span>
                     <button
                         onClick={() => updateQuantity(item.id, item.category, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center text-white hover:text-amber-500 transition-colors"
+                        className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-white hover:text-amber-500 transition-colors"
                     >
-                        <Plus size={14} />
+                        <Plus size={12} />
                     </button>
                 </div>
 
-                <div className="text-center min-w-[80px]">
-                    <span className="text-[22px] font-black text-slate-900 tracking-tighter">
+                <div className="text-right sm:text-center min-w-[70px] sm:min-w-[80px]">
+                    <span className="text-[18px] sm:text-[22px] font-black text-slate-900 tracking-tighter">
                         ₹{(item.price * item.quantity).toLocaleString('en-IN')}
                     </span>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Subtotal</p>
+                    <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase tracking-widest">Subtotal</p>
                 </div>
 
                 <button
                     onClick={() => handleRemoveItem(item.id, item.category, item.name)}
-                    className="absolute top-6 right-6 sm:relative sm:top-0 sm:right-0 w-10 h-10 flex items-center justify-center rounded-2xl bg-[#fff2f2] text-[#ff6b6b] hover:bg-[#ff6b6b] hover:text-white transition-all shadow-sm shrink-0"
+                    className="absolute top-4 right-4 sm:relative sm:top-0 sm:right-0 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-2xl bg-[#fff2f2] text-[#ff6b6b] hover:bg-[#ff6b6b] hover:text-white transition-all shadow-sm shrink-0"
                 >
-                    <Trash2 size={16} strokeWidth={2.5} />
+                    <Trash2 size={14} sm:size={16} strokeWidth={2.5} />
                 </button>
             </div>
         </motion.div>

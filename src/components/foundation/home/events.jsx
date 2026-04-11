@@ -217,7 +217,7 @@ const Events = () => {
             </div>
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="px-12 py-6 bg-white text-slate-900 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-amber-500 hover:text-white transition-all shadow-2xl flex items-center gap-4"
+              className="px-8 py-4 sm:px-12 sm:py-6 bg-white text-slate-900 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-widest hover:bg-amber-500 hover:text-white transition-all shadow-2xl flex items-center gap-3 sm:gap-4"
             >
               Join Unnati Mart <ArrowRight size={18} />
             </button>

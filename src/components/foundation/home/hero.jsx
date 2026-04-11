@@ -55,10 +55,10 @@ const Hero = () => {
             </p>
 
             {/* Premium Interactive Buttons */}
-            <div className="mt-12 flex flex-row items-center gap-6">
+            <div className="mt-12 flex flex-row items-center gap-4 sm:gap-8">
               <Link
                 to="/categories"
-                className="relative group px-10 py-4 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest rounded-2xl overflow-hidden transition-all active:scale-95 shadow-2xl shadow-slate-200"
+                className="relative group px-6 sm:px-10 py-4 bg-slate-900 text-white text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-2xl overflow-hidden transition-all active:scale-95 shadow-2xl shadow-slate-200 text-center"
               >
                 <span className="relative z-10">Start Shopping</span>
                 <div className="absolute inset-0 bg-amber-600 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300"></div>
@@ -66,12 +66,12 @@ const Hero = () => {
 
               <button
                 onClick={() => document.getElementById('testimonials')?.scrollIntoView({ behavior: 'smooth' })}
-                className="group flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-slate-900"
+                className="group flex items-center gap-2 sm:gap-4 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-900"
               >
                 Testimonials
                 <div className="flex items-center">
-                  <div className="h-[1px] w-8 bg-slate-200 group-hover:w-12 group-hover:bg-amber-500 transition-all duration-500"></div>
-                  <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                  <div className="h-[1px] w-6 sm:w-8 bg-slate-200 group-hover:w-12 group-hover:bg-amber-500 transition-all duration-500"></div>
+                  <span className="ml-1 sm:ml-2 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
                 </div>
               </button>
             </div>
