@@ -17,7 +17,7 @@ const Loader = () => {
           <span className="text-xl font-black tracking-tighter text-slate-900 leading-none">
             UNNATI <span className="text-amber-600 italic">MART</span>
           </span>
-          <span className="text-[7px] font-black uppercase tracking-[0.4em] text-slate-400 mt-1">
+          <span className="text-[7px] font-black uppercase tracking-[0.4em] text-slate-500 mt-1">
             Loading...
           </span>
         </div>

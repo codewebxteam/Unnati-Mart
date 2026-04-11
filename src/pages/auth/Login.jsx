@@ -28,7 +28,7 @@ const Login = () => {
             const result = await login(email, password);
             if (result.success) {
                 // Redirect admin to dashboard, others to home
-                if (email === 'meraj786@gmail.com') {
+                if (email?.toLowerCase() === 'admin786@gmail.com') {
                     navigate('/admin');
                 } else {
                     navigate('/');
@@ -67,7 +67,7 @@ const Login = () => {
                         onClick={() => navigate('/')}
                     >
                         <span className="text-2xl font-black tracking-tighter text-slate-900 leading-none cursor-pointer">
-                            UNNATI <span className="text-blue-600 italic">MART</span>
+                            UNNATI <span className="text-amber-600 italic">MART</span>
                         </span>
                     </motion.div>
                     <h2 className="text-3xl font-black text-slate-900 tracking-tight italic">
@@ -85,7 +85,7 @@ const Login = () => {
                         type="button"
                         onClick={() => setIsAdminLogin(!isAdminLogin)}
                         className={`text-[10px] uppercase font-black tracking-widest px-6 py-2.5 rounded-full border-2 transition-all duration-300 ${isAdminLogin
-                                ? 'border-blue-500 bg-blue-50 text-blue-600 shadow-lg shadow-blue-500/10'
+                                ? 'border-amber-500 bg-amber-50 text-amber-600 shadow-lg shadow-amber-500/10'
                                 : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'
                             }`}
                     >
@@ -97,13 +97,13 @@ const Login = () => {
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Email Address</label>
                         <div className="relative group">
-                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={18} />
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-amber-600 transition-colors" size={18} />
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="hello@example.com"
-                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
                             />
                         </div>
                     </div>
@@ -111,16 +111,16 @@ const Login = () => {
                     <div className="space-y-2">
                         <div className="flex justify-between items-center ml-4 mr-1">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Password</label>
-                            <button type="button" className="text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-700 transition-colors">Forgot?</button>
+                            <button type="button" className="text-[10px] font-black uppercase tracking-widest text-amber-600 hover:text-blue-700 transition-colors">Forgot?</button>
                         </div>
                         <div className="relative group">
-                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={18} />
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-amber-600 transition-colors" size={18} />
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
-                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
                             />
                         </div>
                     </div>
@@ -177,7 +177,7 @@ const Login = () => {
                     Don't have an account? {' '}
                     <button
                         onClick={() => navigate('/signup')}
-                        className="text-blue-600 font-black hover:underline underline-offset-4"
+                        className="text-amber-600 font-black hover:underline underline-offset-4"
                     >
                         Sign Up
                     </button>

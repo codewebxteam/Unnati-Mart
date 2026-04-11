@@ -2,7 +2,8 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getDatabase } from "firebase/database"; 
-import { getAuth, GoogleAuthProvider } from "firebase/auth"; // GoogleAuthProvider import kiya
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 
 // Environment variables setup for Vite
 const firebaseConfig = {
@@ -22,4 +23,5 @@ const analytics = getAnalytics(app);
 // Export instances to use in other files
 export const realtimeDb = getDatabase(app);
 export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider(); // Ye line add ki hai
+export const storage = getStorage(app);
+export const googleProvider = new GoogleAuthProvider();

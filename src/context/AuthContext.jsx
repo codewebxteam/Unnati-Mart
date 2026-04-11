@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
-                const isAdmin = currentUser.email === 'meraj786@gmail.com';
+                const isAdmin = currentUser.email?.toLowerCase() === 'admin786@gmail.com';
                 const userData = {
                     id: currentUser.uid,
                     email: currentUser.email,

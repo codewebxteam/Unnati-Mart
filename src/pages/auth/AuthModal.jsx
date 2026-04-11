@@ -37,8 +37,7 @@ const AuthModal = ({ isOpen, onClose, initialView = 'login' }) => {
                 const result = await login(formData.email, formData.password);
                 if (result.success) {
                     onClose();
-                    // Redirect admin to dashboard, others to home (if logic requires)
-                    if (formData.email === 'meraj786@gmail.com') {
+                    if (formData.email?.toLowerCase() === 'admin786@gmail.com') {
                         navigate('/admin');
                     } else {
                         navigate('/');
@@ -125,7 +124,7 @@ const AuthModal = ({ isOpen, onClose, initialView = 'login' }) => {
                                         type="button"
                                         onClick={() => setIsAdminLogin(!isAdminLogin)}
                                         className={`text-[10px] uppercase font-black tracking-widest px-4 py-2 rounded-full border-2 transition-all ${isAdminLogin
-                                            ? 'border-indigo-500 bg-indigo-50 text-indigo-600'
+                                            ? 'border-amber-500 bg-amber-50 text-amber-600'
                                             : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300'
                                             }`}
                                     >
