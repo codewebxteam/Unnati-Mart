@@ -299,7 +299,7 @@ const Header = () => {
                   />
                 )}
                 <span className="relative z-10">{item.icon}</span>
-                <span className="relative z-10 text-[9px] font-black uppercase tracking-[0.15em] mt-1">
+                <span className="relative z-10 text-[8px] min-[375px]:text-[9px] font-black uppercase tracking-[0.05em] min-[375px]:tracking-[0.15em] mt-1">
                   {item.name}
                 </span>
               </button>

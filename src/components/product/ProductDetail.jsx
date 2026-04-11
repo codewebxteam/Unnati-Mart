@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Heart, Minus, Plus, ArrowLeft, Star, ShieldCheck, Truck, RefreshCw, Share2 } from 'lucide-react';
@@ -7,9 +7,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useWishlist } from '../../context/WishlistContext';
 import ShareModal from '../common/ShareModal';
 import RecommendedProducts from './RecommendedProducts';
-import { useEffect } from 'react';
+import ProductSkeleton from './ProductSkeleton';
 import { realtimeDb as db } from '../../firebase';
-import { ref, onValue } from 'firebase/database';
+import { ref, get } from 'firebase/database';
 import { dummyProducts } from '../../data/dummyProducts';
 
 const ProductDetail = () => {
@@ -19,8 +19,22 @@ const ProductDetail = () => {
     const { user, openAuthModal } = useAuth();
     const { toggleWishlist, isInWishlist } = useWishlist();
 
-    const [product, setProduct] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [product, setProduct] = useState(() => {
+        // Instant priority to dummy products if they match the ID
+        const allDummyProducts = Object.values(dummyProducts).flat();
+        const initialDummy = allDummyProducts.find(p => p.id === id);
+        return initialDummy ? {
+            ...initialDummy,
+            id: id,
+            img: initialDummy.img || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
+            unit: initialDummy.unit || 'Kg',
+            highlights: typeof initialDummy.highlights === 'string' ? initialDummy.highlights.split(',').filter(Boolean) : (initialDummy.highlights || []),
+            specifications: Array.isArray(initialDummy.specifications) ? initialDummy.specifications : [],
+            longDescription: initialDummy.description || ''
+        } : null;
+    });
+
+    const [isLoading, setIsLoading] = useState(!product); // Only load if not in dummy
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
     const [isAdded, setIsAdded] = useState(false);
@@ -65,68 +79,54 @@ const ProductDetail = () => {
     };
 
     useEffect(() => {
-        let isMounted = true;
-        let unsubscribe = () => { };
+        const fetchProduct = async () => {
+            try {
+                const productRef = ref(db, `products/${id}`);
+                const snapshot = await get(productRef);
+                const data = snapshot.val();
+                
+                if (data) {
+                    // Parse highlights
+                    let parsedHighlights = [];
+                    if (typeof data.highlights === 'string') {
+                        parsedHighlights = data.highlights.split(',').map(h => h.trim()).filter(Boolean);
+                    } else if (Array.isArray(data.highlights)) {
+                        parsedHighlights = data.highlights;
+                    }
 
-        setIsLoading(true);
-        const productRef = ref(db, `products/${id}`);
-        unsubscribe = onValue(productRef, (snapshot) => {
-            if (!isMounted) return;
-            const data = snapshot.val();
-            
-            // Fallback to dummy data if not in Firebase
-            let finalData = data;
-            if (!finalData) {
-                const allDummyProducts = Object.values(dummyProducts).flat();
-                finalData = allDummyProducts.find(p => p.id === id);
-            }
+                    // Parse specifications
+                    let parsedSpecs = [];
+                    const specsText = data.specification || data.specifications;
+                    if (typeof specsText === 'string') {
+                        parsedSpecs = specsText.split('\n').map(line => {
+                            const parts = line.split(':');
+                            if (parts.length >= 2) {
+                                return { label: parts[0].trim(), value: parts.slice(1).join(':').trim() };
+                            }
+                            return null;
+                        }).filter(Boolean);
+                    } else if (Array.isArray(specsText)) {
+                        parsedSpecs = specsText;
+                    }
 
-            if (finalData) {
-                // Parse highlights
-                let parsedHighlights = [];
-                if (typeof finalData.highlights === 'string') {
-                    parsedHighlights = finalData.highlights.split(',').map(h => h.trim()).filter(Boolean);
-                } else if (Array.isArray(finalData.highlights)) {
-                    parsedHighlights = finalData.highlights;
+                    setProduct({
+                        ...data,
+                        id: id,
+                        img: data.img || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
+                        unit: data.unit || 'Kg',
+                        highlights: parsedHighlights,
+                        specifications: parsedSpecs,
+                        longDescription: data.description || ''
+                    });
                 }
-
-                // Parse specifications
-                let parsedSpecs = [];
-                const specsText = finalData.specification || finalData.specifications;
-                if (typeof specsText === 'string') {
-                    parsedSpecs = specsText.split('\n').map(line => {
-                        const parts = line.split(':');
-                        if (parts.length >= 2) {
-                            return { label: parts[0].trim(), value: parts.slice(1).join(':').trim() };
-                        }
-                        return null;
-                    }).filter(Boolean);
-                } else if (Array.isArray(specsText)) {
-                    parsedSpecs = specsText;
-                }
-
-                setProduct({
-                    ...finalData,
-                    id: id,
-                    img: finalData.img || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
-                    unit: finalData.unit || 'Kg',
-                    highlights: parsedHighlights,
-                    specifications: parsedSpecs,
-                    longDescription: finalData.description || ''
-                });
-            } else {
-                setProduct(null);
+            } catch (error) {
+                console.error("Fetch product error:", error);
+            } finally {
+                setIsLoading(false);
             }
-            setIsLoading(false);
-        }, (error) => {
-            console.error("Fetch product error:", error);
-            setIsLoading(false);
-        });
-
-        return () => {
-            isMounted = false;
-            unsubscribe();
         };
+
+        fetchProduct();
     }, [id]);
 
     useEffect(() => {
@@ -134,14 +134,9 @@ const ProductDetail = () => {
     }, [id]);
 
     if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center p-4">
-                <div className="text-center">
-                    <h2 className="text-2xl font-black text-slate-900 mb-4">Loading Product Details...</h2>
-                </div>
-            </div>
-        );
+        return <ProductSkeleton />;
     }
+
 
     if (!product) {
         return (

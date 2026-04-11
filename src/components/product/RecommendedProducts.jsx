@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { realtimeDb as db } from '../../firebase';
-import { ref, onValue } from 'firebase/database';
+import { ref, get, query, orderByChild, equalTo, limitToFirst } from 'firebase/database';
 import { dummyProducts } from '../../data/dummyProducts';
 import ProductCard from './ProductCard';
 
@@ -12,21 +12,41 @@ const RecommendedProducts = ({ currentProductId, category }) => {
     const { user, openAuthModal } = useAuth();
 
     const [firebaseProducts, setFirebaseProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const productsRef = ref(db, 'products');
-        const unsubscribe = onValue(productsRef, (snapshot) => {
-            const data = snapshot.val() || {};
-            const list = Object.keys(data).map(key => ({
-                ...data[key],
-                id: key,
-                img: data[key].img || data[key].image || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
-                unit: data[key].unit || 'Kg'
-            }));
-            setFirebaseProducts(list);
-        });
-        return () => unsubscribe();
-    }, []);
+        const fetchRecommendations = async () => {
+            if (!category) return;
+            setIsLoading(true);
+            try {
+                // HIGH PERFORMANCE QUERY: Fetch only products in same category
+                // This replaces the old "fetch all products" approach
+                const productsRef = ref(db, 'products');
+                const recommendationsQuery = query(
+                    productsRef, 
+                    orderByChild('category'), 
+                    equalTo(category),
+                    limitToFirst(10) // Fetch slightly more to account for excluding current product
+                );
+                
+                const snapshot = await get(recommendationsQuery);
+                const data = snapshot.val() || {};
+                const list = Object.keys(data).map(key => ({
+                    ...data[key],
+                    id: key,
+                    img: data[key].img || data[key].image || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
+                    unit: data[key].unit || 'Kg'
+                }));
+                setFirebaseProducts(list);
+            } catch (error) {
+                console.error("Fetch recommendations error:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchRecommendations();
+    }, [category]);
 
     const isMushroom = String(category || '').toLowerCase().includes('mushroom');
     const isDairy = String(category || '').toLowerCase().includes('dairy');

@@ -147,7 +147,7 @@ const Categories = () => {
                     </motion.h1>
                 </header>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-12">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-12">
                     <AnimatePresence mode="popLayout">
                         {displayedCategories.map((cat, idx) => (
                             <motion.div
@@ -162,36 +162,34 @@ const Categories = () => {
                                 }}
                                 whileHover={{ y: -8 }}
                                 onClick={() => navigate(cat.path)}
-                                className={`group relative aspect-[4/5] ${cat.color} rounded-[2.5rem] overflow-hidden cursor-pointer shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300 transition-all duration-500`}
+                                className={`group relative aspect-[4/5] ${cat.color} rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden cursor-pointer shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300 transition-all duration-500 flex flex-col`}
                             >
-                                {/* Text Header */}
-                                <div className="p-6 relative z-20">
-                                    <h3 className={`text-xl md:text-2xl font-black ${cat.textColor} tracking-tighter leading-[1.1] mb-1`}>
+                                {/* Text Header - FLEX ITEM 1 */}
+                                <div className="p-4 sm:p-6 relative z-20 shrink-0">
+                                    <h3 className={`text-sm min-[375px]:text-base sm:text-xl md:text-2xl font-black ${cat.textColor} tracking-tighter leading-tight sm:leading-[1.1] mb-0.5 sm:mb-1 line-clamp-2`}>
                                         {cat.name}
                                     </h3>
-                                    <p className={`text-[10px] font-bold ${cat.textColor} opacity-70 uppercase tracking-widest`}>
+                                    <p className={`text-[8px] sm:text-[10px] font-bold ${cat.textColor} opacity-70 uppercase tracking-widest`}>
                                         {cat.sub}
                                     </p>
                                 </div>
-
-                                {/* Image at bottom */}
-                                <div className="absolute inset-x-0 bottom-0 p-4 h-1/2 flex items-end">
+                                
+                                {/* Image container - FLEX ITEM 2 (Pushed to bottom) */}
+                                <div className="mt-auto px-3 pb-3 sm:px-4 sm:pb-4 relative z-10 overflow-hidden">
                                     <motion.div 
                                         whileHover={{ scale: 1.05, rotate: -2 }}
-                                        className="relative w-full aspect-square"
+                                        className="relative w-full aspect-square bg-white/95 rounded-[1.5rem] sm:rounded-[2rem] p-3 sm:p-4 shadow-2xl flex items-center justify-center overflow-hidden"
                                     >
                                         <img 
                                             src={cat.img} 
                                             alt={cat.name} 
-                                            className="w-full h-full object-cover rounded-[2rem] shadow-2xl transition-transform duration-700 group-hover:rotate-3" 
+                                            className="w-full h-full object-contain brightness-110 drop-shadow-xl transition-transform duration-700 group-hover:rotate-3" 
                                         />
                                     </motion.div>
                                 </div>
 
-                                {/* Subtle Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-                                
-                                {/* Glow Effect on Hover */}
+                                {/* Overlays should be absolute */}
+                                <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20 opacity-40 group-hover:opacity-20 transition-opacity pointer-events-none" />
                                 <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" />
                             </motion.div>
                         ))}
