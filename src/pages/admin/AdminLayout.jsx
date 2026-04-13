@@ -18,7 +18,9 @@ import {
     Mail,
     Menu,
     X,
-    MailOpen
+    MailOpen,
+    Database,
+    LogOut
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -199,13 +201,15 @@ const AdminLayout = () => {
         return () => window.removeEventListener('click', handleClickOutside);
     }, []);
 
-    const sidebarItems = [
+    const mainItems = [
         { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
+        { name: 'Categories', path: '/admin/categories', icon: <Tags size={20} /> },
         { name: 'Orders', path: '/admin/orders', icon: <ShoppingCart size={20} /> },
+    ];
+
+    const managementItems = [
         { name: 'Customers', path: '/admin/customers', icon: <Users size={20} /> },
-        { name: 'Payments', path: '/admin/payments', icon: <CreditCard size={20} /> },
-        { name: 'Inventory', path: '/admin/inventory', icon: <Warehouse size={20} /> },
-        { name: 'Settings', path: '/admin/settings', icon: <Settings size={20} /> },
+        { name: 'Inventory', path: '/admin/inventory', icon: <Database size={20} /> },
     ];
 
     const handleLogout = async () => {
@@ -223,49 +227,101 @@ const AdminLayout = () => {
                 />
             )}
             {/* Sidebar */}
-            <aside className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:relative transition-transform duration-200 ease-in-out`}>
+            <aside className={`fixed inset-y-0 left-0 w-64 bg-[#111827] border-r border-[#1e293b]/10 flex flex-col shadow-2xl z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:relative transition-transform duration-300 ease-in-out`}>
                 {/* Logo Area */}
-                <div className="h-20 flex items-center justify-between px-6 border-b border-slate-100 shrink-0">
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-400 flex items-center justify-center text-white font-black shadow-lg shadow-amber-500/30">
-                            SU
+                <div className="h-28 flex items-center px-8 shrink-0">
+                    <div className="flex items-center gap-3.5 cursor-pointer group" onClick={() => navigate('/')}>
+                        <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform">
+                            U
                         </div>
-                        <span className="text-xl font-black tracking-tight text-slate-800">
-                            Admin <span className="text-amber-600 font-bold">Panel</span>
-                        </span>
+                        <div className="flex flex-col">
+                            <span className="text-[15px] font-black tracking-tight text-white leading-tight">
+                                Unnati Mart
+                            </span>
+                            <span className="text-[9px] font-black text-slate-500 tracking-[0.2em] uppercase mt-1">
+                                Admin Panel
+                            </span>
+                        </div>
                     </div>
                     {/* Close button for mobile */}
                     <button
                         onClick={() => setIsSidebarOpen(false)}
-                        className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg md:hidden"
+                        className="p-1.5 text-slate-400 hover:text-white rounded-lg md:hidden ml-auto transition-colors"
                     >
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Navigation Items */}
-                <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1 custom-scrollbar">
-                    {sidebarItems.map((item) => {
-                        // For exact matching of /admin or /admin/reports, let's treat /admin as the reports page per user screenshot.
-                        const isActive = location.pathname === item.path || (item.path === '/admin' && location.pathname === '/admin/reports');
+                <div className="flex-1 overflow-y-auto py-4 px-5 flex flex-col gap-8 custom-scrollbar scrollbar-hide">
+                    {/* MAIN Section */}
+                    <div>
+                        <h4 className="px-3 text-[9px] font-black tracking-[0.3em] text-slate-500 uppercase mb-5 opacity-60">Main</h4>
+                        <nav className="space-y-1.5">
+                            {mainItems.map((item) => {
+                                const isActive = location.pathname === item.path || (item.path === '/admin/dashboard' && (location.pathname === '/admin' || location.pathname === '/admin/reports'));
+                                return (
+                                    <button
+                                        key={item.name}
+                                        onClick={() => navigate(item.path)}
+                                        className={`w-full flex items-center gap-3.5 px-3.5 py-3 rounded-2xl text-[13px] font-bold transition-all duration-300 group ${isActive
+                                            ? 'bg-emerald-500/10 text-emerald-400 shadow-sm border border-emerald-500/10'
+                                            : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
+                                            }`}
+                                    >
+                                        <span className={`${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-200'} transition-colors`}>
+                                            {item.icon}
+                                        </span>
+                                        {item.name}
+                                    </button>
+                                );
+                            })}
+                        </nav>
+                    </div>
 
-                        return (
-                            <button
-                                key={item.name}
-                                onClick={() => navigate(item.path)}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${isActive
-                                    ? 'bg-indigo-50/80 text-indigo-700 shadow-sm shadow-indigo-100'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                    }`}
-                            >
-                                <span className={`${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
-                                    {item.icon}
-                                </span>
-                                {item.name}
-                            </button>
-                        );
-                    })}
-                </nav>
+                    {/* MANAGEMENT Section */}
+                    <div>
+                        <h4 className="px-3 text-[9px] font-black tracking-[0.3em] text-slate-500 uppercase mb-5 opacity-60">Management</h4>
+                        <nav className="space-y-1.5">
+                            {managementItems.map((item) => {
+                                const isActive = location.pathname === item.path;
+                                return (
+                                    <button
+                                        key={item.name}
+                                        onClick={() => navigate(item.path)}
+                                        className={`w-full flex items-center gap-3.5 px-3.5 py-3 rounded-2xl text-[13px] font-bold transition-all duration-300 group ${isActive
+                                            ? 'bg-emerald-500/10 text-emerald-400 shadow-sm border border-emerald-500/10'
+                                            : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
+                                            }`}
+                                    >
+                                        <span className={`${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-200'} transition-colors`}>
+                                            {item.icon}
+                                        </span>
+                                        {item.name}
+                                    </button>
+                                );
+                            })}
+                        </nav>
+                    </div>
+                </div>
+
+                {/* Bottom Actions */}
+                <div className="p-6 border-t border-white/5 space-y-2">
+                    <button
+                        onClick={() => navigate('/admin/settings')}
+                        className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[13px] font-bold transition-all duration-200 ${location.pathname === '/admin/settings' ? 'bg-emerald-500/10 text-emerald-500' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'}`}
+                    >
+                        <Settings size={18} />
+                        Settings
+                    </button>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[13px] font-bold transition-all duration-200 text-slate-400 hover:bg-white/5 hover:text-rose-400 group"
+                    >
+                        <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
+                        Back to Store
+                    </button>
+                </div>
             </aside>
 
             {/* Main Content Area */}

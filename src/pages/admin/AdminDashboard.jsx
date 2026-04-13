@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { DollarSign, ShoppingBag, Users, AlertCircle, X } from 'lucide-react';
+import { 
+    TrendingUp, TrendingDown, Users, ShoppingBag, 
+    DollarSign, Package, Clock, CheckCircle, 
+    ArrowRight, Filter, Download as DownloadIcon, RefreshCcw,
+    ChevronRight, CreditCard, ShoppingCart, X, Database, AlertCircle
+} from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { realtimeDb as db } from '../../firebase';
 import { ref, onValue, push, set } from 'firebase/database';
@@ -16,7 +21,9 @@ import {
     PieChart,
     Pie,
     Cell,
-    Legend
+    Legend,
+    AreaChart,
+    Area
 } from 'recharts';
 
 const AdminDashboard = () => {
@@ -33,6 +40,87 @@ const AdminDashboard = () => {
     const [exportTime, setExportTime] = useState('All Time');
     const [customStartDate, setCustomStartDate] = useState('');
     const [customEndDate, setCustomEndDate] = useState('');
+    
+    // Mock seeding logic
+    const handleSeedData = async () => {
+        if (!window.confirm('This will populate your database with mock data. Existing items might be duplicated. Proceed?')) return;
+        
+        try {
+            // Seed Segments
+            const segRef = ref(db, 'segments');
+            const segments = [
+                { name: 'Grocery', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400', status: 'Active' },
+                { name: 'Fashion', image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=400', status: 'Active' },
+                { name: 'Electronics', image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400', status: 'Active' },
+                { name: 'Home & Kitchen', image: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400', status: 'Active' }
+            ];
+            const segmentIds = {};
+            for (const seg of segments) {
+                const newSegRef = push(segRef);
+                segmentIds[seg.name] = newSegRef.key;
+                await set(newSegRef, { ...seg, firebaseId: newSegRef.key, createdAt: new Date().toISOString() });
+            }
+
+            // Seed Categories
+            const catRef = ref(db, 'categories');
+            const categories = [
+                { name: 'Fruits & Vegetables', slug: 'fruits-veg', image: 'https://images.unsplash.com/photo-1518843875459-f738682238a6?w=400', segmentId: segmentIds['Grocery'], status: 'Active' },
+                { name: 'Dairy & Bakery', slug: 'dairy-bakery', image: 'https://images.unsplash.com/photo-1550583724-125581cc258b?w=400', segmentId: segmentIds['Grocery'], status: 'Active' },
+                { name: 'Men\'s Wear', slug: 'mens-wear', image: 'https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?w=400', segmentId: segmentIds['Fashion'], status: 'Active' },
+                { name: 'Smartphones', slug: 'smartphones', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', segmentId: segmentIds['Electronics'], status: 'Active' },
+                { name: 'Cookware', slug: 'cookware', image: 'https://images.unsplash.com/photo-1584990344319-7244ca704251?w=400', segmentId: segmentIds['Home & Kitchen'], status: 'Active' }
+            ];
+            for (const cat of categories) {
+                const newCatRef = push(catRef);
+                await set(newCatRef, { ...cat, firebaseId: newCatRef.key, createdAt: new Date().toISOString() });
+            }
+
+            // Seed Products
+            const prodRef = ref(db, 'products');
+            const products = [
+                { name: 'Premium Organic Broccoli', price: 85, stock: 150, category: 'Vegetables', unit: '500g', img: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=400' },
+                { name: 'Fresh Green Spinach', price: 45, stock: 135, category: 'Vegetables', unit: '250g', img: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400' },
+                { name: 'Local Sweet Carrots', price: 60, stock: 120, category: 'Vegetables', unit: '1kg', img: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400' },
+                { name: 'Organic Red Tomatoes', price: 40, stock: 105, category: 'Vegetables', unit: '1kg', img: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400' },
+                { name: 'Farm Fresh Red Apples', price: 180, stock: 90, category: 'Fruits', unit: '1kg', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6bccb?w=400' },
+                { name: 'Sweet Valencia Oranges', price: 120, stock: 75, category: 'Fruits', unit: '1kg', img: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=400' },
+                { name: 'Golden Bananas', price: 60, stock: 60, category: 'Fruits', unit: '1 doz', img: 'https://images.unsplash.com/photo-1571771894821-ad9b58864c9a?w=400' },
+                { name: 'Fresh Pomegranate', price: 220, stock: 45, category: 'Fruits', unit: '1kg', img: 'https://images.unsplash.com/photo-1615484477771-3183778a873c?w=400' },
+                { name: 'Premium Toor Dal', price: 160, stock: 30, category: 'Grocery & Staples', unit: '1kg', img: 'https://images.unsplash.com/photo-1585994192703-f3908889ff6a?w=400' },
+                { name: 'Organic Moong Dal', price: 140, stock: 15, category: 'Grocery & Staples', unit: '1kg', img: 'https://images.unsplash.com/photo-1542601906990-b4d3fb75bb44?w=400' }
+            ];
+            for (const prod of products) {
+                const status = prod.stock === 0 ? 'Out of Stock' : prod.stock < 10 ? 'Low Stock' : 'Active';
+                await push(prodRef, { ...prod, status, createdAt: new Date().toISOString() });
+            }
+
+            // Seed Orders
+            const ordersRef = ref(db, 'orders');
+            const orders = [
+                { customer: 'Rahul Sharma', email: 'rahul@example.com', grandTotal: 545, status: 'Pending', date: new Date(Date.now() - 3600000).toISOString(), payment: 'UPI' },
+                { customer: 'Priya Verma', email: 'priya@example.com', grandTotal: 1280, status: 'Delivered', date: new Date(Date.now() - 86400000).toISOString(), payment: 'Credit Card' },
+                { customer: 'Amit Singh', email: 'amit@example.com', grandTotal: 350, status: 'Cancelled', date: new Date(Date.now() - 172800000).toISOString(), payment: 'COD' }
+            ];
+            for (const order of orders) {
+                await push(ordersRef, { ...order, orderId: 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase() });
+            }
+
+            // Seed Users
+            const usersRef = ref(db, 'users');
+            const usersMock = [
+                { name: 'Rahul Sharma', email: 'rahul@example.com', phone: '9876543210', joinedAt: new Date(Date.now() - 2592000000).toISOString() },
+                { name: 'Priya Verma', email: 'priya@example.com', phone: '9876543211', joinedAt: new Date(Date.now() - 5184000000).toISOString() }
+            ];
+            for (const user of usersMock) {
+                await push(usersRef, user);
+            }
+
+            alert('Database seeded successfully!');
+        } catch (err) {
+            console.error('Seeding error:', err);
+            alert('Failed to seed database.');
+        }
+    };
 
 
     useEffect(() => {
@@ -41,22 +129,27 @@ const AdminDashboard = () => {
         const usersRef = ref(db, 'users');
         const messagesRef = ref(db, 'messages');
 
+        // Safety Timeout
+        const safetyTimeout = setTimeout(() => {
+            setIsLoading(false);
+        }, 3000);
+
         const unsubOrders = onValue(ordersRef, (snap) => {
+            clearTimeout(safetyTimeout);
             const data = snap.val();
-            console.log("[Dashboard] Raw Orders Data snapped:", data ? Object.keys(data).length : "NULL");
             if (data) {
                 const list = Object.keys(data).map(key => ({
                     ...data[key],
                     firebaseId: key,
                     orderId: data[key].orderId || data[key].id || key
                 }));
-                console.log("[Dashboard] Parsed Orders list length:", list.length);
                 setOrders(list);
             } else {
                 setOrders([]);
             }
             setIsLoading(false);
         }, (err) => {
+            clearTimeout(safetyTimeout);
             console.error("Orders sync error:", err);
             setIsLoading(false);
         });
@@ -193,11 +286,11 @@ const AdminDashboard = () => {
     }, [orders, users]);
 
     // Graph Data Processing
-    const salesChartData = useMemo(() => {
+    const chartData = useMemo(() => {
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
         return months.map(month => ({
             name: month,
-            sales: orders.filter(o => {
+            revenue: orders.filter(o => {
                 if (!o.date) return false;
                 const date = new Date(o.date);
                 return date.toLocaleString('default', { month: 'short' }) === month;
@@ -245,33 +338,47 @@ const AdminDashboard = () => {
         }));
     }, [bulkOrders]);
 
-    const COLORS = ['#10b981', '#f59e0b'];
+    const COLORS = ['#10b981', '#f59e0b', '#6366f1', '#ec4899', '#8b5cf6'];
     return (
         <div className="w-full animate-fade-in pb-12">
             {/* Header Area */}
             <div className="mb-8">
                 <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Dashboard Overview</h1>
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-                    <span className="hover:text-indigo-600 cursor-pointer transition-colors">Home</span>
-                    <span>/</span>
-                    <span className="text-indigo-600">Dashboard</span>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
+                        <span className="hover:text-indigo-600 cursor-pointer transition-colors">Home</span>
+                        <span>/</span>
+                        <span className="text-indigo-600">Dashboard</span>
+                    </div>
+                    <button 
+                        onClick={handleSeedData}
+                        className="flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                    >
+                        <Database size={16} />
+                        Seed Mock Data
+                    </button>
                 </div>
             </div>
 
             {/* Excel Export Toolbar */}
-            <div className="bg-white p-5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 mb-8 flex flex-wrap items-center justify-between gap-4 animate-fade-in">
-                <div className="flex items-center gap-2">
-                    <span className="text-xs font-black uppercase text-slate-400 tracking-widest">Excel Export:</span>
+            <div className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-slate-100 mb-10 flex flex-wrap items-center justify-between gap-6 animate-fade-in mx-2">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner">
+                        <DownloadIcon size={24} strokeWidth={2.5} />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-black text-[#111827]">Analytics Export</h2>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Generate CSV/Excel Reports</p>
+                    </div>
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-3">
-                    {/* Source Filter */}
-                    <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black uppercase text-slate-400">Data Source</label>
+                <div className="flex flex-wrap items-center gap-4 flex-1 justify-end">
+                    <div className="flex flex-col gap-1 min-w-[140px]">
+                        <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Source</label>
                         <select 
                             value={exportSource} 
                             onChange={(e) => setExportSource(e.target.value)}
-                            className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-slate-700 focus:ring-4 focus:ring-emerald-500/10 cursor-pointer"
                         >
                             <option value="AdminOrder">Orders</option>
                             <option value="AdminCustomer">Customers</option>
@@ -280,13 +387,12 @@ const AdminDashboard = () => {
                         </select>
                     </div>
 
-                    {/* Time Filter */}
-                    <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-black uppercase text-slate-400">Time Period</label>
+                    <div className="flex flex-col gap-1 min-w-[140px]">
+                        <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Period</label>
                         <select 
                             value={exportTime} 
                             onChange={(e) => setExportTime(e.target.value)}
-                            className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-slate-700 focus:ring-4 focus:ring-emerald-500/10 cursor-pointer"
                         >
                             <option value="All Time">All Time</option>
                             <option value="Weekly">Weekly</option>
@@ -296,120 +402,61 @@ const AdminDashboard = () => {
                         </select>
                     </div>
 
-                    {/* Custom Date Range Inputs */}
                     {exportTime === 'Custom' && (
-                        <>
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-black uppercase text-slate-400">Start Date</label>
-                                <input 
-                                    type="date" 
-                                    value={customStartDate} 
-                                    onChange={(e) => setCustomStartDate(e.target.value)}
-                                    className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-black uppercase text-slate-400">End Date</label>
-                                <input 
-                                    type="date" 
-                                    value={customEndDate} 
-                                    onChange={(e) => setCustomEndDate(e.target.value)}
-                                    className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700"
-                                />
-                            </div>
-                        </>
+                        <div className="flex items-center gap-2">
+                            <input 
+                                type="date" 
+                                value={customStartDate} 
+                                onChange={(e) => setCustomStartDate(e.target.value)}
+                                className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-bold text-slate-700"
+                            />
+                            <span className="text-slate-300 font-bold">to</span>
+                            <input 
+                                type="date" 
+                                value={customEndDate} 
+                                onChange={(e) => setCustomEndDate(e.target.value)}
+                                className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-bold text-slate-700"
+                            />
+                        </div>
                     )}
 
                     <button 
                         onClick={handleExportExcel}
-                        className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md shadow-amber-500/20 transition-all self-end"
+                        className="bg-[#111827] hover:bg-[#1e293b] text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-900/10 active:scale-95 flex items-center gap-2"
                     >
-                        Export Excel
+                        Download Report
                     </button>
                 </div>
             </div>
 
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 mx-2">
+                {[
+                    { label: 'TOTAL SALES', value: `₹${stats.totalSales.toLocaleString()}`, icon: <DollarSign size={24} />, change: '+12.5%', color: 'emerald' },
+                    { label: 'TOTAL ORDERS', value: stats.totalOrders, icon: <ShoppingBag size={24} />, change: '+8.2%', color: 'indigo' },
+                    { label: 'CUSTOMERS', value: stats.totalCustomers, icon: <Users size={24} />, change: '+15.3%', color: 'amber' },
+                    { label: 'PENDING', value: stats.pendingOrders, icon: <Clock size={24} />, change: 'Real-time', color: 'rose' }
+                ].map((stat, i) => (
+                    <div key={i} className="bg-white rounded-[2rem] p-6 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col justify-between group hover:shadow-xl transition-all">
+                        <div className="flex items-center justify-between mb-2">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-${stat.color}-50 text-${stat.color}-500 group-hover:scale-110 transition-transform`}>
+                                {stat.icon}
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-3xl font-black text-[#111827]">{stat.value}</h3>
+                            <div className={`flex items-center gap-1.5 text-[10px] font-black mt-2 ${stat.color === 'rose' ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                <TrendingUp size={12} strokeWidth={3} />
+                                <span>{stat.change}</span>
+                                <span className="text-slate-300 font-bold ml-1 uppercase">from last week</span>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
 
-{/* Stats Cards */ }
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    {/* Total Sales */}
-    <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between h-40">
-        <div className="flex justify-between items-start">
-            <div>
-                <h3 className="text-3xl font-black text-slate-800">₹{stats.totalSales.toLocaleString()}</h3>
-                <p className="text-sm font-semibold text-slate-500 mt-1">Total Sales</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
-                <DollarSign size={24} strokeWidth={2.5} />
-            </div>
-        </div>
-        <div className="flex items-center gap-2 text-sm font-semibold text-amber-500">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-            <span>+12.5% live data</span>
-        </div>
-    </div>
-
-    {/* Total Orders */}
-    <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between h-40">
-        <div className="flex justify-between items-start">
-            <div>
-                <h3 className="text-3xl font-black text-slate-800">{stats.totalOrders}</h3>
-                <p className="text-sm font-semibold text-slate-500 mt-1">Total Orders</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
-                <ShoppingBag size={24} strokeWidth={2.5} />
-            </div>
-        </div>
-        <div className="flex items-center gap-2 text-sm font-semibold text-amber-500">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-            <span>+8.2% live data</span>
-        </div>
-    </div>
-
-    {/* Total Customers */}
-    <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between h-40">
-        <div className="flex justify-between items-start">
-            <div>
-                <h3 className="text-3xl font-black text-slate-800">{stats.totalCustomers}</h3>
-                <p className="text-sm font-semibold text-slate-500 mt-1">Total Customers</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                <Users size={24} strokeWidth={2.5} />
-            </div>
-        </div>
-        <div className="flex items-center gap-2 text-sm font-semibold text-amber-500">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-            <span>+15.3% live data</span>
-        </div>
-    </div>
-
-    {/* Pending Orders */}
-    <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between h-40">
-        <div className="flex justify-between items-start">
-            <div>
-                <h3 className="text-3xl font-black text-slate-800">{stats.pendingOrders}</h3>
-                <p className="text-sm font-semibold text-slate-500 mt-1">Orders Placed</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
-                <AlertCircle size={24} strokeWidth={2.5} />
-            </div>
-        </div>
-        <div className="flex items-center gap-2 text-sm font-semibold text-rose-500">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
-            </svg>
-            <span>Real-time tracking</span>
-        </div>
-    </div>
-</div>
-
-{/* Charts Section */ }
+            {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Sales Overview Chart */}
                 <div className="bg-white rounded-[1.5rem] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100">
@@ -417,15 +464,50 @@ const AdminDashboard = () => {
                         <h2 className="text-xl font-bold text-slate-800">Sales Overview</h2>
                         <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">Real-time</span>
                     </div>
-                    <div className="h-[300px] w-full min-h-[300px] relative">
-                        <ResponsiveContainer width="99%" height={300}>
-                            <LineChart data={salesChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <div className="h-[350px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
+                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} />
-                                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                                <Line type="monotone" dataKey="sales" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#8b5cf6' }} activeDot={{ r: 6, strokeWidth: 0, fill: '#8b5cf6' }} />
-                            </LineChart>
+                                <XAxis 
+                                    dataKey="name" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fontSize: 10, fontWeight: 700, fill: '#94a3b8'}}
+                                    dy={10}
+                                />
+                                <YAxis 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fontSize: 10, fontWeight: 700, fill: '#94a3b8'}}
+                                    tickFormatter={(value) => `₹${value/1000}k`}
+                                />
+                                <Tooltip 
+                                    contentStyle={{ 
+                                        borderRadius: '16px', 
+                                        border: 'none', 
+                                        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                                        background: 'rgba(255, 255, 255, 0.95)',
+                                        backdropFilter: 'blur(8px)',
+                                        padding: '12px'
+                                    }}
+                                    itemStyle={{ fontSize: '12px', fontWeight: 900 }}
+                                />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="revenue" 
+                                    stroke="#6366f1" 
+                                    strokeWidth={4}
+                                    fillOpacity={1} 
+                                    fill="url(#colorRevenue)" 
+                                    animationDuration={2000}
+                                />
+                            </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>

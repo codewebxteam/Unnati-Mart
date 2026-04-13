@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Phone, Ban, Users, UserPlus, Star, Landmark, Filter, ChevronDown, Calendar } from 'lucide-react';
+import { Users, Search, MoreVertical, Eye, Mail, Download, Filter, Calendar, ChevronDown, Ban, AlertCircle, UserPlus } from 'lucide-react';
 import { realtimeDb as db } from '../../firebase';
 import { ref, onValue, update, push } from 'firebase/database';
 import UserAvatar from '../../components/common/UserAvatar';
@@ -16,6 +16,9 @@ const AdminCustomers = () => {
     const [isMsgModalOpen, setIsMsgModalOpen] = useState(false);
     const [msgText, setMsgText] = useState('');
     const [selectedCustomer, setSelectedCustomer] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusTab, setStatusTab] = useState('All');
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
     const handleBlockToggle = (uid) => {
         if (!uid || uid.startsWith('guest_')) {
@@ -207,7 +210,22 @@ const AdminCustomers = () => {
             });
         }
 
-        // 2. Apply Sort
+        // 2. Apply Status Tab Filter
+        if (statusTab !== 'All') {
+            result = result.filter(c => c.status === statusTab);
+        }
+
+        // 3. Apply Search Filter
+        if (searchQuery) {
+            const s = searchQuery.toLowerCase();
+            result = result.filter(c => 
+                c.customer.toLowerCase().includes(s) || 
+                c.email.toLowerCase().includes(s) || 
+                c.contact.toLowerCase().includes(s)
+            );
+        }
+
+        // 4. Apply Sort
         result.sort((a, b) => {
             if (sortBy === 'Highest Spending') {
                 const spentA = parseInt(a.spent.replace(/[₹,]/g, '')) || 0;
@@ -231,7 +249,7 @@ const AdminCustomers = () => {
         });
 
         return result;
-    }, [customers, sortBy, timeFilter]);
+    }, [customers, sortBy, timeFilter, statusTab, searchQuery]);
 
     return (
         <div className="max-w-7xl mx-auto w-full animate-fade-in pb-12">
@@ -246,60 +264,50 @@ const AdminCustomers = () => {
                     </div>
                 </div>
 
-                {/* Filters */}
-                <div className="flex items-center gap-3 relative z-10">
-                    {/* Sort Dropdown */}
-                    <div className="relative">
-                        <button 
-                            onClick={() => { setShowSortDropdown(!showSortDropdown); setShowTimeDropdown(false); }}
-                            className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 py-2.5 px-4 rounded-xl font-bold text-sm transition-colors shadow-sm"
-                        >
-                            <Filter size={16} className="text-indigo-500" />
-                            Sort By: {sortBy}
-                            <ChevronDown size={14} className="text-slate-400 ml-1" />
-                        </button>
-                        
-                        {showSortDropdown && (
-                            <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 z-50">
-                                {['Highest Spending', 'Most Orders', 'Newest Customers', 'Oldest Customers'].map(option => (
-                                    <button
-                                        key={option}
-                                        onClick={() => { setSortBy(option); setShowSortDropdown(false); }}
-                                        className={`w-full text-left px-5 py-2.5 text-sm font-bold transition-colors ${sortBy === option ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}
-                                    >
-                                        {option}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+            <div className="flex flex-col gap-6 mb-8">
+                {/* Search and Status Filters */}
+                <div className="bg-white p-6 rounded-[1.5rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        {/* Status Tabs */}
+                        <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
+                            {['All', 'Active', 'VIP', 'Blocked'].map((status) => (
+                                <button
+                                    key={status}
+                                    onClick={() => setStatusTab(status)}
+                                    className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 ${
+                                        statusTab === status 
+                                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200' 
+                                        : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-600'
+                                    }`}
+                                >
+                                    {status}
+                                    <span className="ml-2 opacity-60">
+                                        {status === 'All' ? customers.length : customers.filter(c => c.status === status).length}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
 
-                    {/* Time Dropdown */}
-                    <div className="relative">
-                        <button 
-                            onClick={() => { setShowTimeDropdown(!showTimeDropdown); setShowSortDropdown(false); }}
-                            className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 py-2.5 px-4 rounded-xl font-bold text-sm transition-colors shadow-sm"
-                        >
-                            <Calendar size={16} className="text-amber-500" />
-                            {timeFilter}
-                            <ChevronDown size={14} className="text-slate-400 ml-1" />
-                        </button>
-                        
-                        {showTimeDropdown && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 z-50">
-                                {['All Time', 'Today', 'This Week', 'This Month', 'This Year'].map(option => (
-                                    <button
-                                        key={option}
-                                        onClick={() => { setTimeFilter(option); setShowTimeDropdown(false); }}
-                                        className={`w-full text-left px-5 py-2.5 text-sm font-bold transition-colors ${timeFilter === option ? 'bg-amber-50 text-amber-700' : 'text-slate-600 hover:bg-slate-50'}`}
-                                    >
-                                        {option}
-                                    </button>
-                                ))}
+                        {/* Search Bar */}
+                        <div className="flex items-center gap-4 flex-1 max-w-2xl">
+                            <div className="relative flex-1">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input 
+                                    type="text"
+                                    placeholder="Search by name, email or contact..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-slate-50 border-none rounded-2xl py-3 pl-12 pr-4 text-[11px] font-black uppercase tracking-widest text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 transition-all shadow-inner"
+                                />
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
+            </div>
             </div>
 
             {/* Summary Cards */}
@@ -337,8 +345,66 @@ const AdminCustomers = () => {
 
             {/* All Customers Table */}
             <div className="bg-white rounded-[1.5rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden">
-                <div className="p-6 border-b border-slate-100">
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between gap-4 flex-wrap">
                     <h2 className="text-lg font-bold text-slate-800">All Customers</h2>
+                    
+                    <div className="flex items-center gap-3">
+                         {/* Sort Dropdown */}
+                        <div className="relative">
+                            <button 
+                                onClick={() => { setShowSortDropdown(!showSortDropdown); setShowTimeDropdown(false); }}
+                                className="flex items-center gap-2 bg-slate-50 border-none text-slate-600 py-2.5 px-4 rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-inner"
+                            >
+                                <Filter size={14} className="text-indigo-500" />
+                                Sort: {sortBy}
+                                <ChevronDown size={14} className="text-slate-400 ml-1" />
+                            </button>
+                            
+                            {showSortDropdown && (
+                                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 z-50">
+                                    {['Highest Spending', 'Most Orders', 'Newest Customers', 'Oldest Customers'].map(option => (
+                                        <button
+                                            key={option}
+                                            onClick={() => { setSortBy(option); setShowSortDropdown(false); }}
+                                            className={`w-full text-left px-5 py-2.5 text-xs font-black uppercase tracking-widest transition-colors ${sortBy === option ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                                        >
+                                            {option}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Time Dropdown */}
+                        <div className="relative">
+                            <button 
+                                onClick={() => { setShowTimeDropdown(!showTimeDropdown); setShowSortDropdown(false); }}
+                                className="flex items-center gap-2 bg-slate-50 border-none text-slate-600 py-2.5 px-4 rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-inner"
+                            >
+                                <Calendar size={14} className="text-amber-500" />
+                                {timeFilter}
+                                <ChevronDown size={14} className="text-slate-400 ml-1" />
+                            </button>
+                            
+                            {showTimeDropdown && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 z-50">
+                                    {['All Time', 'Today', 'This Week', 'This Month', 'This Year'].map(option => (
+                                        <button
+                                            key={option}
+                                            onClick={() => { setTimeFilter(option); setShowTimeDropdown(false); }}
+                                            className={`w-full text-left px-5 py-2.5 text-xs font-black uppercase tracking-widest transition-colors ${timeFilter === option ? 'bg-amber-50 text-amber-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                                        >
+                                            {option}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
+                            {processedCustomers.length} Records
+                        </div>
+                    </div>
                 </div>
 
                 <div className="w-full overflow-x-auto">
@@ -393,21 +459,31 @@ const AdminCustomers = () => {
                                         </span>
                                     </td>
                                     <td className="py-4 px-6">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-1 group-hover:translate-x-0">
+                                            <button 
+                                                onClick={() => { setSelectedCustomer(item); setIsProfileModalOpen(true); }}
+                                                className="w-9 h-9 flex items-center justify-center bg-white text-indigo-500 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-95" 
+                                                title="View Profile"
+                                            >
+                                                <Eye size={14} strokeWidth={2.5} />
+                                            </button>
                                             <button 
                                                 onClick={() => { setSelectedCustomer(item); setIsMsgModalOpen(true); }}
-                                                className="text-slate-400 hover:text-indigo-600 transition-colors" 
+                                                className="w-9 h-9 flex items-center justify-center bg-white text-emerald-500 hover:bg-emerald-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-95" 
                                                 title="Message"
                                             >
-                                                <Mail size={16} strokeWidth={2.5} />
+                                                <Mail size={14} strokeWidth={2.5} />
                                             </button>
                                             <button 
                                                 onClick={() => handleBlockToggle(item.id)}
-                                                className={`${usersData[item.id]?.blocked ? 'text-red-500 hover:text-red-600' : 'text-slate-400 hover:text-red-500'} transition-colors`} 
+                                                className={`w-9 h-9 flex items-center justify-center bg-white ${usersData[item.id]?.blocked ? 'text-red-500' : 'text-slate-400 hover:text-red-500'} hover:bg-red-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-95`} 
                                                 title={usersData[item.id]?.blocked ? "Unblock" : "Block"}
                                             >
-                                                <Ban size={16} strokeWidth={2.5} />
+                                                <Ban size={14} strokeWidth={2.5} />
                                             </button>
+                                        </div>
+                                        <div className="group-hover:hidden text-slate-300 flex justify-end">
+                                            <MoreVertical size={18} />
                                         </div>
                                     </td>
                                 </tr>
@@ -442,6 +518,65 @@ const AdminCustomers = () => {
                                 className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-200 transition-colors"
                             >
                                 Send Message
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Profile Modal */}
+            {isProfileModalOpen && selectedCustomer && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4" onClick={() => setIsProfileModalOpen(false)}>
+                    <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-6 mb-8">
+                            <UserAvatar name={selectedCustomer.customer} size="xl" />
+                            <div>
+                                <h3 className="text-2xl font-black text-slate-900 tracking-tight">{selectedCustomer.customer}</h3>
+                                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{selectedCustomer.email}</p>
+                                <div className="flex gap-2 mt-2">
+                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${getStatusStyle(selectedCustomer.status)}`}>
+                                        {selectedCustomer.status}
+                                    </span>
+                                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-100 text-slate-500">
+                                        Joined {selectedCustomer.joined}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4 mb-8">
+                            {[
+                                { label: 'Total Orders', value: selectedCustomer.orders, color: 'indigo' },
+                                { label: 'Lifetime Spent', value: selectedCustomer.spent, color: 'emerald' },
+                                { label: 'Avg Order', value: `₹${(parseInt(selectedCustomer.spent.replace(/[₹,]/g, '')) / (selectedCustomer.orders || 1)).toFixed(0)}`, color: 'amber' }
+                            ].map((stat, i) => (
+                                <div key={i} className={`p-4 rounded-2xl bg-${stat.color}-50 border border-${stat.color}-100`}>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{stat.label}</p>
+                                    <h4 className={`text-xl font-black text-${stat.color}-700 tracking-tight`}>{stat.value}</h4>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="space-y-6">
+                            <div>
+                                <h4 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-3 ml-1">Account Information</h4>
+                                <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Phone Number</span>
+                                        <span className="text-sm font-black text-slate-700">{selectedCustomer.contact}</span>
+                                    </div>
+                                    <div className="flex justify-between items-start">
+                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Primary Address</span>
+                                        <span className="text-sm font-black text-slate-700 max-w-[200px] text-right">{selectedCustomer.address}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setIsProfileModalOpen(false)}
+                                className="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl shadow-slate-900/10"
+                            >
+                                Close Profile
                             </button>
                         </div>
                     </div>

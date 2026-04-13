@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import { isToday, isThisWeek, isThisMonth, isThisYear, parseISO, isValid, differenceInDays, format } from 'date-fns';
 import { realtimeDb as db } from '../../firebase';
 import { ref, onValue, update, remove } from 'firebase/database';
-import { Download, Eye, X, Check } from 'lucide-react';
+import { Download, Eye, X, Check, ShoppingCart, FileText, Search, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import OrderDetailModal from './OrderDetailModal';
 import useScrollLock from '../../hooks/useScrollLock';
@@ -18,6 +18,7 @@ const AdminOrders = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [statusFilter, setStatusFilter] = useState('All');
     const [dateFilter, setDateFilter] = useState('All Time');
+    const [searchQuery, setSearchQuery] = useState('');
 
     useScrollLock(!!selectedOrder);
 
@@ -25,7 +26,13 @@ const AdminOrders = () => {
     useEffect(() => {
         const ordersRef = ref(db, 'orders');
 
+        // Safety Timeout
+        const safetyTimeout = setTimeout(() => {
+            setIsLoading(false);
+        }, 3000);
+
         const unsubOrders = onValue(ordersRef, (snapshot) => {
+            clearTimeout(safetyTimeout);
             try {
                 const data = snapshot.val();
                 if (data) {
@@ -44,6 +51,7 @@ const AdminOrders = () => {
                 setIsLoading(false);
             }
         }, (error) => {
+            clearTimeout(safetyTimeout);
             console.error("Firebase onValue error:", error);
             setIsLoading(false);
         });
@@ -106,13 +114,16 @@ const AdminOrders = () => {
     const stats = {
         total: orders.length,
         placed: orders.filter(o => o.status === 'Placed').length,
-        delivered: orders.filter(o => o.status === 'Delivered').length,
-        cancelled: orders.filter(o => o.status === 'Cancelled').length
+        delivered: orders.filter(o => o.status === 'Delivered' || o.status === 'Success').length,
+        cancelled: orders.filter(o => o.status === 'Cancelled').length,
+        returned: orders.filter(o => o.status === 'Returned').length
     };
 
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
-            const matchesStatus = statusFilter === 'All' || order.status === statusFilter;
+            const matchesStatus = statusFilter === 'All' || 
+                                 order.status === statusFilter || 
+                                 (statusFilter === 'Success' && order.status === 'Delivered');
 
             let matchesDate = true;
             if (dateFilter !== 'All Time' && order.date) {
@@ -124,9 +135,16 @@ const AdminOrders = () => {
                     else if (dateFilter === 'This Year') matchesDate = isThisYear(orderDate);
                 }
             }
-            return matchesStatus && matchesDate;
+
+            const searchLower = searchQuery.toLowerCase();
+            const matchesSearch = !searchQuery || 
+                                 (order.orderId || '').toLowerCase().includes(searchLower) ||
+                                 (order.customer || '').toLowerCase().includes(searchLower) ||
+                                 (order.payment || '').toLowerCase().includes(searchLower);
+
+            return matchesStatus && matchesDate && matchesSearch;
         });
-    }, [orders, statusFilter, dateFilter]);
+    }, [orders, statusFilter, dateFilter, searchQuery]);
 
     const handleExportExcel = () => {
         const dataToExport = filteredOrders.map(order => ({
@@ -152,85 +170,81 @@ const AdminOrders = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto w-full animate-fade-in pb-12">
-            <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto w-full animate-fade-in pb-12 px-2">
+            <div className="mb-10 flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Orders</h1>
-                    <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-                        <span className="hover:text-indigo-600 cursor-pointer transition-colors" onClick={() => navigate('/admin/dashboard')}>Home</span>
-                        <span>/</span>
-                        <span className="text-indigo-600">Orders</span>
+                    <h1 className="text-[28px] font-black text-[#111827] tracking-tight">Orders Management</h1>
+                    <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest flex items-center gap-2">
+                        <ShoppingCart size={14} className="text-emerald-500" />
+                        Main / Orders
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleExportExcel}
+                        className="flex items-center gap-2.5 bg-[#111827] hover:bg-[#1e293b] text-white py-3.5 px-8 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-900/10 active:scale-95"
+                    >
+                        <Download size={18} strokeWidth={3} />
+                        Export Sheet
+                    </button>
+                </div>
+            </div>
+
+            {/* Orders Container */}
+            <div className="bg-white rounded-[2.5rem] shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+                <div className="p-8 border-b border-slate-50 flex flex-col gap-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
+                                <FileText size={24} strokeWidth={2.5} />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black text-[#111827]">Order Records</h2>
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{filteredOrders.length} records active</p>
+                            </div>
+                        </div>
+
+                        {/* Status Tabs */}
+                        <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
+                            {['All', 'Placed', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Returned'].map((status) => (
+                                <button
+                                    key={status}
+                                    onClick={() => setStatusFilter(status)}
+                                    className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                                        statusFilter === status 
+                                        ? 'bg-white text-indigo-600 shadow-sm' 
+                                        : 'text-slate-400 hover:text-slate-600'
+                                    }`}
+                                >
+                                    {status}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {/* Total Orders */}
-                <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-center">
-                    <h3 className="text-[2.2rem] font-black text-slate-800 tracking-tight mb-1">{stats.total}</h3>
-                    <p className="text-sm font-bold text-slate-400">Total Orders</p>
-                </div>
-
-                {/* Orders Placed */}
-                <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-center">
-                    <h3 className="text-[2.2rem] font-black text-amber-500 tracking-tight mb-1">{stats.placed}</h3>
-                    <p className="text-sm font-bold text-slate-400">Orders Placed</p>
-                </div>
-
-                {/* Delivered */}
-                <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-center">
-                    <h3 className="text-[2.2rem] font-black text-amber-500 tracking-tight mb-1">{stats.delivered}</h3>
-                    <p className="text-sm font-bold text-slate-400">Delivered</p>
-                </div>
-
-                {/* Cancelled */}
-                <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-center">
-                    <h3 className="text-[2.2rem] font-black text-red-500 tracking-tight mb-1">{stats.cancelled}</h3>
-                    <p className="text-sm font-bold text-slate-400">Cancelled</p>
-                </div>
-            </div>
-
-            {/* All Orders Table */}
-            <div className="bg-white rounded-[1.5rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between gap-4 flex-wrap">
-                    <h2 className="text-lg font-bold text-slate-800">All Orders</h2>
-
-                    <div className="flex items-center gap-3 flex-wrap">
-                        {/* Status Filter */}
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="bg-white border border-slate-200 text-sm font-bold text-slate-700 py-2 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-sm appearance-none cursor-pointer pr-10 relative bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:10px_10px] bg-[right_12px_center]"
-                        >
-                            <option value="All">All Status</option>
-                            <option value="Delivered">Delivered</option>
-                            <option value="Placed">Order Placed</option>
-                            <option value="Confirmed">Order Confirmed</option>
-                            <option value="Shipped">Shipped</option>
-                            <option value="Cancelled">Cancelled</option>
-                        </select>
-
-                        {/* Date Filter */}
-                        <select
-                            value={dateFilter}
-                            onChange={(e) => setDateFilter(e.target.value)}
-                            className="bg-white border border-slate-200 text-sm font-bold text-slate-700 py-2 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-sm appearance-none cursor-pointer pr-10 relative bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:10px_10px] bg-[right_12px_center]"
-                        >
-                            <option value="All Time">All Time</option>
-                            <option value="Today">Today</option>
-                            <option value="This Week">This Week</option>
-                            <option value="This Month">This Month</option>
-                            <option value="This Year">This Year</option>
-                        </select>
-
-                        <button
-                            onClick={handleExportExcel}
-                            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-xl font-bold text-sm transition-colors shadow-sm shadow-indigo-100"
-                        >
-                            <Download size={16} strokeWidth={2.5} />
-                            Export Excel
-                        </button>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="relative flex-1 max-w-xl">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                            <input 
+                                type="text"
+                                placeholder="Search Order ID, Customer..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-slate-50/80 border-none rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 transition-all"
+                            />
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <select
+                                value={dateFilter}
+                                onChange={(e) => setDateFilter(e.target.value)}
+                                className="bg-slate-50 border-none text-[10px] font-black uppercase tracking-widest text-slate-600 py-3.5 pl-4 pr-10 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 shadow-sm appearance-none cursor-pointer min-w-[140px] bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:10px_10px] bg-[right_16px_center]"
+                            >
+                                <option value="All Time">All Time</option>
+                                <option value="Today">Today</option>
+                                <option value="This Week">This Week</option>
+                                <option value="This Month">This Month</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -238,95 +252,87 @@ const AdminOrders = () => {
                     <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="py-5 px-6 text-[11px] font-black uppercase tracking-widest text-slate-500">Order ID</th>
-                                <th className="py-5 px-6 text-[11px] font-black uppercase tracking-widest text-slate-500">Customer</th>
-                                <th className="py-5 px-6 text-[11px] font-black uppercase tracking-widest text-slate-500">Amount</th>
-                                <th className="py-5 px-6 text-[11px] font-black uppercase tracking-widest text-slate-500">Payment</th>
-                                <th className="py-5 px-6 text-[11px] font-black uppercase tracking-widest text-slate-500">Status</th>
-                                <th className="py-5 px-6 text-[11px] font-black uppercase tracking-widest text-slate-500">Date</th>
-                                <th className="py-5 px-6 text-[11px] font-black uppercase tracking-widest text-slate-500">Actions</th>
+                                <th className="py-5 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Order ID</th>
+                                <th className="py-5 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Customer</th>
+                                <th className="py-5 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Date</th>
+                                <th className="py-5 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Amount</th>
+                                <th className="py-5 px-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Status</th>
+                                <th className="py-5 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Action</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {filteredOrders.map((item, index) => (
-                                <tr key={item.firebaseId || item.id || index} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="py-4 px-6">
-                                        <span className="font-bold text-slate-600 text-sm">{item.orderId}</span>
+                        <tbody className="divide-y divide-slate-50">
+                            {filteredOrders.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="py-32 text-center text-slate-300 font-black uppercase tracking-widest text-xs">
+                                        No order records found
                                     </td>
-                                    <td className="py-4 px-6">
+                                </tr>
+                            ) : filteredOrders.map((item) => (
+                                <tr key={item.firebaseId} className="hover:bg-slate-50/50 transition-colors group">
+                                    <td className="py-5 px-8">
+                                        <span className="font-bold text-[#111827] text-sm tracking-tight group-hover:text-indigo-600 transition-colors cursor-pointer" onClick={() => setSelectedOrder(item)}>#{item.orderId.slice(-6).toUpperCase()}</span>
+                                    </td>
+                                    <td className="py-5 px-6 text-sm">
                                         <div className="flex items-center gap-3">
-                                            <UserAvatar name={item.customer} size="sm" />
-                                            <span className="text-sm font-semibold text-slate-700">{item.customer}</span>
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold border border-slate-200">
+                                                {(item.customer || 'A').charAt(0)}
+                                            </div>
+                                            <span className="font-semibold text-slate-700">{item.customer || 'Guest User'}</span>
                                         </div>
                                     </td>
-                                    <td className="py-4 px-6">
-                                        <span className="text-sm font-bold text-slate-700">₹{(item.grandTotal || item.amount || 0).toLocaleString('en-IN')}</span>
+                                    <td className="py-5 px-6 text-center">
+                                        <span className="text-[11px] font-bold text-slate-500">
+                                            {item.date && isValid(parseISO(item.date)) ? format(parseISO(item.date), 'dd MMM, yyyy') : 'N/A'}
+                                        </span>
                                     </td>
-                                    <td className="py-4 px-6">
-                                        <span className="text-sm font-semibold text-slate-500">{item.payment}</span>
+                                    <td className="py-5 px-6 text-center">
+                                        <span className="font-black text-[#111827] text-sm">₹{item.grandTotal || item.amount || 0}</span>
                                     </td>
-                                    <td className="py-4 px-6">
+                                    <td className="py-5 px-6 text-center">
                                         <select
-                                            value={item.status}
+                                            value={item.status === 'Success' ? 'Delivered' : item.status}
                                             onChange={(e) => handleStatusChange(item, e.target.value)}
-                                            className={`text-xs font-bold py-1.5 px-3 rounded-full border focus:outline-none appearance-none cursor-pointer pr-8 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:8px_8px] bg-[right_10px_center] ${item.status === 'Delivered' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                                item.status === 'Shipped' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
-                                                    item.status === 'Confirmed' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                                        item.status === 'Placed' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                                            item.status === 'Cancelled' ? 'bg-red-50 text-red-700 border-red-200' :
-                                                                item.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                                                    'bg-slate-50 text-slate-700 border-slate-200'
-                                                }`}
+                                            className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full inline-block min-w-[120px] border-none focus:ring-4 focus:ring-indigo-500/10 cursor-pointer transition-all ${
+                                                (item.status === 'Delivered' || item.status === 'Success') ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' :
+                                                (item.status === 'Pending' || item.status === 'Placed') ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' :
+                                                (item.status === 'Cancelled' || item.status === 'Returned') ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' :
+                                                'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                                            }`}
                                         >
-                                            <option value="Pending">Pending</option>
-                                            <option value="Placed">Order Placed</option>
-                                            <option value="Confirmed">Order Confirmed</option>
+                                            <option value="Placed">Placed</option>
+                                            <option value="Processing">Processing</option>
                                             <option value="Shipped">Shipped</option>
                                             <option value="Delivered">Delivered</option>
                                             <option value="Cancelled">Cancelled</option>
+                                            <option value="Returned">Returned</option>
                                         </select>
                                     </td>
-                                    <td className="py-4 px-6">
-                                        <span className="text-sm font-semibold text-slate-500">
-                                            {item.date && isValid(parseISO(item.date)) ? format(parseISO(item.date), 'dd MMM yyyy, hh:mm a') : item.date || 'N/A'}
-                                        </span>
-                                    </td>
-                                    <td className="py-4 px-6">
-                                        <div className="flex items-center gap-3">
-                                             <button
-                                                 onClick={() => setSelectedOrder(item)}
-                                                 className="text-slate-400 hover:text-indigo-600 transition-colors"
-                                                 title="View Order Details"
-                                             >
-                                                 <Eye size={18} strokeWidth={2.5} />
-                                             </button>
-                                             {(item.status === 'Pending' || item.status === 'Placed') && (
-                                                 <button
-                                                     onClick={() => handleStatusChange(item, item.status === 'Pending' ? 'Placed' : 'Confirmed')}
-                                                     className="text-amber-500 hover:text-amber-600 transition-colors"
-                                                     title={item.status === 'Pending' ? "Confirm Order" : "Mark as Confirmed"}
-                                                 >
-                                                     <Check size={20} strokeWidth={2.5} />
-                                                 </button>
-                                             )}
-                                            {item.status !== 'Cancelled' && item.status !== 'Delivered' && (
-                                                <button
-                                                    onClick={() => handleCancelOrder(item.firebaseId)}
-                                                    className="text-slate-400 hover:text-red-500 transition-colors"
-                                                    title="Cancel Order (Out of Stock)"
-                                                >
-                                                    <X size={18} strokeWidth={2.5} />
-                                                </button>
-                                            )}
+                                    <td className="py-5 px-8 text-right">
+                                        <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                                            <button
+                                                onClick={() => setSelectedOrder(item)}
+                                                className="w-9 h-9 flex items-center justify-center bg-white text-indigo-500 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-90"
+                                            >
+                                                <Eye size={16} strokeWidth={2.5} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleCancelOrder(item.firebaseId)}
+                                                className="w-9 h-9 flex items-center justify-center bg-white text-rose-500 hover:bg-rose-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-90"
+                                            >
+                                                <X size={16} strokeWidth={2.5} />
+                                            </button>
+                                        </div>
+                                        <div className="group-hover:hidden text-slate-300 flex justify-end">
+                                            <MoreVertical size={20} />
                                         </div>
                                     </td>
-
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             </div>
+
 
             {selectedOrder && (
                 <OrderDetailModal
