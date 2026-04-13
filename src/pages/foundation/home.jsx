@@ -12,11 +12,11 @@ const Home = () => {
       {/* 1. First Impression */}
       <Hero />
       
+      {/* 4. Scientific Proof & Methodology (Products) */}
+      <Root />
+
       {/* 3. The Human Connection & Brand Story */}
       <Story />
-      
-      {/* 4. Scientific Proof & Methodology */}
-      <Root />
       
       {/* 5. Community & Live Engagement */}
       <Events />

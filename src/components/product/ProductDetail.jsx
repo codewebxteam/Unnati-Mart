@@ -9,7 +9,7 @@ import ShareModal from '../common/ShareModal';
 import RecommendedProducts from './RecommendedProducts';
 import ProductSkeleton from './ProductSkeleton';
 import { realtimeDb as db } from '../../firebase';
-import { ref, get } from 'firebase/database';
+import { ref, get, onValue } from 'firebase/database';
 import { dummyProducts } from '../../data/dummyProducts';
 
 const ProductDetail = () => {
@@ -79,54 +79,129 @@ const ProductDetail = () => {
     };
 
     useEffect(() => {
-        const fetchProduct = async () => {
-            try {
-                const productRef = ref(db, `products/${id}`);
-                const snapshot = await get(productRef);
-                const data = snapshot.val();
-                
-                if (data) {
-                    // Parse highlights
-                    let parsedHighlights = [];
-                    if (typeof data.highlights === 'string') {
-                        parsedHighlights = data.highlights.split(',').map(h => h.trim()).filter(Boolean);
-                    } else if (Array.isArray(data.highlights)) {
-                        parsedHighlights = data.highlights;
-                    }
+        let isMounted = true;
+        let unsubscribe = () => { };
 
-                    // Parse specifications
-                    let parsedSpecs = [];
-                    const specsText = data.specification || data.specifications;
-                    if (typeof specsText === 'string') {
-                        parsedSpecs = specsText.split('\n').map(line => {
-                            const parts = line.split(':');
-                            if (parts.length >= 2) {
-                                return { label: parts[0].trim(), value: parts.slice(1).join(':').trim() };
-                            }
-                            return null;
-                        }).filter(Boolean);
-                    } else if (Array.isArray(specsText)) {
-                        parsedSpecs = specsText;
-                    }
+        // 1. CLEAR PREVIOUS STATE & SET LOADING
+        setIsLoading(true);
+        setProduct(null);
 
-                    setProduct({
-                        ...data,
-                        id: id,
-                        img: data.img || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
-                        unit: data.unit || 'Kg',
-                        highlights: parsedHighlights,
-                        specifications: parsedSpecs,
-                        longDescription: data.description || ''
-                    });
-                }
-            } catch (error) {
-                console.error("Fetch product error:", error);
-            } finally {
+        // 2. IMMEDIATE DUMMY DATA LOOKUP (Fast Initial Load)
+        try {
+            const allDummyProducts = Object.values(dummyProducts).flat();
+            const localDummy = allDummyProducts.find(p => p.id === id);
+            if (localDummy && isMounted) {
+                const initialEnriched = {
+                    ...localDummy,
+                    highlights: Array.isArray(localDummy.highlights) ? localDummy.highlights : [],
+                    specifications: Array.isArray(localDummy.specifications) ? localDummy.specifications : [],
+                    reviews: localDummy.reviews || [],
+                    longDescription: localDummy.description || ''
+                };
+                setProduct(initialEnriched);
+                // SET LOADING TO FALSE IMMEDIATELY if we have local data for instant feel
                 setIsLoading(false);
             }
-        };
+        } catch (e) {
+            console.warn("Local dummy lookup failed:", e);
+        }
 
-        fetchProduct();
+        // 3. SAFETY TIMEOUT (Don't let the user wait forever)
+        const safetyTimeout = setTimeout(() => {
+            if (isMounted) setIsLoading(false);
+        }, 3000); // 3 seconds safety margin
+
+        // 4. FIREBASE REALTIME LISTENER
+        try {
+            const productRef = ref(db, `products/${id}`);
+            unsubscribe = onValue(productRef, (snapshot) => {
+                if (!isMounted) return;
+
+                try {
+                    const data = snapshot.val();
+                    let finalData = data;
+
+                    // Fallback to dummy data if not in Firebase
+                    if (!finalData) {
+                        const allDummyProducts = Object.values(dummyProducts).flat();
+                        finalData = allDummyProducts.find(p => p.id === id);
+                    }
+
+                    if (finalData) {
+                        // Parse highlights
+                        let parsedHighlights = [];
+                        if (typeof finalData.highlights === 'string') {
+                            parsedHighlights = finalData.highlights.split(',').map(h => h.trim()).filter(Boolean);
+                        } else if (Array.isArray(finalData.highlights)) {
+                            parsedHighlights = finalData.highlights;
+                        }
+
+                        // Parse specifications
+                        let parsedSpecs = [];
+                        const specsText = finalData.specification || finalData.specifications;
+                        if (typeof specsText === 'string') {
+                            parsedSpecs = specsText.split('\n').map(line => {
+                                const parts = line.split(':');
+                                if (parts.length >= 2) {
+                                    return { label: parts[0].trim(), value: parts.slice(1).join(':').trim() };
+                                }
+                                return null;
+                            }).filter(Boolean);
+                        } else if (Array.isArray(specsText)) {
+                            parsedSpecs = specsText;
+                        }
+
+                        const enrichedProduct = {
+                            ...finalData,
+                            id: id,
+                            img: finalData.img || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
+                            unit: finalData.unit || 'Kg',
+                            highlights: parsedHighlights,
+                            specifications: parsedSpecs,
+                            reviews: finalData.reviews || [],
+                            longDescription: finalData.description || ''
+                        };
+
+                        setProduct(enrichedProduct);
+
+                        // --- Track Recently Viewed ---
+                        const recentKey = 'unnatimart_recently_viewed';
+                        const saved = localStorage.getItem(recentKey);
+                        let recentList = saved ? JSON.parse(saved) : [];
+                        const minimalProduct = {
+                            id: enrichedProduct.id,
+                            name: enrichedProduct.name,
+                            img: enrichedProduct.img,
+                            category: enrichedProduct.category,
+                            price: enrichedProduct.price
+                        };
+                        recentList = [minimalProduct, ...recentList.filter(p => p.id !== minimalProduct.id)].slice(0, 10);
+                        localStorage.setItem(recentKey, JSON.stringify(recentList));
+                    } else {
+                        setProduct(null);
+                    }
+                } catch (innerError) {
+                    console.error("Data processing error:", innerError);
+                } finally {
+                    setIsLoading(false);
+                    clearTimeout(safetyTimeout);
+                }
+            }, (fbError) => {
+                console.error("Firebase fetch error:", fbError);
+                if (isMounted) setIsLoading(false);
+                clearTimeout(safetyTimeout);
+            });
+        } catch (outerError) {
+            console.error("Firebase setup error:", outerError);
+            if (isMounted) setIsLoading(false);
+            clearTimeout(safetyTimeout);
+        }
+
+        return () => {
+            isMounted = false;
+            unsubscribe();
+            clearTimeout(safetyTimeout);
+        };
     }, [id]);
 
     useEffect(() => {
@@ -300,7 +375,7 @@ const ProductDetail = () => {
                                         <Star key={i} size={10} className="fill-amber-500 text-amber-500" />
                                     ))}
                                     <span className="text-[10px] font-black text-slate-900 ml-1">5.0</span>
-                                    <span className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-widest">(12 REVIEWS)</span>
+                                    <span className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-widest">({product.reviews?.length || 0} REVIEWS)</span>
                                 </div>
                             </motion.div>
 
@@ -409,8 +484,8 @@ const ProductDetail = () => {
 
                         {/* Tabs Section */}
                         <div className="pt-12">
-                            <div className="flex gap-8 border-b border-slate-100 mb-8">
-                                {['description', 'specifications', 'highlights'].map((tab) => (
+                            <div className="flex flex-wrap gap-8 border-b border-slate-100 mb-8">
+                                {['description', 'specifications', 'highlights', 'reviews'].map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
@@ -428,7 +503,7 @@ const ProductDetail = () => {
                                 ))}
                             </div>
 
-                            <div className="min-h-[150px]">
+                            <div className="min-h-[200px]">
                                 <AnimatePresence mode="wait">
                                     <motion.div
                                         key={activeTab}
@@ -438,14 +513,14 @@ const ProductDetail = () => {
                                         transition={{ duration: 0.2 }}
                                     >
                                         {activeTab === 'description' && (
-                                            <p className="text-slate-500 text-sm font-semibold leading-relaxed">
+                                            <p className="text-slate-500 text-sm font-semibold leading-relaxed max-w-2xl">
                                                 {product.longDescription || product.description}
                                             </p>
                                         )}
                                         {activeTab === 'specifications' && (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
                                                 {(product.specifications || []).map((spec, i) => (
-                                                    <div key={i} className="flex justify-between p-3 bg-white rounded-xl border border-slate-50">
+                                                    <div key={i} className="flex justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
                                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{spec.label}</span>
                                                         <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{spec.value}</span>
                                                     </div>
@@ -453,13 +528,39 @@ const ProductDetail = () => {
                                             </div>
                                         )}
                                         {activeTab === 'highlights' && (
-                                            <div className="flex flex-wrap gap-2">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
                                                 {(product.highlights || []).map((highlight, i) => (
-                                                    <span key={i} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-100 flex items-center gap-2">
-                                                        <div className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
-                                                        {highlight}
-                                                    </span>
+                                                    <div key={i} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+                                                        <div className="w-2 h-2 bg-amber-500 rounded-full" />
+                                                        <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{highlight}</span>
+                                                    </div>
                                                 ))}
+                                            </div>
+                                        )}
+                                        {activeTab === 'reviews' && (
+                                            <div className="space-y-6 max-w-2xl">
+                                                {product.reviews && product.reviews.length > 0 ? (
+                                                    product.reviews.map((review) => (
+                                                        <div key={review.id} className="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                                                            <div className="flex justify-between items-start mb-4">
+                                                                <div>
+                                                                    <p className="text-sm font-black text-slate-900">{review.user}</p>
+                                                                    <div className="flex items-center gap-1 mt-1">
+                                                                        {[...Array(5)].map((_, i) => (
+                                                                            <Star key={i} size={10} className={`${i < review.rating ? 'fill-amber-500 text-amber-500' : 'text-slate-200'}`} />
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{review.date}</span>
+                                                            </div>
+                                                            <p className="text-sm text-slate-600 font-semibold italic">"{review.comment}"</p>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="text-center py-10 bg-white rounded-3xl border border-slate-100 border-dashed">
+                                                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No reviews yet. Be the first to review!</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </motion.div>
