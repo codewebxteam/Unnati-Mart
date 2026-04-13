@@ -26,7 +26,12 @@ export const dummyProducts = {
                 { label: 'Brand', value: 'Aashirvaad' },
                 { label: 'Weight', value: '5Kg' },
                 { label: 'Type', value: 'Whole Wheat Atta' },
-                { label: 'Shelf Life', value: '4 Months' }
+                { label: 'Shelf Life', value: '4 Months' },
+                { label: 'Storage', value: 'Store in cool and dry place' }
+            ],
+            reviews: [
+                { id: 1, user: 'Deepak S.', rating: 5, comment: 'The best atta ever. Rotis stay soft for a long time.', date: '2024-03-15' },
+                { id: 2, user: 'Priya M.', rating: 4, comment: 'Very high quality, but packaging could be better.', date: '2024-03-10' }
             ]
         },
         {
@@ -44,6 +49,9 @@ export const dummyProducts = {
                 { label: 'Volume', value: '1Litre' },
                 { label: 'Type', value: 'Sunflower Oil' },
                 { label: 'Shelf Life', value: '9 Months' }
+            ],
+            reviews: [
+                { id: 1, user: 'Amit K.', rating: 5, comment: 'Light and neutral taste. Perfect for daily cooking.', date: '2024-03-12' }
             ]
         },
         {
@@ -83,6 +91,10 @@ export const dummyProducts = {
                 { label: 'Variety', value: 'Royal Gala' },
                 { label: 'Weight', value: '1Kg' },
                 { label: 'Type', value: 'Fresh Fruit' }
+            ],
+            reviews: [
+                { id: 1, user: 'Rahul V.', rating: 5, comment: 'Extremely fresh and crunchy. Highly recommended!', date: '2024-03-18' },
+                { id: 2, user: 'Ananya G.', rating: 5, comment: 'Best apples I have had in a long time.', date: '2024-03-16' }
             ]
         },
         {
@@ -206,6 +218,10 @@ export const dummyProducts = {
                 { label: 'Volume', value: '1Litre' },
                 { label: 'Type', value: 'Full Cream' },
                 { label: 'Fat Content', value: '6% Minimum' }
+            ],
+            reviews: [
+                { id: 1, user: 'Suresh B.', rating: 5, comment: 'Amul Gold is my favorite for morning tea.', date: '2024-03-14' },
+                { id: 2, user: 'Indra J.', rating: 4, comment: 'Trusted quality as always.', date: '2024-03-11' }
             ]
         },
         {
