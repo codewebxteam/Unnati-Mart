@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, ShoppingCart, Heart } from 'lucide-react';
+import { Trash2, ShoppingCart, Heart, ArrowRight } from 'lucide-react';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
 import ConfirmDialog from '../common/ConfirmDialog';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Wishlist = () => {
     const { wishlistItems, removeFromWishlist } = useWishlist();
     const { addToCart } = useCart();
+    const navigate = useNavigate();
 
     const [confirmDialog, setConfirmDialog] = useState({
         isOpen: false, title: '', message: '', onConfirm: null,
@@ -27,11 +29,19 @@ const Wishlist = () => {
     if (wishlistItems.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+                <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                     <Heart size={32} className="text-slate-300" />
                 </div>
                 <h3 className="text-2xl font-black text-slate-900 tracking-tighter italic">Your Wishlist is Empty.</h3>
-                <p className="text-sm text-slate-500 font-semibold mt-2">Start adding Earth's purest products to your wishlist!</p>
+                <p className="text-sm text-slate-500 font-semibold mt-2 mb-8">Start adding Earth's purest products to your wishlist!</p>
+                
+                <button
+                    onClick={() => navigate('/')}
+                    className="px-10 py-4 bg-slate-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 active:scale-95 flex items-center gap-3"
+                >
+                    Start Exploring
+                    <ArrowRight size={16} />
+                </button>
             </div>
         );
     }
@@ -53,17 +63,22 @@ const Wishlist = () => {
                                 transition={{ duration: 0.3 }}
                                 className="group relative bg-slate-50 rounded-3xl p-5 border border-slate-100 hover:bg-white hover:shadow-xl transition-all flex gap-5"
                             >
-                                {/* Product Image */}
-                                <div className="w-24 h-24 rounded-2xl bg-white flex items-center justify-center p-2 border border-slate-100 overflow-hidden shrink-0">
-                                    <img src={item.img} alt={item.name} className="w-full h-full object-contain group-hover:scale-110 transition-all duration-500" />
-                                </div>
+                                {/* Product Image & Info wrapped in Link */}
+                                <Link to={`/product/${item.id}`} className="flex gap-5 flex-1 group/link">
+                                    {/* Product Image */}
+                                    <div className="w-24 h-24 rounded-2xl bg-white flex items-center justify-center p-2 border border-slate-100 overflow-hidden shrink-0">
+                                        <img src={item.img} alt={item.name} className="w-full h-full object-contain group-hover/link:scale-110 transition-all duration-500" />
+                                    </div>
 
-                                {/* Product Info */}
-                                <div className="flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <h4 className="font-black text-slate-900 text-lg leading-tight">{item.name}</h4>
+                                    {/* Product Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-black text-slate-900 text-lg leading-tight group-hover/link:text-amber-600 transition-colors truncate">{item.name}</h4>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">₹{item.price} / {item.unit}</p>
                                     </div>
+                                </Link>
+
+                                {/* Actions Container */}
+                                <div className="flex flex-col justify-end">
 
                                     <div className="flex items-center gap-3 mt-4">
                                         <button

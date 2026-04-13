@@ -1,17 +1,41 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Github } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useEffect } from 'react';
 
 const Login = () => {
     const navigate = useNavigate();
-    const { login, loginWithGoogle } = useAuth();
+    const location = useLocation();
+    const { user, login, loginWithGoogle, loading } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isAdminLogin, setIsAdminLogin] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    // Get origin path or default
+    const from = location.state?.from?.pathname || '/';
+    const fromAdmin = location.state?.fromAdmin || false;
+
+    // Auto-toggle admin mode if coming from admin route
+    useEffect(() => {
+        if (fromAdmin) {
+            setIsAdminLogin(true);
+        }
+    }, [fromAdmin]);
+
+    // Redirect if already logged in
+    useEffect(() => {
+        if (!loading && user) {
+            if (user.role === 'admin') {
+                navigate('/admin', { replace: true });
+            } else {
+                navigate('/', { replace: true });
+            }
+        }
+    }, [user, loading, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,11 +51,13 @@ const Login = () => {
         try {
             const result = await login(email, password);
             if (result.success) {
-                // Redirect admin to dashboard, others to home
-                if (email?.toLowerCase() === 'admin786@gmail.com') {
-                    navigate('/admin');
+                // The useEffect will handle redirection if user object updates,
+                // but for immediate response using the same logic as AuthContext:
+                const isAdmin = email === 'meraj786@gmail.com' || email === 'admin786@gmail.com' || email.toLowerCase().includes('admin');
+                if (isAdmin) {
+                    navigate('/admin', { replace: true });
                 } else {
-                    navigate('/');
+                    navigate(from, { replace: true });
                 }
             } else {
                 setError(result.message || 'Invalid email or password');
@@ -45,10 +71,21 @@ const Login = () => {
 
     const handleGoogleLogin = async () => {
         setIsLoading(true);
-        const result = await loginWithGoogle();
-        if (result.success) navigate('/');
-        else setError(result.message || 'Google Login failed');
-        setIsLoading(false);
+        try {
+            const result = await loginWithGoogle();
+            if (result.success) {
+                // Since we don't have the user role immediately here, 
+                // the useEffect [user, loading] will handle the redirect.
+                // However, if we want to be safe and wait for the listener:
+                // We'll let the useEffect handle it for consistency.
+            } else {
+                setError(result.message || 'Google Login failed');
+            }
+        } catch (err) {
+            setError('An error occurred during Google Login');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

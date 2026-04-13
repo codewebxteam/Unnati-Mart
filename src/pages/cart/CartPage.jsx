@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Trash2, Plus, Minus, Sprout, Milk, ArrowRight, ShoppingCart, X, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import CheckoutModal from '../../pages/cart/CheckoutModal';
 
@@ -57,6 +57,14 @@ const CartPage = () => {
                         <p className="text-sm font-semibold text-slate-400 mb-10 w-full max-w-sm">
                             Add some delicious products to your cart!
                         </p>
+
+                        <button
+                            onClick={() => navigate('/')}
+                            className="px-10 py-4 bg-slate-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 active:scale-95 flex items-center gap-3"
+                        >
+                            Start Exploring
+                            <ArrowRight size={16} />
+                        </button>
                     </motion.div>
                 </div>
             </main>
@@ -71,24 +79,26 @@ const CartPage = () => {
             exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
             className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5 p-4 sm:p-6 bg-white rounded-[2rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/50 transition-all group relative"
         >
-            {/* Product Image */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-slate-50 rounded-[1.5rem] sm:rounded-[1.8rem] overflow-hidden shrink-0 flex items-center justify-center border border-slate-100 group-hover:scale-105 transition-transform">
-                <img src={item.img} alt={item.name} className="w-full h-full object-contain p-2 sm:p-3 drop-shadow-xl" />
-            </div>
-
-            {/* Product Info */}
-            <div className="flex-1 min-w-0 text-center sm:text-left">
-                <div className="flex flex-wrap items-center gap-2 mb-1 justify-center sm:justify-start">
-                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
-                        {item.category || 'GROCERY'}
-                    </span>
-                    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-100 text-slate-500">
-                        {item.tag}
-                    </span>
+            <Link to={`/product/${item.id}`} className="flex flex-col sm:flex-row items-center gap-5 flex-1 group/link cursor-pointer min-w-0 pointer-events-auto">
+                {/* Product Image */}
+                <div className="w-24 h-24 bg-slate-50 rounded-[1.8rem] overflow-hidden shrink-0 flex items-center justify-center border border-slate-100 group-hover/link:scale-105 transition-transform">
+                    <img src={item.img} alt={item.name} className="w-full h-full object-contain p-3 drop-shadow-xl" />
                 </div>
-                <h4 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-tight line-clamp-2">{item.name}</h4>
-                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">₹{item.price} / {item.unit}</p>
-            </div>
+
+                {/* Product Info */}
+                <div className="flex-1 min-w-0 text-center sm:text-left">
+                    <div className="flex flex-wrap items-center gap-2 mb-2 justify-center sm:justify-start">
+                        <span className="text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
+                            {item.category || 'GROCERY'}
+                        </span>
+                        <span className="text-[8px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full bg-slate-100 text-slate-500">
+                            {item.tag}
+                        </span>
+                    </div>
+                    <h4 className="text-xl font-black text-slate-900 tracking-tight leading-tight group-hover/link:text-amber-600 transition-colors truncate w-full">{item.name}</h4>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">₹{item.price} / {item.unit}</p>
+                </div>
+            </Link>
 
             {/* Quantity & Price */}
             <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-8 w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-100/60">
