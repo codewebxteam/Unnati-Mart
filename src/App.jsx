@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 
 // Layout Components
 import Header from "./components/Header";
@@ -37,13 +37,17 @@ import AdminPayments from "./pages/admin/AdminPayments";
 import AdminCustomers from "./pages/admin/AdminCustomers";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminCategories from "./pages/admin/AdminCategories";
 
 // Protect Admin Routes
 const AdminProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
+
   if (loading) return <Loader />;
   if (!user || user.role !== 'admin') {
-    return <FoundationHome />;
+    // Redirect to login but save the current location they were trying to access
+    return <Navigate to="/login" state={{ from: location, fromAdmin: true }} replace />;
   }
   return children;
 };
@@ -97,6 +101,7 @@ function AppContent() {
             <Route path="customers" element={<AdminCustomers />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="categories" element={<AdminCategories />} />
             <Route path="*" element={<AdminDashboard />} />
           </Route>
 
