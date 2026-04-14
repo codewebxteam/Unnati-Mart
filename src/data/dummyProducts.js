@@ -59,7 +59,7 @@ export const dummyProducts = {
             name: 'Tata Salt - Vacuum Evaporated Iodised Salt',
             price: 28,
             description: 'Tata Salt is known for its purity and consistent quality. It is vacuum evaporated iodised salt.',
-            img: 'https://images.unsplash.com/photo-1626082895617-2c6de3476af7?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1626082895617-2c6de3476af7?w=800&auto=format&fm=webp',
             category: 'Grocery & Staples',
             unit: '1Kg',
             tag: 'Purity'
@@ -69,7 +69,7 @@ export const dummyProducts = {
             name: 'Daawat Rozana Super Basmati Rice',
             price: 395,
             description: 'Daawat Rozana Super is the finest Basmati rice in the mid-price segment. It is specially processed for daily consumption.',
-            img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&auto=format&fm=webp',
             category: 'Grocery & Staples',
             unit: '5Kg',
             tag: 'Premium'
@@ -102,7 +102,7 @@ export const dummyProducts = {
             name: 'Banana - Robusta',
             price: 60,
             description: 'Naturally ripened Robusta bananas. Rich in potassium.',
-            img: 'https://images.unsplash.com/photo-1571771894821-ad9961135b46?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1571771894821-ad9961135b46?w=800&auto=format&fm=webp',
             category: 'Fresh Fruits',
             unit: '1 Dozen',
             tag: 'Daily'
@@ -112,7 +112,7 @@ export const dummyProducts = {
             name: 'Valencia Orange',
             price: 120,
             description: 'Sweet and juicy Valencia oranges, imported for the best quality.',
-            img: 'https://images.unsplash.com/photo-1547514701-42782101795e?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1547514701-42782101795e?w=800&auto=format&fm=webp',
             category: 'Fresh Fruits',
             unit: '1Kg',
             tag: 'Juicy'
@@ -122,7 +122,7 @@ export const dummyProducts = {
             name: 'Alphonso Mango (Hapus)',
             price: 600,
             description: 'The king of mangoes. Extremely sweet and aromatic.',
-            img: 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=800&auto=format&fm=webp',
             category: 'Fresh Fruits',
             unit: '1 Dozen',
             tag: 'Seasonal'
@@ -134,7 +134,7 @@ export const dummyProducts = {
             name: 'Fresh Potato (Jyoti)',
             price: 40,
             description: 'Fresh and clean potatoes, sourced directly from farms.',
-            img: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=800&auto=format&fm=webp',
             category: 'Vegetables',
             unit: '1Kg',
             tag: 'Farm Fresh',
@@ -150,7 +150,7 @@ export const dummyProducts = {
             name: 'Red Tomato (Hybrid)',
             price: 50,
             description: 'Plump and red hybrid tomatoes. Perfect for salads and curries.',
-            img: 'https://images.unsplash.com/photo-1546473427-e1ad6c448144?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1546473427-e1ad6c448144?w=800&auto=format&fm=webp',
             category: 'Vegetables',
             unit: '1Kg',
             tag: 'Organic',
@@ -166,7 +166,7 @@ export const dummyProducts = {
             name: 'Onion (Nasik)',
             price: 35,
             description: 'Best quality red onions from Nasik. Long shelf life.',
-            img: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=800&auto=format&fm=webp',
             category: 'Vegetables',
             unit: '1Kg',
             tag: 'Pantry Must'
@@ -176,7 +176,7 @@ export const dummyProducts = {
             name: 'Cauliflower (Gobhi)',
             price: 45,
             description: 'Fresh and white cauliflower heads. Free from insects.',
-            img: 'https://images.unsplash.com/photo-1510627489930-0c1b0ba0431f?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1510627489930-0c1b0ba0431f?w=800&auto=format&fm=webp',
             category: 'Vegetables',
             unit: '1 Piece',
             tag: 'Seasonal'
@@ -186,7 +186,7 @@ export const dummyProducts = {
             name: 'Green Chili (Hari Mirch)',
             price: 15,
             description: 'Spicy and fresh green chilies to add heat to your dishes.',
-            img: 'https://images.unsplash.com/photo-1588253511790-da768652cc2a?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1588253511790-da768652cc2a?w=800&auto=format&fm=webp',
             category: 'Vegetables',
             unit: '100g',
             tag: 'Fresh'
@@ -196,7 +196,7 @@ export const dummyProducts = {
             name: 'Ginger (Adrak)',
             price: 30,
             description: 'Premium quality fresh ginger root for cooking and tea.',
-            img: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&auto=format&fm=webp',
             category: 'Vegetables',
             unit: '250g',
             tag: 'Nutritious'
@@ -229,7 +229,7 @@ export const dummyProducts = {
             name: 'Amul Fresh Paneer',
             price: 90,
             description: 'Soft and fresh paneer made from pure milk.',
-            img: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800&auto=format&fm=webp',
             category: 'Dairy & Bakery',
             unit: '200g',
             tag: 'Premium'
@@ -239,7 +239,7 @@ export const dummyProducts = {
             name: 'Britannia Toastea Premium Bake Rusk',
             price: 45,
             description: 'Crunchy and crispy rusk. Perfect with your evening tea.',
-            img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fm=webp',
             category: 'Dairy & Bakery',
             unit: '300g',
             tag: 'Tea Time'
@@ -249,7 +249,7 @@ export const dummyProducts = {
             name: 'Mother Dairy Classic Curd',
             price: 35,
             description: 'Thick and tasty classic curd. No preservatives.',
-            img: 'https://images.unsplash.com/photo-1485962391945-424a33a844b5?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1485962391945-424a33a844b5?w=800&auto=format&fm=webp',
             category: 'Dairy & Bakery',
             unit: '400g',
             tag: 'Healthy'
@@ -278,7 +278,7 @@ export const dummyProducts = {
             name: 'Lays Magic Masala Chips',
             price: 20,
             description: 'Classic potato chips with a magic masala twist.',
-            img: 'https://images.unsplash.com/photo-1566478431375-7ef4a88052e4?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1566478431375-7ef4a88052e4?w=800&auto=format&fm=webp',
             category: 'Packaged Food & Snacks',
             unit: '50g',
             tag: 'Classic'
@@ -288,7 +288,7 @@ export const dummyProducts = {
             name: 'Cadbury Dairy Milk Silk',
             price: 80,
             description: 'Irresistibly smooth and creamy chocolate.',
-            img: 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=800&auto=format&fm=webp',
             category: 'Packaged Food & Snacks',
             unit: '60g',
             tag: 'Sweet'
@@ -298,7 +298,7 @@ export const dummyProducts = {
             name: 'Oreo Vanilla Sandwich Biscuits',
             price: 40,
             description: 'Crunchy cocoa cookies with smooth vanilla cream.',
-            img: 'https://images.unsplash.com/photo-1558961363-fa4fdfc51f05?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1558961363-fa4fdfc51f05?w=800&auto=format&fm=webp',
             category: 'Packaged Food & Snacks',
             unit: '120g',
             tag: 'Favorite'
@@ -327,7 +327,7 @@ export const dummyProducts = {
             name: 'Nescafe Classic Instant Coffee',
             price: 155,
             description: 'Pure coffee with an unmistakable taste.',
-            img: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&auto=format&fm=webp',
             category: 'Beverages',
             unit: '50g',
             tag: 'Breakfast'
@@ -337,7 +337,7 @@ export const dummyProducts = {
             name: 'Red Bull Energy Drink',
             price: 110,
             description: 'Vitalizes body and mind.',
-            img: 'https://images.unsplash.com/photo-1596448408588-bb161049f4c1?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1596448408588-bb161049f4c1?w=800&auto=format&fm=webp',
             category: 'Beverages',
             unit: '250ml',
             tag: 'Energy'
@@ -347,7 +347,7 @@ export const dummyProducts = {
             name: 'Real Fruit Power Mixed Fruit Juice',
             price: 105,
             description: 'Goodness of 9 fruits in every sip.',
-            img: 'https://images.unsplash.com/photo-1600271886342-dc04d7049dc4?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1600271886342-dc04d7049dc4?w=800&auto=format&fm=webp',
             category: 'Beverages',
             unit: '1L',
             tag: 'Healthy'
@@ -376,7 +376,7 @@ export const dummyProducts = {
             name: 'Head & Shoulders Anti-Dandruff Shampoo',
             price: 180,
             description: 'Cool Menthol for a refreshing feel.',
-            img: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=800&auto=format&fm=webp',
             category: 'Personal Care & Hygiene',
             unit: '180ml',
             tag: 'Care'
@@ -386,7 +386,7 @@ export const dummyProducts = {
             name: 'Colgate MaxFresh Toothpaste',
             price: 95,
             description: 'Power of spicy fresh peppermint strips.',
-            img: 'https://images.unsplash.com/photo-1559594482-7c2490ec6ef0?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1559594482-7c2490ec6ef0?w=800&auto=format&fm=webp',
             category: 'Personal Care & Hygiene',
             unit: '150g',
             tag: 'Fresh'
@@ -396,7 +396,7 @@ export const dummyProducts = {
             name: 'Nivea Soft Light Moisturiser',
             price: 160,
             description: 'Non-greasy moisturisation for face, hands and body.',
-            img: 'https://images.unsplash.com/photo-1552046122-03184de85e08?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1552046122-03184de85e08?w=800&auto=format&fm=webp',
             category: 'Personal Care & Hygiene',
             unit: '200ml',
             tag: 'Skin Care'
@@ -406,7 +406,7 @@ export const dummyProducts = {
             name: 'Dettol Original Handwash',
             price: 99,
             description: 'Protects against 100 illness-causing germs.',
-            img: 'https://images.unsplash.com/photo-1584622781564-1d9876a1efd1?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1584622781564-1d9876a1efd1?w=800&auto=format&fm=webp',
             category: 'Personal Care & Hygiene',
             unit: '200ml',
             tag: 'Protection'
@@ -416,7 +416,7 @@ export const dummyProducts = {
             name: 'Pears Pure and Gentle Soap',
             price: 145,
             description: 'Enriched with 98% pure glycerin and natural oils.',
-            img: 'https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=800&auto=format&fm=webp',
             category: 'Personal Care & Hygiene',
             unit: '3x125g',
             tag: 'Pure'
@@ -445,7 +445,7 @@ export const dummyProducts = {
             name: 'Harpic Disinfectant Toilet Cleaner',
             price: 175,
             description: 'Kills 99.9% germs and removes stains.',
-            img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&auto=format&fm=webp',
             category: 'Household & Cleaning Products',
             unit: '1L',
             tag: 'Hygienic'
@@ -455,7 +455,7 @@ export const dummyProducts = {
             name: 'Lizol Disinfectant Floor Cleaner',
             price: 199,
             description: 'Floral fragrance with germ protection.',
-            img: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&auto=format&fm=webp',
             category: 'Household & Cleaning Products',
             unit: '975ml',
             tag: 'Fragrant'
@@ -465,7 +465,7 @@ export const dummyProducts = {
             name: 'Vim Dishwash Liquid Gel',
             price: 155,
             description: 'Power of 100 lemons for grease-free dishes.',
-            img: 'https://images.unsplash.com/photo-1585832770481-4d5212dd2744?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1585832770481-4d5212dd2744?w=800&auto=format&fm=webp',
             category: 'Household & Cleaning Products',
             unit: '750ml',
             tag: 'Shiny'
@@ -487,7 +487,7 @@ export const dummyProducts = {
             name: 'Revital H Multivitamin Capsules',
             price: 280,
             description: 'Daily health supplement with Ginseng.',
-            img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fm=webp',
             category: 'Health & Wellness',
             unit: '30 Caps',
             tag: 'Energy'
@@ -497,7 +497,7 @@ export const dummyProducts = {
             name: 'Patanjali Pure Honey',
             price: 135,
             description: '100% pure honey from natural hives.',
-            img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&auto=format&fm=webp',
             category: 'Health & Wellness',
             unit: '500g',
             tag: 'Pure'
@@ -507,7 +507,7 @@ export const dummyProducts = {
             name: 'Tetley Green Tea - Ginger, Mint \u0026 Lemon',
             price: 160,
             description: 'Detox tea rich in antioxidants.',
-            img: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&auto=format&fm=webp',
             category: 'Health & Wellness',
             unit: '25 Bags',
             tag: 'Detox'
@@ -529,7 +529,7 @@ export const dummyProducts = {
             name: 'Johnson\'s Baby Lotion',
             price: 165,
             description: 'Gentle moisturiser for baby\'s soft skin.',
-            img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&auto=format&fm=webp',
             category: 'Baby Care Products',
             unit: '200ml',
             tag: 'Gentle'
@@ -539,7 +539,7 @@ export const dummyProducts = {
             name: 'Himalaya Baby Wipes',
             price: 120,
             description: 'Extra soft wipes with Aloe Vera \u0026 Indian Lotus.',
-            img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&auto=format&fm=webp',
             category: 'Baby Care Products',
             unit: '72 Pcs',
             tag: 'Safe'
@@ -549,7 +549,7 @@ export const dummyProducts = {
             name: 'Cerelac Wheat Apple Cherry',
             price: 195,
             description: 'Iron fortified baby cereal for 8 months+.',
-            img: 'https://images.unsplash.com/photo-1594498653385-d5172c532c00?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1594498653385-d5172c532c00?w=800&auto=format&fm=webp',
             category: 'Baby Care Products',
             unit: '300g',
             tag: 'Nutrition'
@@ -578,7 +578,7 @@ export const dummyProducts = {
             name: 'Whole Cashews (Kaju)',
             price: 420,
             description: 'W240 grade cashews, rich and buttery.',
-            img: 'https://images.unsplash.com/photo-1590005024862-6b67679a29fb?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1590005024862-6b67679a29fb?w=800&auto=format&fm=webp',
             category: 'Dry Fruits & nuts',
             unit: '500g',
             tag: 'Sweet'
@@ -588,7 +588,7 @@ export const dummyProducts = {
             name: 'Black Raisins (Kishmish)',
             price: 180,
             description: 'Seedless black raisins, high in iron.',
-            img: 'https://images.unsplash.com/photo-1599589334812-70b777a83d0d?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1599589334812-70b777a83d0d?w=800&auto=format&fm=webp',
             category: 'Dry Fruits & nuts',
             unit: '250g',
             tag: 'Iron Rich'
@@ -598,7 +598,7 @@ export const dummyProducts = {
             name: 'Walnut Kernels (Akhrot)',
             price: 550,
             description: 'Light colour snow white walnut kernels.',
-            img: 'https://images.unsplash.com/photo-1623930154466-267958693898?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1623930154466-267958693898?w=800&auto=format&fm=webp',
             category: 'Dry Fruits & nuts',
             unit: '250g',
             tag: 'Brain Food'
@@ -608,7 +608,7 @@ export const dummyProducts = {
             name: 'Premium Pistachios (Pista)',
             price: 360,
             description: 'Salted and roasted premium pistachios.',
-            img: 'https://images.unsplash.com/photo-1597463945417-74070a93fcfd?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1597463945417-74070a93fcfd?w=800&auto=format&fm=webp',
             category: 'Dry Fruits & nuts',
             unit: '250g',
             tag: 'Roasted'
@@ -618,7 +618,7 @@ export const dummyProducts = {
             name: 'Dried Figs (Anjeer)',
             price: 299,
             description: 'Sweet and nutritious dried figs from Afghanistan.',
-            img: 'https://images.unsplash.com/photo-1621344449830-9b3de342f534?w=800&auto=format&fit=crop',
+            img: 'https://images.unsplash.com/photo-1621344449830-9b3de342f534?w=800&auto=format&fm=webp',
             category: 'Dry Fruits & nuts',
             unit: '250g',
             tag: 'Healthy'

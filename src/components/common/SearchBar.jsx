@@ -89,7 +89,7 @@ const SearchBar = () => {
             {searchResults.map((product) => (
               <Link
                 key={product.id}
-                to={product.category === 'Mushroom' ? `/mushroom/${product.id}` : `/dairy/${product.id}`}
+                to={`/product/${product.id}`}
                 onClick={handleProductClick}
                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200 group"
               >

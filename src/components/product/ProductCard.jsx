@@ -48,6 +48,8 @@ const ProductCard = ({ product }) => {
                     <motion.img
                         src={product.img}
                         alt={product.name}
+                        loading="lazy"
+                        decoding="async"
                         whileHover={{ scale: 1.1 }}
                         className="w-full h-full object-contain drop-shadow-md"
                     />

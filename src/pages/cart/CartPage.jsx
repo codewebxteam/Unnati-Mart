@@ -77,7 +77,7 @@ const CartPage = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20, transition: { duration: 0.2 } }}
-            className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5 p-4 sm:p-6 bg-white rounded-[2rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/50 transition-all group relative"
+            className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 p-3 sm:p-6 bg-white rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-100/50 transition-all group relative"
         >
             <Link to={`/product/${item.id}`} className="flex flex-col sm:flex-row items-center gap-5 flex-1 group/link cursor-pointer min-w-0 pointer-events-auto">
                 {/* Product Image */}
@@ -137,8 +137,8 @@ const CartPage = () => {
 
     return (
         <>
-            <main className="min-h-screen bg-white pt-28 pb-32">
-                <div className="container mx-auto px-4 lg:px-8">
+            <main className="min-h-screen bg-white pt-24 sm:pt-28 pb-32">
+                <div className="container mx-auto px-2 sm:px-4 lg:px-8">
 
                     {/* Header */}
                     <motion.div
@@ -163,8 +163,8 @@ const CartPage = () => {
                         </div>
                     </motion.div>                    <div className="flex flex-col lg:flex-row gap-12">
                         {/* Left: Cart Items */}
-                        <div className="flex-1 space-y-12">
-                            <div className="bg-white rounded-[2rem] sm:rounded-[3rem] p-5 sm:p-8 lg:p-12 shadow-sm border border-slate-100">
+                        <div className="flex-1 space-y-8 sm:space-y-12">
+                            <div className="bg-white rounded-[1.5rem] sm:rounded-[3rem] p-3 sm:p-8 lg:p-12 shadow-sm border border-slate-100">
                                 <div className="space-y-4">
                                     <AnimatePresence>
                                         {cartItems.map((item) => (
@@ -175,13 +175,12 @@ const CartPage = () => {
                             </div>
                         </div>
 
-                        {/* Right: Order Summary */}
-                        <div className="w-full lg:w-[420px] shrink-0">
+                                <div className="w-full lg:w-[420px] shrink-0">
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.2 }}
-                                className="bg-[#111827] text-white rounded-[2.2rem] sm:rounded-[3.5rem] p-5 sm:p-10 lg:p-12 sticky top-28 shadow-2xl shadow-slate-200"
+                                className="bg-[#111827] text-white rounded-[1.5rem] sm:rounded-[3.5rem] p-6 sm:p-10 lg:p-12 sticky top-28 shadow-2xl shadow-slate-200"
                             >
                                 <div className="flex items-center gap-4 mb-10">
                                     <div className="w-12 h-12 rounded-2xl bg-[#1f2937] border border-white/5 flex items-center justify-center">

@@ -3,31 +3,57 @@ import { useNavigate } from 'react-router-dom';
 import ProductCard from '../../product/ProductCard';
 import { dummyProducts } from '../../../data/dummyProducts';
 import { ArrowRight } from 'lucide-react';
+import { realtimeDb as db } from '../../../firebase';
+import { ref, onValue } from 'firebase/database';
 
 const Root = () => {
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = React.useState(false);
+  const [firebaseProducts, setFirebaseProducts] = React.useState([]);
+
+  React.useEffect(() => {
+    const productsRef = ref(db, 'products');
+    const unsubscribe = onValue(productsRef, (snap) => {
+      const data = snap.val() || {};
+      setFirebaseProducts(Object.entries(data).map(([id, val]) => ({
+        ...val,
+        id,
+        img: val.img || val.image || 'https://images.unsplash.com/photo-1550583794-a2b7142647ec?w=500'
+      })));
+    });
+
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      unsubscribe();
+    };
+  }, []);
 
   const featuredProducts = useMemo(() => {
-    const all = [];
-    const categories = Object.keys(dummyProducts);
+    // 1. Combine data sources
+    const staticProds = Object.values(dummyProducts).flat();
+    const allAvailable = [...firebaseProducts, ...staticProds];
+    
+    // 2. Prioritize dynamic/new products then follow with variety
+    const unique = [];
+    const seen = new Set();
 
-    // Distribute products from categories evenly
-    let i = 0;
-    while (all.length < 16) {
-      const cat = categories[i % categories.length];
-      const prodIndex = Math.floor(i / categories.length);
-      const product = dummyProducts[cat]?.[prodIndex];
+    allAvailable.forEach(p => {
+        if (!seen.has(p.id)) {
+            unique.push(p);
+            seen.add(p.id);
+        }
+    });
 
-      if (product) {
-        all.push(product);
-      }
+    // 3. Select 16 items for desktop, 4 for mobile (variety logic)
+    return unique.slice(0, 16);
+  }, [firebaseProducts]);
 
-      i++;
-      // Safety break if we run out of products (unlikely with this data)
-      if (i > 100) break;
-    }
-    return all;
-  }, []);
+  const displayProducts = useMemo(() => {
+    return isMobile ? featuredProducts.slice(0, 4) : featuredProducts;
+  }, [isMobile, featuredProducts]);
 
   return (
     <section className="w-full bg-[#fdfdfd] py-16 lg:py-28 overflow-hidden relative">
@@ -52,8 +78,8 @@ const Root = () => {
 
         {/* Product Grid - 2x2 for Mobile (4 items), 4x4 for Desktop (16 items) */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-1 sm:px-0 lg:gap-8 mb-16">
-          {featuredProducts.map((product, index) => (
-            <div key={product.id || index} className={index >= 4 ? 'hidden md:block' : ''}>
+          {displayProducts.map((product, index) => (
+            <div key={product.id || index}>
               <ProductCard product={product} />
             </div>
           ))}

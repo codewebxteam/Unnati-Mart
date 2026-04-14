@@ -369,23 +369,21 @@ const AdminDashboard = () => {
     }, [orders, chartMonths]);
 
     const taxonomyData = useMemo(() => {
-        // Show categories directly as they appear in the Categories Modal/Taxonomy
         if (categories.length === 0) return [];
         return categories.map(cat => ({
             name: cat.name || 'Unnamed Category',
-            value: 1 // Each category is an equal portion of the taxonomy wheel
-        })).slice(0, 10);
+            value: 1
+        })).sort((a, b) => b.value - a.value);
     }, [categories]);
 
     const inventoryData = useMemo(() => {
-        // Count products per category from the actual inventory
         if (products.length === 0) return [];
         const counts = products.reduce((acc, p) => {
             const cat = p.category || 'Uncategorized';
             acc[cat] = (acc[cat] || 0) + 1;
             return acc;
         }, {});
-        
+
         return Object.keys(counts)
             .map(name => ({
                 name: name,

@@ -82,6 +82,7 @@ const AdminInventory = () => {
     });
     const [searchQuery, setSearchQuery] = useState('');
     const [statusTab, setStatusTab] = useState('All');
+    const [selectedCategory, setSelectedCategory] = useState('All');
     const [categories, setCategories] = useState([]);
 
     const allCategoryOptions = useMemo(() => {
@@ -344,9 +345,12 @@ const AdminInventory = () => {
                 (p.category || '').toLowerCase().includes(s) ||
                 (p.firebaseId || '').toLowerCase().includes(s);
 
-            return matchesSearch;
+            const matchesStatus = statusTab === 'All' || p.status === statusTab;
+            const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
+
+            return matchesSearch && matchesStatus && matchesCategory;
         });
-    }, [products, searchQuery]);
+    }, [products, searchQuery, statusTab, selectedCategory]);
 
     const handleQuickStockUpdate = async (product, delta) => {
         const currentStock = parseInt(product.stock || 0);
@@ -402,38 +406,68 @@ const AdminInventory = () => {
 
             {/* Main Inventory Card */}
             <div className="bg-white rounded-[2.5rem] shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden mx-2">
-                <div className="p-8 border-b border-slate-50 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
-                            <Warehouse size={24} strokeWidth={2.5} />
+                <div className="p-8 border-b border-slate-50">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
+                                <Warehouse size={24} strokeWidth={2.5} />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-black text-[#111827]">Inventory Control</h2>
+                            </div>
                         </div>
-                        <div>
-                            <h2 className="text-2xl font-black text-[#111827]">Inventory Control</h2>
+
+                        <div className="flex flex-col md:flex-row items-center gap-4 flex-1 justify-end">
+                            <div className="relative w-full md:max-w-xs">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Search SKU or Name..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-slate-50/80 border-none rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-amber-500/10 placeholder:text-slate-400 transition-all"
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => setIsAddModalOpen(true)}
+                                    className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-600/20 transition-all flex items-center gap-2 active:scale-95"
+                                >
+                                    <Plus size={16} strokeWidth={3} />
+                                    New Item
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex flex-col md:flex-row items-center gap-4 flex-1 justify-end">
-                        <div className="relative w-full md:max-w-xs">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                            <input
-                                type="text"
-                                placeholder="Search SKU or Name..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-slate-50/80 border-none rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-amber-500/10 placeholder:text-slate-400 transition-all"
-                            />
+                    {/* Dynamic Filters Strip */}
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-2 shrink-0">Status:</span>
+                            {['All', 'Active', 'Low Stock', 'Out of Stock'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setStatusTab(tab)}
+                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shrink-0 ${statusTab === tab ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
                         </div>
 
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => setIsAddModalOpen(true)}
-                                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-600/20 transition-all flex items-center gap-2 active:scale-95"
-                            >
-                                <Plus size={16} strokeWidth={3} />
-                                New Item
-                            </button>
+                        <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar">
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-2 shrink-0">Category:</span>
+                            {['All', ...allCategoryOptions.filter(c => c !== 'Select Category')].map((cat) => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setSelectedCategory(cat)}
+                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shrink-0 ${selectedCategory === cat ? 'bg-amber-600 text-white shadow-lg' : 'bg-amber-50 text-amber-600/60 hover:bg-amber-100'}`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
                         </div>
-
                     </div>
                 </div>
 
