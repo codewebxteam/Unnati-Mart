@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProductCard from '../../product/ProductCard';
 import { dummyProducts } from '../../../data/dummyProducts';
@@ -7,20 +7,27 @@ import { ArrowRight } from 'lucide-react';
 const Root = () => {
   const navigate = useNavigate();
 
-  // Get 1 product from each category
-  const categories = Object.keys(dummyProducts);
-  const featuredProducts = [];
-  
-  categories.forEach(cat => {
-    if (dummyProducts[cat]?.[0]) {
-      featuredProducts.push(dummyProducts[cat][0]);
+  const featuredProducts = useMemo(() => {
+    const all = [];
+    const categories = Object.keys(dummyProducts);
+
+    // Distribute products from categories evenly
+    let i = 0;
+    while (all.length < 16) {
+      const cat = categories[i % categories.length];
+      const prodIndex = Math.floor(i / categories.length);
+      const product = dummyProducts[cat]?.[prodIndex];
+
+      if (product) {
+        all.push(product);
+      }
+
+      i++;
+      // Safety break if we run out of products (unlikely with this data)
+      if (i > 100) break;
     }
-  });
-  
-  // Add another product to make it exactly 12 for an even 4-column grid
-  if (dummyProducts['grocery']?.[1]) {
-    featuredProducts.push(dummyProducts['grocery'][1]);
-  }
+    return all;
+  }, []);
 
   return (
     <section className="w-full bg-[#fdfdfd] py-16 lg:py-28 overflow-hidden relative">
@@ -43,10 +50,12 @@ const Root = () => {
           </p>
         </div>
 
-        {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8 mb-16">
-          {featuredProducts.slice(0, 12).map((product, index) => (
-            <ProductCard key={product.id || index} product={product} />
+        {/* Product Grid - 2x2 for Mobile (4 items), 4x4 for Desktop (16 items) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-1 sm:px-0 lg:gap-8 mb-16">
+          {featuredProducts.map((product, index) => (
+            <div key={product.id || index} className={index >= 4 ? 'hidden md:block' : ''}>
+              <ProductCard product={product} />
+            </div>
           ))}
         </div>
 
