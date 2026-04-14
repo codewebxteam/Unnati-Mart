@@ -258,9 +258,9 @@ const AdminCustomers = () => {
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Customers</h1>
                     <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-                        <span className="hover:text-indigo-600 cursor-pointer transition-colors">Home</span>
+                        <span className="hover:text-amber-600 cursor-pointer transition-colors">Home</span>
                         <span>/</span>
-                        <span className="text-indigo-600">Customers</span>
+                        <span className="text-amber-600">Customers</span>
                     </div>
                 </div>
 
@@ -276,7 +276,7 @@ const AdminCustomers = () => {
                                     onClick={() => setStatusTab(status)}
                                     className={`px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 ${
                                         statusTab === status 
-                                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200' 
+                                        ? 'bg-amber-600 border-amber-600 text-white shadow-lg shadow-amber-200' 
                                         : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-600'
                                     }`}
                                 >
@@ -301,7 +301,7 @@ const AdminCustomers = () => {
                                     placeholder="Search by name, email or contact..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-slate-50 border-none rounded-2xl py-3 pl-12 pr-4 text-[11px] font-black uppercase tracking-widest text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 transition-all shadow-inner"
+                                    className="w-full bg-slate-50 border-none rounded-2xl py-3 pl-12 pr-4 text-[11px] font-black uppercase tracking-widest text-slate-700 focus:outline-none focus:ring-4 focus:ring-amber-500/10 placeholder:text-slate-400 transition-all shadow-inner"
                                 />
                             </div>
                         </div>
@@ -313,7 +313,7 @@ const AdminCustomers = () => {
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {/* Total Customers */}
-                <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-center relative overflow-hidden group border-b-4 border-b-indigo-500">
+                <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-center relative overflow-hidden group border-b-4 border-b-amber-500">
                     <h3 className="text-[2.2rem] font-black text-slate-800 tracking-tight mb-1">{customers.length}</h3>
                     <p className="text-sm font-bold text-slate-400">Total Customers</p>
                 </div>
@@ -355,7 +355,7 @@ const AdminCustomers = () => {
                                 onClick={() => { setShowSortDropdown(!showSortDropdown); setShowTimeDropdown(false); }}
                                 className="flex items-center gap-2 bg-slate-50 border-none text-slate-600 py-2.5 px-4 rounded-xl font-bold text-[11px] uppercase tracking-widest transition-all shadow-inner"
                             >
-                                <Filter size={14} className="text-indigo-500" />
+                                <Filter size={14} className="text-amber-600" />
                                 Sort: {sortBy}
                                 <ChevronDown size={14} className="text-slate-400 ml-1" />
                             </button>
@@ -366,7 +366,7 @@ const AdminCustomers = () => {
                                         <button
                                             key={option}
                                             onClick={() => { setSortBy(option); setShowSortDropdown(false); }}
-                                            className={`w-full text-left px-5 py-2.5 text-xs font-black uppercase tracking-widest transition-colors ${sortBy === option ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                                            className={`w-full text-left px-5 py-2.5 text-xs font-black uppercase tracking-widest transition-colors ${sortBy === option ? 'bg-amber-50 text-amber-700' : 'text-slate-600 hover:bg-slate-50'}`}
                                         >
                                             {option}
                                         </button>
@@ -462,14 +462,14 @@ const AdminCustomers = () => {
                                         <div className="flex items-center gap-2.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-1 group-hover:translate-x-0">
                                             <button 
                                                 onClick={() => { setSelectedCustomer(item); setIsProfileModalOpen(true); }}
-                                                className="w-9 h-9 flex items-center justify-center bg-white text-indigo-500 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-95" 
+                                                className="w-9 h-9 flex items-center justify-center bg-white text-amber-600 hover:bg-amber-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-95" 
                                                 title="View Profile"
                                             >
                                                 <Eye size={14} strokeWidth={2.5} />
                                             </button>
                                             <button 
                                                 onClick={() => { setSelectedCustomer(item); setIsMsgModalOpen(true); }}
-                                                className="w-9 h-9 flex items-center justify-center bg-white text-emerald-500 hover:bg-emerald-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-95" 
+                                                className="w-9 h-9 flex items-center justify-center bg-white text-amber-600 hover:bg-amber-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-95" 
                                                 title="Message"
                                             >
                                                 <Mail size={14} strokeWidth={2.5} />
@@ -500,7 +500,7 @@ const AdminCustomers = () => {
                         <p className="text-xs text-slate-400 mb-4">This message will be sent to the user's inbox.</p>
                         
                         <textarea 
-                            className="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
+                            className="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/20 resize-none"
                             placeholder="Type your message here..."
                             value={msgText}
                             onChange={(e) => setMsgText(e.target.value)}
@@ -515,7 +515,7 @@ const AdminCustomers = () => {
                             </button>
                             <button 
                                 onClick={handleSendMessage} 
-                                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-200 transition-colors"
+                                className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-amber-200 transition-colors"
                             >
                                 Send Message
                             </button>
@@ -546,8 +546,8 @@ const AdminCustomers = () => {
 
                         <div className="grid grid-cols-3 gap-4 mb-8">
                             {[
-                                { label: 'Total Orders', value: selectedCustomer.orders, color: 'indigo' },
-                                { label: 'Lifetime Spent', value: selectedCustomer.spent, color: 'emerald' },
+                                { label: 'Total Orders', value: selectedCustomer.orders, color: 'amber' },
+                                { label: 'Lifetime Spent', value: selectedCustomer.spent, color: 'amber' },
                                 { label: 'Avg Order', value: `₹${(parseInt(selectedCustomer.spent.replace(/[₹,]/g, '')) / (selectedCustomer.orders || 1)).toFixed(0)}`, color: 'amber' }
                             ].map((stat, i) => (
                                 <div key={i} className={`p-4 rounded-2xl bg-${stat.color}-50 border border-${stat.color}-100`}>

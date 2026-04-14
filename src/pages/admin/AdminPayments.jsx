@@ -203,7 +203,7 @@ const AdminPayments = () => {
             head: [tableColumn],
             body: tableRows,
             theme: 'grid',
-            headStyles: { fillColor: [79, 70, 229], textColor: 255, fontStyle: 'bold' }, // Indigo-600
+            headStyles: { fillColor: [217, 119, 6], textColor: 255, fontStyle: 'bold' }, // Amber-600
             alternateRowStyles: { fillColor: [248, 250, 252] }, // Slate-50
             styles: { fontSize: 9, cellPadding: 4 },
         });
@@ -217,7 +217,7 @@ const AdminPayments = () => {
     const getMethodStyle = (method) => {
         switch (method?.toUpperCase()) {
             case 'UPI': return 'bg-blue-50 text-blue-600 border-blue-200';
-            case 'CARD': return 'bg-indigo-50 text-indigo-600 border-indigo-200';
+            case 'CARD': return 'bg-amber-50 text-amber-600 border-amber-200';
             case 'COD': return 'bg-slate-100 text-slate-600 border-slate-200';
             default: return 'bg-slate-100 text-slate-600 border-slate-200';
         }
@@ -240,9 +240,9 @@ const AdminPayments = () => {
             <div className="mb-8">
                 <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Payments</h1>
                 <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-                    <span className="hover:text-indigo-600 cursor-pointer transition-colors">Home</span>
+                    <span className="hover:text-amber-600 cursor-pointer transition-colors">Home</span>
                     <span>/</span>
-                    <span className="text-indigo-600">Payments</span>
+                    <span className="text-amber-600">Payments</span>
                 </div>
             </div>
 
@@ -257,9 +257,9 @@ const AdminPayments = () => {
                 </div>
 
                 {/* Online Payments */}
-                <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-center relative overflow-hidden group border-b-4 border-b-indigo-500">
-                    <h3 className="text-[2.2rem] font-black text-indigo-600 tracking-tight mb-1">₹{stats.onlinePayments.toLocaleString()}</h3>
-                    <p className="text-sm font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                <div className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col justify-center relative overflow-hidden group border-b-4 border-b-amber-500">
+                    <h3 className="text-[2.2rem] font-black text-amber-600 tracking-tight mb-1">₹{stats.onlinePayments.toLocaleString()}</h3>
+                    <p className="text-sm font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
                         <CreditCard size={16} /> Online Payments
                     </p>
                 </div>
@@ -326,7 +326,7 @@ const AdminPayments = () => {
                         placeholder="Search by Order ID or Customer..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-12 pr-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:font-medium"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-12 pr-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all placeholder:font-medium"
                     />
                 </div>
 
@@ -336,12 +336,12 @@ const AdminPayments = () => {
                     {/* Method Filter */}
                     <div className="relative">
                         <button onClick={() => toggleDropdown('method')} className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 py-2 px-3 rounded-lg font-bold text-[11px] uppercase tracking-wider transition-colors">
-                            Method: <span className="text-indigo-600">{filterMethod}</span> <ChevronDown size={14} />
+                            Method: <span className="text-amber-600">{filterMethod}</span> <ChevronDown size={14} />
                         </button>
                         {activeDropdown === 'method' && (
                             <div className="absolute top-full left-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
                                 {['All', 'Online', 'COD', 'UPI', 'Card'].map(opt => (
-                                    <button key={opt} onClick={() => { setFilterMethod(opt); setActiveDropdown(null); }} className={`w-full text-left px-4 py-2 text-xs font-bold ${filterMethod === opt ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'}`}>{opt}</button>
+                                    <button key={opt} onClick={() => { setFilterMethod(opt); setActiveDropdown(null); }} className={`w-full text-left px-4 py-2 text-xs font-bold ${filterMethod === opt ? 'bg-amber-50 text-amber-600' : 'text-slate-600 hover:bg-slate-50'}`}>{opt}</button>
                                 ))}
                             </div>
                         )}

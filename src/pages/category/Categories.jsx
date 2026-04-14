@@ -7,8 +7,6 @@ import { ChevronRight, Sparkles } from 'lucide-react';
 import vegImg from '../../assets/categories/vegetables.png';
 import fruitsImg from '../../assets/categories/fruits.png';
 import grainsImg from '../../assets/categories/grains.png';
-import meatImg from '../../assets/categories/meat.png';
-import fishImg from '../../assets/categories/fish.png';
 import nutsImg from '../../assets/categories/nuts.png';
 import dairyImg from '../../assets/categories/dairy.png';
 import babyImg from '../../assets/categories/baby.png';
@@ -156,7 +154,7 @@ const Categories = () => {
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ 
+                                transition={{
                                     opacity: { duration: 0.2 },
                                     layout: { type: "spring", stiffness: 300, damping: 30 }
                                 }}
@@ -173,17 +171,17 @@ const Categories = () => {
                                         {cat.sub}
                                     </p>
                                 </div>
-                                
+
                                 {/* Image container - FLEX ITEM 2 (Pushed to bottom) */}
                                 <div className="mt-auto px-3 pb-3 sm:px-4 sm:pb-4 relative z-10 overflow-hidden">
-                                    <motion.div 
+                                    <motion.div
                                         whileHover={{ scale: 1.05, rotate: -2 }}
                                         className="relative w-full aspect-square bg-white/95 rounded-[1.5rem] sm:rounded-[2rem] p-3 sm:p-4 shadow-2xl flex items-center justify-center overflow-hidden"
                                     >
-                                        <img 
-                                            src={cat.img} 
-                                            alt={cat.name} 
-                                            className="w-full h-full object-contain brightness-110 drop-shadow-xl transition-transform duration-700 group-hover:rotate-3" 
+                                        <img
+                                            src={cat.img}
+                                            alt={cat.name}
+                                            className="w-full h-full object-contain brightness-110 drop-shadow-xl transition-transform duration-700 group-hover:rotate-3"
                                         />
                                     </motion.div>
                                 </div>
@@ -198,7 +196,7 @@ const Categories = () => {
 
                 {!showAll && categories.length > 8 && (
                     <div className="flex justify-center mt-12 pb-12">
-                        <motion.button 
+                        <motion.button
                             whileHover={{ scale: 1.05, y: -2 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setShowAll(true)}

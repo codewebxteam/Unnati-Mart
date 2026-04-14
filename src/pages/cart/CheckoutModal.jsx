@@ -346,7 +346,7 @@ Please send the QR code for payment.`;
                             </div>
                         </div>
 
-                        {/* Mini Segments */}
+                        {/* Mini Progress Steps */}
                         <div className="space-y-4">
                             <div className={`p-5 rounded-3xl border flex items-center gap-4 transition-all ${error && (!formData.fullName?.trim() || !formData.mobile?.trim() || formData.mobile?.trim().length !== 10) && step === 1 ? 'border-red-200 bg-red-50' : 'border-[#f1efe1] bg-white/60'}`}>
                                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${error && (!formData.fullName?.trim() || !formData.mobile?.trim() || formData.mobile?.trim().length !== 10) && step === 1 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>

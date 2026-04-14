@@ -46,29 +46,16 @@ const AdminDashboard = () => {
         if (!window.confirm('This will populate your database with mock data. Existing items might be duplicated. Proceed?')) return;
         
         try {
-            // Seed Segments
-            const segRef = ref(db, 'segments');
-            const segments = [
-                { name: 'Grocery', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400', status: 'Active' },
-                { name: 'Fashion', image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=400', status: 'Active' },
-                { name: 'Electronics', image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400', status: 'Active' },
-                { name: 'Home & Kitchen', image: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400', status: 'Active' }
-            ];
-            const segmentIds = {};
-            for (const seg of segments) {
-                const newSegRef = push(segRef);
-                segmentIds[seg.name] = newSegRef.key;
-                await set(newSegRef, { ...seg, firebaseId: newSegRef.key, createdAt: new Date().toISOString() });
-            }
+
 
             // Seed Categories
             const catRef = ref(db, 'categories');
             const categories = [
-                { name: 'Fruits & Vegetables', slug: 'fruits-veg', image: 'https://images.unsplash.com/photo-1518843875459-f738682238a6?w=400', segmentId: segmentIds['Grocery'], status: 'Active' },
-                { name: 'Dairy & Bakery', slug: 'dairy-bakery', image: 'https://images.unsplash.com/photo-1550583724-125581cc258b?w=400', segmentId: segmentIds['Grocery'], status: 'Active' },
-                { name: 'Men\'s Wear', slug: 'mens-wear', image: 'https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?w=400', segmentId: segmentIds['Fashion'], status: 'Active' },
-                { name: 'Smartphones', slug: 'smartphones', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', segmentId: segmentIds['Electronics'], status: 'Active' },
-                { name: 'Cookware', slug: 'cookware', image: 'https://images.unsplash.com/photo-1584990344319-7244ca704251?w=400', segmentId: segmentIds['Home & Kitchen'], status: 'Active' }
+                { name: 'Fruits & Vegetables', slug: 'fruits-veg', image: 'https://images.unsplash.com/photo-1518843875459-f738682238a6?w=400', status: 'Active' },
+                { name: 'Dairy & Bakery', slug: 'dairy-bakery', image: 'https://images.unsplash.com/photo-1550583724-125581cc258b?w=400', status: 'Active' },
+                { name: 'Men\'s Wear', slug: 'mens-wear', image: 'https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?w=400', status: 'Active' },
+                { name: 'Smartphones', slug: 'smartphones', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', status: 'Active' },
+                { name: 'Cookware', slug: 'cookware', image: 'https://images.unsplash.com/photo-1584990344319-7244ca704251?w=400', status: 'Active' }
             ];
             for (const cat of categories) {
                 const newCatRef = push(catRef);
@@ -338,7 +325,7 @@ const AdminDashboard = () => {
         }));
     }, [bulkOrders]);
 
-    const COLORS = ['#10b981', '#f59e0b', '#6366f1', '#ec4899', '#8b5cf6'];
+    const COLORS = ['#d97706', '#10b981', '#f59e0b', '#ef4444', '#6366f1'];
     return (
         <div className="w-full animate-fade-in pb-12">
             {/* Header Area */}
@@ -346,15 +333,11 @@ const AdminDashboard = () => {
                 <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Dashboard Overview</h1>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-                        <span className="hover:text-indigo-600 cursor-pointer transition-colors">Home</span>
+                        <span className="hover:text-amber-600 cursor-pointer transition-colors">Home</span>
                         <span>/</span>
-                        <span className="text-indigo-600">Dashboard</span>
+                        <span className="text-amber-600">Dashboard</span>
                     </div>
-                    <button 
-                        onClick={handleSeedData}
-                        className="flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
-                    >
-                        <Database size={16} />
+                    <button onClick={handleSeedData} className="px-5 py-2.5 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-100 transition-colors shadow-sm active:scale-95">
                         Seed Mock Data
                     </button>
                 </div>
@@ -363,7 +346,7 @@ const AdminDashboard = () => {
             {/* Excel Export Toolbar */}
             <div className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-slate-100 mb-10 flex flex-wrap items-center justify-between gap-6 animate-fade-in mx-2">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
                         <DownloadIcon size={24} strokeWidth={2.5} />
                     </div>
                     <div>
@@ -378,7 +361,7 @@ const AdminDashboard = () => {
                         <select 
                             value={exportSource} 
                             onChange={(e) => setExportSource(e.target.value)}
-                            className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-slate-700 focus:ring-4 focus:ring-emerald-500/10 cursor-pointer"
+                            className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-slate-700 focus:ring-4 focus:ring-amber-500/10 cursor-pointer"
                         >
                             <option value="AdminOrder">Orders</option>
                             <option value="AdminCustomer">Customers</option>
@@ -392,7 +375,7 @@ const AdminDashboard = () => {
                         <select 
                             value={exportTime} 
                             onChange={(e) => setExportTime(e.target.value)}
-                            className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-slate-700 focus:ring-4 focus:ring-emerald-500/10 cursor-pointer"
+                            className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-slate-700 focus:ring-4 focus:ring-amber-500/10 cursor-pointer"
                         >
                             <option value="All Time">All Time</option>
                             <option value="Weekly">Weekly</option>
@@ -432,16 +415,18 @@ const AdminDashboard = () => {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 mx-2">
                 {[
-                    { label: 'TOTAL SALES', value: `₹${stats.totalSales.toLocaleString()}`, icon: <DollarSign size={24} />, change: '+12.5%', color: 'emerald' },
-                    { label: 'TOTAL ORDERS', value: stats.totalOrders, icon: <ShoppingBag size={24} />, change: '+8.2%', color: 'indigo' },
+                    { label: 'TOTAL SALES', value: `₹${stats.totalSales.toLocaleString()}`, icon: <DollarSign size={24} />, change: '+12.5%', color: 'amber' },
+                    { label: 'TOTAL ORDERS', value: stats.totalOrders, icon: <ShoppingBag size={24} />, change: '+8.2%', color: 'amber' },
                     { label: 'CUSTOMERS', value: stats.totalCustomers, icon: <Users size={24} />, change: '+15.3%', color: 'amber' },
                     { label: 'PENDING', value: stats.pendingOrders, icon: <Clock size={24} />, change: 'Real-time', color: 'rose' }
                 ].map((stat, i) => (
                     <div key={i} className="bg-white rounded-[2rem] p-6 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col justify-between group hover:shadow-xl transition-all">
                         <div className="flex items-center justify-between mb-2">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-${stat.color}-50 text-${stat.color}-500 group-hover:scale-110 transition-transform`}>
-                                {stat.icon}
+                            <div className={`w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-inner`}>
+                                <div className="transform group-hover:scale-110 transition-transform duration-500">
+                                    {stat.icon}
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -462,15 +447,15 @@ const AdminDashboard = () => {
                 <div className="bg-white rounded-[1.5rem] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-bold text-slate-800">Sales Overview</h2>
-                        <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">Real-time</span>
+                        <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-3 py-1 rounded-full uppercase tracking-widest">Real-time</span>
                     </div>
-                    <div className="h-[350px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-[350px] w-full min-h-[350px] relative">
+                        <ResponsiveContainer width="99%" height={350}>
                             <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
-                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#d97706" stopOpacity={0.2}/>
+                                        <stop offset="95%" stopColor="#d97706" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -501,7 +486,7 @@ const AdminDashboard = () => {
                                 <Area 
                                     type="monotone" 
                                     dataKey="revenue" 
-                                    stroke="#6366f1" 
+                                    stroke="#d97706" 
                                     strokeWidth={4}
                                     fillOpacity={1} 
                                     fill="url(#colorRevenue)" 
@@ -551,7 +536,7 @@ const AdminDashboard = () => {
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} />
                                 <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                                <Bar dataKey="orders" fill="#10b981" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="orders" fill="#d97706" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -560,14 +545,14 @@ const AdminDashboard = () => {
                 {/* Bulk Orders Overview Chart */}
                 <div 
                     onClick={() => setIsBulkListOpen(true)}
-                    className="bg-white rounded-[1.5rem] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 cursor-pointer group hover:border-indigo-200 transition-all"
+                    className="bg-white rounded-[1.5rem] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 cursor-pointer group hover:border-amber-200 transition-all"
                 >
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h2 className="text-xl font-bold text-slate-800">Bulk Orders</h2>
                             <p className="text-xs text-slate-400 font-semibold">Click to view details</p>
                         </div>
-                        <span className="text-[10px] font-black text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full uppercase tracking-widest">Enquiries</span>
+                        <span className="text-[10px] font-black text-amber-600 bg-amber-100 px-3 py-1 rounded-full uppercase tracking-widest">Enquiries</span>
                     </div>
                     <div className="h-[300px] w-full min-h-[300px] relative">
                         <ResponsiveContainer width="99%" height={300}>
@@ -576,7 +561,7 @@ const AdminDashboard = () => {
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} />
                                 <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                                <Bar dataKey="orders" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="orders" fill="#d97706" radius={[6, 6, 0, 0]} barSize={20} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

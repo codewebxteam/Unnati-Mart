@@ -231,7 +231,7 @@ const AdminLayout = () => {
                 {/* Logo Area */}
                 <div className="h-28 flex items-center px-8 shrink-0">
                     <div className="flex items-center gap-3.5 cursor-pointer group" onClick={() => navigate('/')}>
-                        <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform">
+                        <div className="w-10 h-10 rounded-full bg-amber-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-amber-600/20 group-hover:scale-110 transition-transform">
                             U
                         </div>
                         <div className="flex flex-col">
@@ -265,11 +265,11 @@ const AdminLayout = () => {
                                         key={item.name}
                                         onClick={() => navigate(item.path)}
                                         className={`w-full flex items-center gap-3.5 px-3.5 py-3 rounded-2xl text-[13px] font-bold transition-all duration-300 group ${isActive
-                                            ? 'bg-emerald-500/10 text-emerald-400 shadow-sm border border-emerald-500/10'
+                                            ? 'bg-amber-600/10 text-amber-500 shadow-sm border border-amber-600/10'
                                             : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
                                             }`}
                                     >
-                                        <span className={`${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-200'} transition-colors`}>
+                                        <span className={`${isActive ? 'text-amber-500' : 'text-slate-500 group-hover:text-slate-200'} transition-colors`}>
                                             {item.icon}
                                         </span>
                                         {item.name}
@@ -290,11 +290,11 @@ const AdminLayout = () => {
                                         key={item.name}
                                         onClick={() => navigate(item.path)}
                                         className={`w-full flex items-center gap-3.5 px-3.5 py-3 rounded-2xl text-[13px] font-bold transition-all duration-300 group ${isActive
-                                            ? 'bg-emerald-500/10 text-emerald-400 shadow-sm border border-emerald-500/10'
+                                            ? 'bg-amber-600/10 text-amber-500 shadow-sm border border-amber-600/10'
                                             : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
                                             }`}
                                     >
-                                        <span className={`${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-200'} transition-colors`}>
+                                        <span className={`${isActive ? 'text-amber-500' : 'text-slate-500 group-hover:text-slate-200'} transition-colors`}>
                                             {item.icon}
                                         </span>
                                         {item.name}
@@ -309,7 +309,7 @@ const AdminLayout = () => {
                 <div className="p-6 border-t border-white/5 space-y-2">
                     <button
                         onClick={() => navigate('/admin/settings')}
-                        className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[13px] font-bold transition-all duration-200 ${location.pathname === '/admin/settings' ? 'bg-emerald-500/10 text-emerald-500' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'}`}
+                        className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[13px] font-bold transition-all duration-200 ${location.pathname === '/admin/settings' ? 'bg-amber-500/10 text-amber-600' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'}`}
                     >
                         <Settings size={18} />
                         Settings
@@ -344,7 +344,7 @@ const AdminLayout = () => {
                             placeholder="Search products, orders, customers"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-slate-50 border-none rounded-full py-2.5 pl-12 pr-4 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all shadow-inner"
+                            className="w-full bg-slate-50 border-none rounded-full py-2.5 pl-12 pr-4 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:bg-white transition-all shadow-inner"
                         />
 
                         {/* Search Results Dropdown */}
@@ -365,12 +365,12 @@ const AdminLayout = () => {
                                                             setSearchQuery('');
                                                             setSearchResults([]);
                                                         }}
-                                                        className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-indigo-50/50 group transition-all text-left"
+                                                        className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-amber-50/50 group transition-all text-left"
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                                                                 item.type === 'order' ? 'bg-amber-100 text-amber-600' :
-                                                                item.type === 'customer' ? 'bg-blue-100 text-blue-600' :
+                                                                item.type === 'customer' ? 'bg-amber-100 text-amber-600' :
                                                                 'bg-amber-100 text-amber-600'
                                                             }`}>
                                                                 {item.type === 'order' ? <ShoppingCart size={16} /> :
@@ -378,7 +378,7 @@ const AdminLayout = () => {
                                                                  <Package size={16} />}
                                                             </div>
                                                             <div>
-                                                                <p className="text-sm font-bold text-slate-800 leading-tight group-hover:text-indigo-700">
+                                                                <p className="text-sm font-bold text-slate-800 leading-tight group-hover:text-amber-700">
                                                                     {item.orderId || item.name || item.displayName || 'Unnamed Item'}
                                                                 </p>
                                                                 <p className="text-[11px] text-slate-500 font-medium line-clamp-1">
@@ -389,7 +389,7 @@ const AdminLayout = () => {
                                                             </div>
                                                         </div>
                                                         <div className="flex flex-col items-end shrink-0">
-                                                            <span className="text-[10px] font-black text-slate-900 group-hover:text-indigo-600">
+                                                            <span className="text-[10px] font-black text-slate-900 group-hover:text-amber-600">
                                                                 {item.type === 'order' ? `₹${item.grandTotal}` : 
                                                                  item.type === 'product' ? `₹${item.price}` : ''}
                                                             </span>
@@ -422,7 +422,7 @@ const AdminLayout = () => {
                                         setShowNotifications(!showNotifications);
                                         setShowMessages(false);
                                     }}
-                                    className={`relative p-2 rounded-full transition-colors ${showNotifications ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+                                    className={`relative p-2 rounded-full transition-colors ${showNotifications ? 'bg-amber-50 text-amber-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
                                 >
                                     <Bell size={20} />
                                     {pendingOrders.length > 0 && (
@@ -434,7 +434,7 @@ const AdminLayout = () => {
                                     <div className="absolute top-full right-0 mt-3 w-80 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
                                         <div className="p-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
                                             <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">Notifications</h3>
-                                            <span className="text-[10px] font-bold bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">{pendingOrders.length} New</span>
+                                            <span className="text-[10px] font-bold bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full">{pendingOrders.length} New</span>
                                         </div>
                                         <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
                                             {pendingOrders.length > 0 ? (
@@ -464,7 +464,7 @@ const AdminLayout = () => {
                                             )}
                                         </div>
                                         {pendingOrders.length > 0 && (
-                                            <button className="w-full py-3 bg-slate-50 text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:bg-indigo-50 transition-colors border-t border-slate-100" onClick={() => { navigate('/admin/orders'); setShowNotifications(false); }}>
+                                            <button className="w-full py-3 bg-slate-50 text-[10px] font-black text-amber-600 uppercase tracking-widest hover:bg-amber-50 transition-colors border-t border-slate-100" onClick={() => { navigate('/admin/orders'); setShowNotifications(false); }}>
                                                 View All Orders
                                             </button>
                                         )}
@@ -479,7 +479,7 @@ const AdminLayout = () => {
                                         setShowMessages(!showMessages);
                                         setShowNotifications(false);
                                     }}
-                                    className={`relative p-2 rounded-full transition-colors ${showMessages ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+                                    className={`relative p-2 rounded-full transition-colors ${showMessages ? 'bg-amber-50 text-amber-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
                                 >
                                     {unreadMessages.length > 0 ? <Mail size={20} /> : <MailOpen size={20} />}
                                     {unreadMessages.length > 0 && (
@@ -495,9 +495,9 @@ const AdminLayout = () => {
                                             <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">Messages</h3>
                                             <div className="flex items-center gap-2">
                                                 {unreadMessages.length > 0 && (
-                                                    <button onClick={handleMarkAllAsRead} className="text-[10px] font-bold text-indigo-600 hover:underline mr-1">Mark All Read</button>
+                                                    <button onClick={handleMarkAllAsRead} className="text-[10px] font-bold text-amber-600 hover:underline mr-1">Mark All Read</button>
                                                 )}
-                                                <span className="text-[10px] font-bold bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">{unreadMessages.length} New</span>
+                                                <span className="text-[10px] font-bold bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full">{unreadMessages.length} New</span>
                                             </div>
                                         </div>
                                         <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
@@ -506,7 +506,7 @@ const AdminLayout = () => {
                                                     {messages.map((msg) => (
                                                         <div key={msg.id} onClick={() => handleOpenMessage(msg)} className="p-4 hover:bg-slate-50 transition-colors cursor-pointer group">
                                                             <div className="flex items-start gap-3">
-                                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${(msg.status === 'Read' || msg.type === 'foundation_join') ? 'bg-slate-100 text-slate-400' : 'bg-indigo-100 text-indigo-600'}`}>
+                                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${(msg.status === 'Read' || msg.type === 'foundation_join') ? 'bg-slate-100 text-slate-400' : 'bg-amber-100 text-amber-600'}`}>
                                                                     {(msg.status === 'Read' || msg.type === 'foundation_join') ? <MailOpen size={14} /> : <Mail size={14} />}
                                                                 </div>
                                                                 <div>
@@ -534,7 +534,7 @@ const AdminLayout = () => {
 
                         {/* User Profile */}
                         <div className="flex items-center gap-3 border-l border-slate-200 pl-6 cursor-pointer" onClick={handleLogout} title="Click to Logout">
-                            <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-500/30 shrink-0 border-2 border-white cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-indigo-400 transition-all">
+                            <div className="w-10 h-10 rounded-full bg-amber-600 flex items-center justify-center text-white font-bold shadow-md shadow-amber-600/30 shrink-0 border-2 border-white cursor-pointer hover:ring-2 hover:ring-offset-1 hover:ring-amber-400 transition-all">
                                 {user ? user.name.charAt(0).toUpperCase() : 'A'}
                             </div>
                             <div className="flex flex-col hidden sm:flex">
@@ -563,7 +563,7 @@ const AdminLayout = () => {
                             </button>
 
                             <div className="flex items-center gap-4 mb-6 pt-2">
-                                <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm">
+                                <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center shadow-sm">
                                     <Mail size={24} />
                                 </div>
                                 <div>
@@ -579,7 +579,7 @@ const AdminLayout = () => {
                             </div>
 
                             <div className="flex items-center justify-between text-[11px] font-black text-slate-400 uppercase tracking-wider">
-                                <span className="flex items-center gap-1.5">Type: <span className="bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-lg text-[9px] font-black">{selectedMessage.type || 'General'}</span></span>
+                                <span className="flex items-center gap-1.5">Type: <span className="bg-amber-50 text-amber-600 px-2.5 py-1 rounded-lg text-[9px] font-black">{selectedMessage.type || 'General'}</span></span>
                                 <span className="font-semibold text-slate-400">{selectedMessage.timestamp || 'Just now'}</span>
                             </div>
                         </div>

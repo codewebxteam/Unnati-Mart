@@ -9,39 +9,19 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null }) => {
         name: '',
         slug: '',
         image: '',
-        segmentId: '',
         status: 'Active',
         description: ''
     });
-    const [segments, setSegments] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
     const [preview, setPreview] = useState(null);
 
-    // Fetch segments for the dropdown
-    useEffect(() => {
-        if (isOpen) {
-            const segRef = ref(db, 'segments');
-            const unsub = onValue(segRef, (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    setSegments(Object.entries(data).map(([key, val]) => ({
-                        ...val,
-                        firebaseId: key
-                    })));
-                } else {
-                    setSegments([]);
-                }
-            });
-            return () => unsub();
-        }
-    }, [isOpen]);
+
 
     useEffect(() => {
         if (category) {
             setFormData({
                 ...category,
-                status: category.status || 'Active',
-                segmentId: category.segmentId || ''
+                status: category.status || 'Active'
             });
             setPreview(category.image || null);
         } else {
@@ -49,7 +29,6 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null }) => {
                 name: '',
                 slug: '',
                 image: '',
-                segmentId: '',
                 status: 'Active',
                 description: ''
             });
@@ -112,7 +91,7 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null }) => {
                                 {category ? 'Edit Category' : 'New Category'}
                             </h2>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                Market Segmentation
+                                Category Details
                             </p>
                         </div>
                     </div>
@@ -164,26 +143,7 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null }) => {
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Business Segment <span className="text-rose-500">*</span></label>
-                                <div className="relative group">
-                                    <Box className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-600 transition-colors" size={18} />
-                                    <select
-                                        name="segmentId"
-                                        value={formData.segmentId}
-                                        onChange={handleChange}
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all appearance-none"
-                                    >
-                                        <option value="">Select a Segment</option>
-                                        {segments.map(s => (
-                                            <option key={s.firebaseId} value={s.firebaseId}>{s.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                {segments.length === 0 && (
-                                    <p className="text-[9px] font-bold text-slate-400 ml-1 italic">Note: Consider adding Business Segments in the main view for better organization.</p>
-                                )}
-                            </div>
+
                         </div>
 
                         {/* Right Column: Name, Slug, Description */}

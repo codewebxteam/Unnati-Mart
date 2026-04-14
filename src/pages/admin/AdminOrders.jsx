@@ -164,7 +164,7 @@ const AdminOrders = () => {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
             </div>
         );
     }
@@ -175,7 +175,7 @@ const AdminOrders = () => {
                 <div>
                     <h1 className="text-[28px] font-black text-[#111827] tracking-tight">Orders Management</h1>
                     <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest flex items-center gap-2">
-                        <ShoppingCart size={14} className="text-emerald-500" />
+                        <ShoppingCart size={14} className="text-amber-500" />
                         Main / Orders
                     </p>
                 </div>
@@ -195,7 +195,7 @@ const AdminOrders = () => {
                 <div className="p-8 border-b border-slate-50 flex flex-col gap-8">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
+                            <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
                                 <FileText size={24} strokeWidth={2.5} />
                             </div>
                             <div>
@@ -212,7 +212,7 @@ const AdminOrders = () => {
                                     onClick={() => setStatusFilter(status)}
                                     className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                                         statusFilter === status 
-                                        ? 'bg-white text-indigo-600 shadow-sm' 
+                                        ? 'bg-white text-amber-600 shadow-sm' 
                                         : 'text-slate-400 hover:text-slate-600'
                                     }`}
                                 >
@@ -230,14 +230,14 @@ const AdminOrders = () => {
                                 placeholder="Search Order ID, Customer..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-slate-50/80 border-none rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 transition-all"
+                                className="w-full bg-slate-50/80 border-none rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-amber-500/10 placeholder:text-slate-400 transition-all"
                             />
                         </div>
                         <div className="flex items-center gap-3">
                             <select
                                 value={dateFilter}
                                 onChange={(e) => setDateFilter(e.target.value)}
-                                className="bg-slate-50 border-none text-[10px] font-black uppercase tracking-widest text-slate-600 py-3.5 pl-4 pr-10 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 shadow-sm appearance-none cursor-pointer min-w-[140px] bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:10px_10px] bg-[right_16px_center]"
+                                className="bg-slate-50 border-none text-[10px] font-black uppercase tracking-widest text-slate-600 py-3.5 pl-4 pr-10 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-500/10 shadow-sm appearance-none cursor-pointer min-w-[140px] bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:10px_10px] bg-[right_16px_center]"
                             >
                                 <option value="All Time">All Time</option>
                                 <option value="Today">Today</option>
@@ -270,7 +270,7 @@ const AdminOrders = () => {
                             ) : filteredOrders.map((item) => (
                                 <tr key={item.firebaseId} className="hover:bg-slate-50/50 transition-colors group">
                                     <td className="py-5 px-8">
-                                        <span className="font-bold text-[#111827] text-sm tracking-tight group-hover:text-indigo-600 transition-colors cursor-pointer" onClick={() => setSelectedOrder(item)}>#{item.orderId.slice(-6).toUpperCase()}</span>
+                                        <span className="font-bold text-[#111827] text-sm tracking-tight group-hover:text-amber-600 transition-colors cursor-pointer" onClick={() => setSelectedOrder(item)}>#{item.orderId.slice(-6).toUpperCase()}</span>
                                     </td>
                                     <td className="py-5 px-6 text-sm">
                                         <div className="flex items-center gap-3">
@@ -292,11 +292,11 @@ const AdminOrders = () => {
                                         <select
                                             value={item.status === 'Success' ? 'Delivered' : item.status}
                                             onChange={(e) => handleStatusChange(item, e.target.value)}
-                                            className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full inline-block min-w-[120px] border-none focus:ring-4 focus:ring-indigo-500/10 cursor-pointer transition-all ${
-                                                (item.status === 'Delivered' || item.status === 'Success') ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' :
+                                            className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full inline-block min-w-[120px] border-none focus:ring-4 focus:ring-amber-500/10 cursor-pointer transition-all ${
+                                                (item.status === 'Delivered' || item.status === 'Success') ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' :
                                                 (item.status === 'Pending' || item.status === 'Placed') ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' :
                                                 (item.status === 'Cancelled' || item.status === 'Returned') ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' :
-                                                'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                                                'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
                                             }`}
                                         >
                                             <option value="Placed">Placed</option>
@@ -311,7 +311,7 @@ const AdminOrders = () => {
                                         <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
                                             <button
                                                 onClick={() => setSelectedOrder(item)}
-                                                className="w-9 h-9 flex items-center justify-center bg-white text-indigo-500 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-90"
+                                                className="w-9 h-9 flex items-center justify-center bg-white text-amber-600 hover:bg-amber-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-90"
                                             >
                                                 <Eye size={16} strokeWidth={2.5} />
                                             </button>

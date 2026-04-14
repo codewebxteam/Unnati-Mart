@@ -45,6 +45,21 @@ const compressImage = (file, maxWidth = 500, maxHeight = 500, quality = 0.6) => 
     });
 };
 
+const DEFAULT_CATEGORIES = [
+    "Select Category",
+    "grocery",
+    "fruits",
+    "veg",
+    "dairy",
+    "snacks",
+    "beverages",
+    "personal_care",
+    "household",
+    "wellness",
+    "baby",
+    "dry_fruits"
+];
+
 const AdminInventory = () => {
     const [products, setProducts] = useState([]);
     const [orders, setOrders] = useState([]);
@@ -54,7 +69,7 @@ const AdminInventory = () => {
     const [newStock, setNewStock] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [newProduct, setNewProduct] = useState({
-        name: '', price: '', discount: '', description: '', image: null, stock: '', category: 'Vegetables', specification: '', highlights: ''
+        name: '', price: '', discount: '', description: '', image: null, stock: '', category: '', specification: '', highlights: ''
     });
     const [syncError, setSyncError] = useState(null);
     const [isClearModalOpen, setIsClearModalOpen] = useState(false);
@@ -64,10 +79,24 @@ const AdminInventory = () => {
     const [itemToDelete, setItemToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [editProduct, setEditProduct] = useState({
-        name: '', price: '', discount: '', description: '', image: null, stock: '', category: 'Vegetables', specification: '', highlights: ''
+        name: '', price: '', discount: '', description: '', image: null, stock: '', category: '', specification: '', highlights: ''
     });
     const [searchQuery, setSearchQuery] = useState('');
     const [statusTab, setStatusTab] = useState('All');
+    const [categories, setCategories] = useState([]);
+
+    const allCategoryOptions = useMemo(() => {
+        // Source 1: Dynamic Categories from DB
+        const dynamicNames = categories.map(c => c.name);
+
+        // Source 2: Categories currently used in products
+        const productCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
+
+        // Combined and Deduplicated List
+        const combined = Array.from(new Set([...dynamicNames, ...productCategories, ...DEFAULT_CATEGORIES]));
+
+        return combined.sort();
+    }, [categories, products]);
 
     useScrollLock(isUpdateModalOpen || isAddModalOpen || isClearModalOpen || isDeleteModalOpen);
 
@@ -75,6 +104,7 @@ const AdminInventory = () => {
     useEffect(() => {
         const productsRef = ref(db, 'products');
         const ordersRef = ref(db, 'orders');
+        const categoriesRef = ref(db, 'categories');
 
         // Safety Timeout
         const safetyTimeout = setTimeout(() => {
@@ -98,9 +128,27 @@ const AdminInventory = () => {
             setOrders(orderList);
         });
 
+        const unsubCategories = onValue(categoriesRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const list = Object.entries(data).map(([key, val]) => ({
+                    ...val,
+                    firebaseId: key
+                }));
+                setCategories(list);
+                // Update default category for newProduct if it's currently hardcoded and choices exist
+                if (list.length > 0) {
+                    setNewProduct(prev => ({ ...prev, category: prev.category || list[0].name }));
+                }
+            } else {
+                setCategories([]);
+            }
+        });
+
         return () => {
             unsubProducts();
             unsubOrders();
+            unsubCategories();
         };
     }, []);
 
@@ -277,19 +325,19 @@ const AdminInventory = () => {
             setIsPublishing(false);
         }
     };
-    
+
     const filteredProducts = useMemo(() => {
         return products.filter(p => {
-            const matchesStatus = statusTab === 'All' || 
-                                 (statusTab === 'In Stock' && p.stock >= 10) ||
-                                 (statusTab === 'Low Stock' && p.stock > 0 && p.stock < 10) ||
-                                 (statusTab === 'Out of Stock' && (p.stock === 0 || !p.stock));
+            const matchesStatus = statusTab === 'All' ||
+                (statusTab === 'In Stock' && p.stock >= 10) ||
+                (statusTab === 'Low Stock' && p.stock > 0 && p.stock < 10) ||
+                (statusTab === 'Out of Stock' && (p.stock === 0 || !p.stock));
 
             const s = searchQuery.toLowerCase();
-            const matchesSearch = !searchQuery || 
-                                 p.name.toLowerCase().includes(s) || 
-                                 (p.category || '').toLowerCase().includes(s) ||
-                                 (p.firebaseId || '').toLowerCase().includes(s);
+            const matchesSearch = !searchQuery ||
+                p.name.toLowerCase().includes(s) ||
+                (p.category || '').toLowerCase().includes(s) ||
+                (p.firebaseId || '').toLowerCase().includes(s);
 
             return matchesStatus && matchesSearch;
         });
@@ -299,9 +347,9 @@ const AdminInventory = () => {
         const currentStock = parseInt(product.stock || 0);
         const nextStock = Math.max(0, currentStock + delta);
         const status = nextStock === 0 ? 'Out of Stock' : nextStock < 10 ? 'Low Stock' : 'Active';
-        
+
         try {
-            await update(ref(db, `products/${product.firebaseId}`), { 
+            await update(ref(db, `products/${product.firebaseId}`), {
                 stock: nextStock,
                 status: status,
                 updatedAt: new Date().toISOString()
@@ -318,11 +366,11 @@ const AdminInventory = () => {
             const available = Math.max(0, (p.stock || 0) - committed);
             const status = available === 0 ? 'OUT OF STOCK' : available < 10 ? 'LOW STOCK' : 'IN STOCK';
             return [
-                p.name, 
-                p.category, 
-                p.stock || 0, 
-                committed, 
-                available, 
+                p.name,
+                p.category,
+                p.stock || 0,
+                committed,
+                available,
                 status
             ];
         });
@@ -356,12 +404,12 @@ const AdminInventory = () => {
                     { label: 'OUT OF STOCK', value: stats.outOfStock.length, icon: <AlertTriangle size={20} />, color: 'rose' },
                     { label: 'INVENTORY VALUE', value: `₹${(stats.inventoryValue / 1000).toFixed(1)}k`, icon: <BoxSelect size={20} />, color: 'indigo' }
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white rounded-[2rem] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between group hover:border-emerald-500/20 transition-all">
+                    <div key={i} className="bg-white rounded-[2rem] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between group hover:border-amber-500/20 transition-all">
                         <div>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{stat.label}</p>
                             <h3 className="text-2xl font-black text-[#111827]">{stat.value}</h3>
                         </div>
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-${stat.color}-50 text-${stat.color}-500 group-hover:scale-110 transition-transform`}>
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-50 text-amber-600 group-hover:scale-110 transition-transform`}>
                             {stat.icon}
                         </div>
                     </div>
@@ -372,13 +420,13 @@ const AdminInventory = () => {
             <div className="bg-white rounded-[2.5rem] shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden mx-2">
                 <div className="p-8 border-b border-slate-50 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-emerald-500 shadow-inner">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
                             <Warehouse size={24} strokeWidth={2.5} />
                         </div>
                         <div>
                             <h2 className="text-2xl font-black text-[#111827]">Inventory Control</h2>
                             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                <Activity size={12} className="text-emerald-500" />
+                                <Activity size={12} className="text-amber-500" />
                                 {filteredProducts.length} items logged
                             </p>
                         </div>
@@ -387,26 +435,26 @@ const AdminInventory = () => {
                     <div className="flex flex-col md:flex-row items-center gap-4 flex-1 justify-end">
                         <div className="relative w-full md:max-w-xs">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                            <input 
+                            <input
                                 type="text"
                                 placeholder="Search SKU or Name..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-slate-50/80 border-none rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 placeholder:text-slate-400 transition-all"
+                                className="w-full bg-slate-50/80 border-none rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-amber-500/10 placeholder:text-slate-400 transition-all"
                             />
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <button 
+                            <button
                                 onClick={handleExportExcel}
-                                className="p-3.5 bg-slate-50 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 rounded-2xl transition-all active:scale-90"
+                                className="p-3.5 bg-slate-50 text-slate-500 hover:bg-amber-50 hover:text-amber-600 rounded-2xl transition-all active:scale-90"
                                 title="Export Inventory"
                             >
                                 <Download size={18} strokeWidth={2.5} />
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setIsAddModalOpen(true)}
-                                className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2 active:scale-95"
+                                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-600/20 transition-all flex items-center gap-2 active:scale-95"
                             >
                                 <Plus size={16} strokeWidth={3} />
                                 New Item
@@ -418,11 +466,10 @@ const AdminInventory = () => {
                                 <button
                                     key={tab}
                                     onClick={() => setStatusTab(tab)}
-                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                                        statusTab === tab 
-                                        ? 'bg-white text-emerald-600 shadow-sm' 
+                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${statusTab === tab
+                                        ? 'bg-white text-amber-600 shadow-sm'
                                         : 'text-slate-400 hover:text-slate-600'
-                                    }`}
+                                        }`}
                                 >
                                     {tab}
                                 </button>
@@ -447,7 +494,7 @@ const AdminInventory = () => {
                             {isLoading ? (
                                 <tr><td colSpan="6" className="py-24 text-center">
                                     <div className="flex flex-col items-center gap-4">
-                                        <div className="animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent shadow-lg"></div>
+                                        <div className="animate-spin rounded-full h-10 w-10 border-4 border-amber-600 border-t-transparent shadow-lg"></div>
                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Syncing Inventory...</span>
                                     </div>
                                 </td></tr>
@@ -456,7 +503,7 @@ const AdminInventory = () => {
                             ) : filteredProducts.map((item) => {
                                 const committed = getCommittedStock(item.firebaseId);
                                 const available = Math.max(0, (item.stock || 0) - committed);
-                                
+
                                 return (
                                     <tr key={item.firebaseId} className="hover:bg-slate-50/50 transition-colors group">
                                         <td className="py-5 px-8">
@@ -469,14 +516,14 @@ const AdminInventory = () => {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <span className="font-bold text-[#111827] block text-sm group-hover:text-emerald-600 transition-colors">{item.name}</span>
+                                                    <span className="font-bold text-[#111827] block text-sm group-hover:text-amber-600 transition-colors">{item.name}</span>
                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5 block">{item.category}</span>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="py-5 px-6 text-center">
                                             <div className="flex items-center justify-center gap-3">
-                                                <button 
+                                                <button
                                                     onClick={() => handleQuickStockUpdate(item, -1)}
                                                     className="w-7 h-7 flex items-center justify-center bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 rounded-lg transition-colors font-black"
                                                 >
@@ -485,26 +532,25 @@ const AdminInventory = () => {
                                                 <span className={`text-sm font-black min-w-[30px] ${item.stock < 10 ? 'text-rose-600 animate-pulse' : 'text-slate-700'}`}>
                                                     {item.stock}
                                                 </span>
-                                                <button 
+                                                <button
                                                     onClick={() => handleQuickStockUpdate(item, 1)}
-                                                    className="w-7 h-7 flex items-center justify-center bg-slate-100 hover:bg-emerald-100 text-slate-500 hover:text-emerald-600 rounded-lg transition-colors font-black"
+                                                    className="w-7 h-7 flex items-center justify-center bg-slate-100 hover:bg-amber-100 text-slate-500 hover:text-amber-600 rounded-lg transition-colors font-black"
                                                 >
                                                     +
                                                 </button>
                                             </div>
                                         </td>
                                         <td className="py-5 px-6 text-center">
-                                            <span className={`text-sm font-black ${committed > 0 ? 'text-indigo-500' : 'text-slate-400'}`}>{committed}</span>
+                                            <span className={`text-sm font-black ${committed > 0 ? 'text-amber-500' : 'text-slate-400'}`}>{committed}</span>
                                         </td>
                                         <td className="py-5 px-6 text-center">
-                                            <span className={`text-sm font-black ${available < 10 ? 'text-amber-500' : 'text-emerald-600'}`}>{available}</span>
+                                            <span className={`text-sm font-black ${available < 10 ? 'text-amber-500' : 'text-amber-600'}`}>{available}</span>
                                         </td>
                                         <td className="py-5 px-6 text-center">
-                                            <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full ${
-                                                available === 0 ? 'bg-rose-50 text-rose-500' :
+                                            <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full ${available === 0 ? 'bg-rose-50 text-rose-500' :
                                                 available < 10 ? 'bg-amber-50 text-amber-500' :
-                                                'bg-emerald-50 text-emerald-600'
-                                            }`}>
+                                                    'bg-amber-50 text-amber-600'
+                                                }`}>
                                                 {available === 0 ? 'OUT OF STOCK' : available < 10 ? 'LOW STOCK' : 'IN STOCK'}
                                             </span>
                                         </td>
@@ -512,7 +558,7 @@ const AdminInventory = () => {
                                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
                                                     onClick={() => handleUpdateClick(item)}
-                                                    className="p-2.5 bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-500 rounded-xl transition-all active:scale-90 border border-slate-100"
+                                                    className="p-2.5 bg-slate-50 hover:bg-amber-50 text-slate-400 hover:text-amber-500 rounded-xl transition-all active:scale-90 border border-slate-100"
                                                 >
                                                     <PackageSearch size={18} />
                                                 </button>
@@ -573,7 +619,7 @@ const AdminInventory = () => {
                                                     <img src={selectedItem.img} alt={selectedItem.name} className="w-3/4 h-3/4 object-contain" />
                                                 </div>
                                             ) : (
-                                                <div className="flex flex-col items-center text-slate-400 group-hover:text-indigo-500 transition-colors">
+                                                <div className="flex flex-col items-center text-slate-400 group-hover:text-amber-600 transition-colors">
                                                     <Upload size={32} className="mb-3" />
                                                     <span className="text-sm font-semibold">Click to upload new image</span>
                                                     <span className="text-xs font-medium mt-1">SVG, PNG, JPG or GIF</span>
@@ -596,7 +642,7 @@ const AdminInventory = () => {
                                             onChange={handleEditInputChange}
                                             rows="4"
                                             placeholder="e.g. Organic, Freshly Picked, Rich in Calcium"
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all resize-none custom-scrollbar"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600 transition-all resize-none custom-scrollbar"
                                         ></textarea>
                                     </div>
                                 </div>
@@ -612,7 +658,7 @@ const AdminInventory = () => {
                                             value={editProduct.name}
                                             onChange={handleEditInputChange}
                                             placeholder="e.g. Fresh Cow Milk"
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all placeholder:font-medium"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600 transition-all placeholder:font-medium"
                                             required
                                         />
                                     </div>
@@ -625,13 +671,17 @@ const AdminInventory = () => {
                                                 name="category"
                                                 value={editProduct.category}
                                                 onChange={handleEditInputChange}
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all appearance-none"
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600 transition-all appearance-none"
                                             >
-                                                <option value="Vegetables">Vegetables</option>
-                                                <option value="Fruits">Fruits</option>
-                                                <option value="Dairy & Bakery">Dairy & Bakery</option>
-                                                <option value="Food & Snacks">Food & Snacks</option>
-                                                <option value="Beverages">Beverages</option>
+                                                {allCategoryOptions.length > 0 ? (
+                                                    allCategoryOptions.map((catName) => (
+                                                        <option key={catName} value={catName}>
+                                                            {catName}
+                                                        </option>
+                                                    ))
+                                                ) : (
+                                                    <option value="">No Categories Available</option>
+                                                )}
                                             </select>
                                         </div>
                                         <div>
@@ -643,7 +693,7 @@ const AdminInventory = () => {
                                                 onChange={handleEditInputChange}
                                                 min="0"
                                                 placeholder="e.g. 100"
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all placeholder:font-medium"
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600 transition-all placeholder:font-medium"
                                                 required
                                             />
                                         </div>
@@ -661,7 +711,7 @@ const AdminInventory = () => {
                                                 min="0"
                                                 step="0.01"
                                                 placeholder="0.00"
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all placeholder:font-medium"
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600 transition-all placeholder:font-medium"
                                                 required
                                             />
                                         </div>
@@ -719,7 +769,7 @@ const AdminInventory = () => {
                                 <button
                                     type="submit"
                                     disabled={isPublishing}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-indigo-600/30 disabled:opacity-75 flex items-center gap-2"
+                                    className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-amber-600/30 disabled:opacity-75 flex items-center gap-2"
                                 >
                                     {isPublishing ? 'Updating...' : 'Update Product'}
                                 </button>
@@ -859,11 +909,15 @@ const AdminInventory = () => {
                                                 onChange={handleInputChange}
                                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all appearance-none"
                                             >
-                                                <option value="Vegetables">Vegetables</option>
-                                                <option value="Fruits">Fruits</option>
-                                                <option value="Dairy & Bakery">Dairy & Bakery</option>
-                                                <option value="Food & Snacks">Food & Snacks</option>
-                                                <option value="Beverages">Beverages</option>
+                                                {allCategoryOptions.length > 0 ? (
+                                                    allCategoryOptions.map((catName) => (
+                                                        <option key={catName} value={catName}>
+                                                            {catName}
+                                                        </option>
+                                                    ))
+                                                ) : (
+                                                    <option value="">No Categories Available</option>
+                                                )}
                                             </select>
                                         </div>
                                         <div>
@@ -875,7 +929,7 @@ const AdminInventory = () => {
                                                 onChange={handleInputChange}
                                                 min="0"
                                                 placeholder="e.g. 100"
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all placeholder:font-medium"
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600 transition-all placeholder:font-medium"
                                                 required
                                             />
                                         </div>
@@ -893,7 +947,7 @@ const AdminInventory = () => {
                                                 min="0"
                                                 step="0.01"
                                                 placeholder="0.00"
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all placeholder:font-medium"
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-600 transition-all placeholder:font-medium"
                                                 required
                                             />
                                         </div>

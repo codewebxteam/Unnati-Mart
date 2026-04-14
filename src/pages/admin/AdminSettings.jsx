@@ -117,7 +117,7 @@ const AdminSettings = () => {
                 <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="px-6 py-2.5 bg-amber-600 text-white rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-amber-700 transition-colors flex items-center gap-2 shadow-lg shadow-amber-200 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {isSaving ? (
                         <>
@@ -140,9 +140,9 @@ const AdminSettings = () => {
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="mb-8 p-4 bg-blue-50 border border-blue-200 text-blue-700 rounded-xl flex items-center gap-3 shadow-sm"
+                        className="mb-8 p-4 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl flex items-center gap-3 shadow-sm"
                     >
-                        <CheckCircle2 size={20} className="text-blue-500" />
+                        <CheckCircle2 size={20} className="text-amber-500" />
                         <span className="font-semibold text-sm">Settings saved successfully!</span>
                     </motion.div>
                 )}
@@ -157,11 +157,11 @@ const AdminSettings = () => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-3 px-5 py-3.5 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
-                                    ? 'bg-blue-50 text-blue-700 shadow-sm'
+                                    ? 'bg-amber-50 text-amber-700 shadow-sm'
                                     : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                                     }`}
                             >
-                                <span className={activeTab === tab.id ? 'text-blue-600' : 'text-slate-400'}>
+                                <span className={activeTab === tab.id ? 'text-amber-600' : 'text-slate-400'}>
                                     {tab.icon}
                                 </span>
                                 {tab.label}
@@ -175,7 +175,7 @@ const AdminSettings = () => {
                     <div className="bg-white rounded-[2rem] p-8 lg:p-10 shadow-sm border border-slate-100 min-h-[500px] flex flex-col">
                         {isLoading ? (
                             <div className="flex-1 flex flex-col items-center justify-center space-y-4">
-                                <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" />
+                                <div className="w-10 h-10 border-4 border-amber-100 border-t-amber-600 rounded-full animate-spin" />
                                 <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Syncing with Cloud...</p>
                             </div>
                         ) : (
@@ -185,7 +185,7 @@ const AdminSettings = () => {
                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
                                         <div>
                                             <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                                <Store className="text-blue-500" size={24} /> General Information
+                                                <Store className="text-amber-500" size={24} /> General Information
                                             </h3>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -193,28 +193,28 @@ const AdminSettings = () => {
                                                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Store Name</label>
                                                     <input
                                                         type="text" name="storeName" value={formData.storeName} onChange={handleChange}
-                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all"
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Support Email</label>
                                                     <input
                                                         type="email" name="supportEmail" value={formData.supportEmail} onChange={handleChange}
-                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all"
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Support Phone</label>
                                                     <input
                                                         type="text" name="supportPhone" value={formData.supportPhone} onChange={handleChange}
-                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all"
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Default GST (%)</label>
                                                     <input
                                                         type="number" name="gstPercentage" value={formData.gstPercentage} onChange={handleChange}
-                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all"
                                                     />
                                                 </div>
                                             </div>
@@ -244,7 +244,7 @@ const AdminSettings = () => {
                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
                                         <div>
                                             <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                                <MapPin className="text-blue-500" size={24} /> Delivery Rules
+                                                <MapPin className="text-amber-500" size={24} /> Delivery Rules
                                             </h3>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -252,7 +252,7 @@ const AdminSettings = () => {
                                                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Free Delivery Threshold (₹)</label>
                                                     <input
                                                         type="number" name="freeDeliveryThreshold" value={formData.freeDeliveryThreshold} onChange={handleChange}
-                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all"
                                                     />
                                                     <p className="text-[10px] text-slate-400 font-semibold px-2">Set to 0 for global free shipping.</p>
                                                 </div>
@@ -260,7 +260,7 @@ const AdminSettings = () => {
                                                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Flat Delivery Fee (₹)</label>
                                                     <input
                                                         type="number" name="flatDeliveryFee" value={formData.flatDeliveryFee} onChange={handleChange}
-                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all"
                                                     />
                                                 </div>
 
@@ -274,7 +274,7 @@ const AdminSettings = () => {
                                                 </label>
                                                 <input
                                                     type="text" name="timeSlots" value={formData.timeSlots} onChange={handleChange}
-                                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all"
                                                     placeholder="e.g. 6 AM - 9 AM, 4 PM - 7 PM"
                                                 />
                                                 <p className="text-[10px] text-slate-400 font-semibold px-2">Comma separated list of slots.</p>
@@ -284,7 +284,7 @@ const AdminSettings = () => {
                                                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Serviceable Pincodes</label>
                                                 <textarea
                                                     name="serviceablePincodes" value={formData.serviceablePincodes} onChange={handleChange} rows="3"
-                                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+                                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all resize-none"
                                                     placeholder="e.g. 272175, 272002"
                                                 />
                                                 <p className="text-[10px] text-slate-400 font-semibold px-2">Only users with these pincodes can checkout. Leave empty to serve all.</p>
@@ -298,7 +298,7 @@ const AdminSettings = () => {
                                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
                                         <div>
                                             <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                                <CreditCard className="text-blue-500" size={24} /> Payment Gateways
+                                                <CreditCard className="text-amber-500" size={24} /> Payment Gateways
                                             </h3>
                                             <p className="text-sm text-slate-500 mb-8">Toggle the payment methods you want to show on the checkout screen.</p>
 
@@ -315,7 +315,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" name="enableCOD" checked={formData.enableCOD} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
 
@@ -331,7 +331,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" name="enableUPI" checked={formData.enableUPI} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
 
@@ -347,7 +347,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" name="enableCards" checked={formData.enableCards} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
 
@@ -363,7 +363,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" name="enableBank" checked={formData.enableBank} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
 
@@ -379,7 +379,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" name="enableWallet" checked={formData.enableWallet} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
                                             </div>
@@ -414,7 +414,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer mt-1">
                                                         <input type="checkbox" name="promotionalEmails" checked={formData.promotionalEmails} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
                                             </div>
@@ -429,7 +429,7 @@ const AdminSettings = () => {
                                                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Receive Alerts At</label>
                                                 <input
                                                     type="email" name="adminAlertsEmail" value={formData.adminAlertsEmail} onChange={handleChange}
-                                                    className="w-full md:w-1/2 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                    className="w-full md:w-1/2 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all"
                                                 />
                                                 <p className="text-[10px] text-slate-400 font-semibold px-2">New farm orders and customer inquiries will be sent to this email.</p>
                                             </div>
