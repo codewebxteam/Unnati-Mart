@@ -47,20 +47,20 @@ const OrderDetailModal = ({ order, onClose }) => {
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
-                    <div className="flex items-center gap-4">
+                <div className="p-5 md:p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10 w-full overflow-hidden">
+                    <div className="flex items-center gap-2 md:gap-4 min-w-0">
                         <button
                             onClick={onClose}
-                            className="p-2 hover:bg-slate-100 rounded-full text-slate-700 transition-colors"
+                            className="p-1.5 md:p-2 hover:bg-slate-100 rounded-full text-slate-700 transition-colors shrink-0"
                         >
-                            <ArrowLeft size={22} strokeWidth={2} />
+                            <ArrowLeft size={20} md:size={22} strokeWidth={2} />
                         </button>
-                        <div>
-                            <h2 className="text-xl font-black text-slate-900 leading-none">Order Details</h2>
-                            <p className="text-xs font-bold text-indigo-600 mt-1 uppercase tracking-widest">ID: {order.orderId}</p>
+                        <div className="min-w-0">
+                            <h2 className="text-lg md:text-xl font-black text-slate-900 leading-none truncate overflow-hidden">Order Details</h2>
+                            <p className="text-[9px] md:text-xs font-bold text-indigo-600 mt-1 uppercase tracking-widest truncate overflow-hidden">ID: {order.orderId}</p>
                         </div>
                     </div>
-                    <div className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border ${
+                    <div className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[8px] md:text-xs font-black uppercase tracking-widest border shrink-0 ${
                         order.status === 'Delivered' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                         order.status === 'Cancelled' ? 'bg-red-50 text-red-700 border-red-200' :
                         'bg-indigo-50 text-indigo-700 border-indigo-200'
@@ -70,17 +70,17 @@ const OrderDetailModal = ({ order, onClose }) => {
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-[#fdfdfd]">
+                <div className="flex-1 overflow-y-auto p-5 md:p-10 bg-[#fdfdfd]">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         
                         {/* Left Column: Customer & Address */}
                         <div className="lg:col-span-1 space-y-8">
                             {/* Customer Info */}
                             <section>
-                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                                    <User size={14} className="text-indigo-500" /> Customer Information
+                                <h3 className="text-[10px] md:text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                                    <User size={14} className="text-indigo-500" /> Customer
                                 </h3>
-                                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                                <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm">
                                     <p className="text-lg font-bold text-slate-900 mb-1">{displayFullName}</p>
                                     <div className="space-y-3 mt-4">
                                         <div className="flex items-center gap-3 text-sm text-slate-600 font-medium">
@@ -99,10 +99,10 @@ const OrderDetailModal = ({ order, onClose }) => {
 
                             {/* Delivery Address */}
                             <section>
-                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                                    <MapPin size={14} className="text-rose-500" /> Delivery Address
+                                <h3 className="text-[10px] md:text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                                    <MapPin size={14} className="text-rose-500" /> Delivery
                                 </h3>
-                                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                                <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm">
                                     <div className="space-y-4">
                                         <div>
                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Street / Locality</p>
@@ -136,10 +136,10 @@ const OrderDetailModal = ({ order, onClose }) => {
 
                             {/* Order Timeline Mini */}
                             <section>
-                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                                    <Clock size={14} className="text-amber-500" /> Order Info
+                                <h3 className="text-[10px] md:text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                                    <Clock size={14} className="text-amber-500" /> Info
                                 </h3>
-                                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                                <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
                                     <div className="flex justify-between items-center">
                                         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Placed On</span>
                                         <span className="text-xs font-black text-slate-900">{formatDate(order.date, true)}</span>
@@ -156,11 +156,35 @@ const OrderDetailModal = ({ order, onClose }) => {
                         <div className="lg:col-span-2 space-y-8">
                             {/* Items List */}
                             <section>
-                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                                    <Package size={14} className="text-amber-500" /> Order Items
+                                <h3 className="text-[10px] md:text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 text-wrap break-words">
+                                    <Package size={14} className="text-amber-500" /> Items
                                 </h3>
-                                <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-                                    <div className="overflow-x-auto">
+                                <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
+                                    {/* Mobile items view */}
+                                    <div className="md:hidden divide-y divide-slate-50">
+                                        {order.items?.map((item, idx) => (
+                                            <div key={idx} className="p-4 flex flex-col gap-3">
+                                                <div className="flex gap-3">
+                                                    {item.img && (
+                                                        <div className="w-12 h-12 bg-slate-50 rounded-xl overflow-hidden shrink-0 border border-slate-100 p-1">
+                                                            <img src={item.img} alt={item.name} className="w-full h-full object-contain" />
+                                                        </div>
+                                                    )}
+                                                    <div className="min-w-0">
+                                                        <p className="text-xs font-bold text-slate-800 leading-tight truncate">{item.name}</p>
+                                                        <p className="text-[9px] font-bold text-slate-400 mt-0.5">{item.category}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-600">
+                                                    <span>Qty: {item.quantity}</span>
+                                                    <span>₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Desktop items view */}
+                                    <div className="overflow-x-auto hidden md:block">
                                         <table className="w-full text-left">
                                             <thead>
                                                 <tr className="bg-slate-50/50">
@@ -202,24 +226,24 @@ const OrderDetailModal = ({ order, onClose }) => {
                                     </div>
 
                                     {/* Order Totals */}
-                                    <div className="bg-slate-50/50 p-8 border-t border-slate-100">
-                                        <div className="max-w-xs ml-auto space-y-3">
-                                            <div className="flex justify-between items-center text-sm font-bold text-slate-500">
+                                    <div className="bg-slate-50/50 p-6 md:p-8 border-t border-slate-100">
+                                        <div className="max-w-xs md:ml-auto space-y-3">
+                                            <div className="flex justify-between items-center text-[10px] md:text-sm font-bold text-slate-500 uppercase tracking-widest">
                                                 <span>Subtotal</span>
                                                 <span className="text-slate-900">₹{order.subtotal?.toLocaleString('en-IN') || (order.grandTotal - order.tax - (order.shipping || 0)).toLocaleString('en-IN')}</span>
                                             </div>
-                                            <div className="flex justify-between items-center text-sm font-bold text-slate-500">
+                                            <div className="flex justify-between items-center text-[10px] md:text-sm font-bold text-slate-500 uppercase tracking-widest">
                                                 <span>Tax</span>
                                                 <span className="text-slate-900">₹{order.tax?.toLocaleString('en-IN') || 0}</span>
                                             </div>
-                                            <div className="flex justify-between items-center text-sm font-bold text-slate-500">
+                                            <div className="flex justify-between items-center text-[10px] md:text-sm font-bold text-slate-500 uppercase tracking-widest">
                                                 <span>Shipping</span>
-                                                <span className="text-amber-600 italic uppercase tracking-widest text-[10px]">Free</span>
+                                                <span className="text-amber-600 italic uppercase">Free</span>
                                             </div>
                                             <div className="h-px bg-slate-200 my-4" />
                                             <div className="flex justify-between items-center">
-                                                <span className="text-base font-black text-slate-900 uppercase tracking-tighter">Grand Total</span>
-                                                <span className="text-2xl font-black text-indigo-600 tracking-tighter">₹{(order.grandTotal || order.amount || 0).toLocaleString('en-IN')}</span>
+                                                <span className="text-xs md:text-base font-black text-slate-900 uppercase tracking-tighter">Total</span>
+                                                <span className="text-xl md:text-2xl font-black text-indigo-600 tracking-tighter">₹{(order.grandTotal || order.amount || 0).toLocaleString('en-IN')}</span>
                                             </div>
                                         </div>
                                     </div>

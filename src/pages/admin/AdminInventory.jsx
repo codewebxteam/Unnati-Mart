@@ -97,8 +97,8 @@ const AdminInventory = () => {
 
         // Combined and Deduplicated List
         const combined = Array.from(new Set([
-            ...baseDefaults, 
-            ...dynamicNames, 
+            ...baseDefaults,
+            ...dynamicNames,
             ...productCategories
         ]));
 
@@ -383,21 +383,21 @@ const AdminInventory = () => {
     }, [products]);
 
     return (
-        <div className="max-w-7xl mx-auto w-full animate-fade-in pb-12">
+        <div className="max-w-7xl mx-auto w-full animate-fade-in pb-12 px-2 sm:px-4">
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 px-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10 px-0">
                 {[
                     { label: 'TOTAL ITEMS', value: stats.totalProducts, icon: <PackageCheck size={20} />, color: 'emerald' },
                     { label: 'LOW STOCK', value: stats.lowStock.length, icon: <TrendingDown size={20} />, color: 'amber' },
                     { label: 'OUT OF STOCK', value: stats.outOfStock.length, icon: <AlertTriangle size={20} />, color: 'rose' },
                     { label: 'INVENTORY VALUE', value: `₹${(stats.inventoryValue / 1000).toFixed(1)}k`, icon: <BoxSelect size={20} />, color: 'indigo' }
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white rounded-[2rem] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between group hover:border-amber-500/20 transition-all">
+                    <div key={i} className="bg-white rounded-3xl p-5 md:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between group hover:border-amber-500/20 transition-all">
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{stat.label}</p>
-                            <h3 className="text-2xl font-black text-[#111827]">{stat.value}</h3>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">{stat.label}</p>
+                            <h3 className="text-xl md:text-2xl font-black text-[#111827]">{stat.value}</h3>
                         </div>
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-50 text-amber-600 group-hover:scale-110 transition-transform`}>
+                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center bg-amber-50 text-amber-600 group-hover:scale-110 transition-transform`}>
                             {stat.icon}
                         </div>
                     </div>
@@ -405,39 +405,37 @@ const AdminInventory = () => {
             </div>
 
             {/* Main Inventory Card */}
-            <div className="bg-white rounded-[2.5rem] shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden mx-2">
-                <div className="p-8 border-b border-slate-50">
+            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+                <div className="p-5 md:p-8 border-b border-slate-50">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
-                                <Warehouse size={24} strokeWidth={2.5} />
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner shrink-0">
+                                <Warehouse size={20} className="md:size-[24px]" strokeWidth={2.5} />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-[#111827]">Inventory Control</h2>
+                                <h2 className="text-xl md:text-2xl font-black text-[#111827]">Inventory</h2>
                             </div>
                         </div>
 
-                        <div className="flex flex-col md:flex-row items-center gap-4 flex-1 justify-end">
-                            <div className="relative w-full md:max-w-xs">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4 flex-1 justify-end">
+                            <div className="relative w-full sm:max-w-xs">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                                 <input
                                     type="text"
                                     placeholder="Search SKU or Name..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-slate-50/80 border-none rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-amber-500/10 placeholder:text-slate-400 transition-all"
+                                    className="w-full bg-slate-50/80 border-none rounded-2xl py-3 pl-11 pr-4 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-amber-500/10 placeholder:text-slate-400 transition-all"
                                 />
                             </div>
 
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => setIsAddModalOpen(true)}
-                                    className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-600/20 transition-all flex items-center gap-2 active:scale-95"
-                                >
-                                    <Plus size={16} strokeWidth={3} />
-                                    New Item
-                                </button>
-                            </div>
+                            <button
+                                onClick={() => setIsAddModalOpen(true)}
+                                className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 md:py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-600/20 transition-all flex items-center justify-center gap-2 active:scale-95"
+                            >
+                                <Plus size={16} strokeWidth={3} />
+                                New Item
+                            </button>
                         </div>
                     </div>
 
@@ -471,7 +469,67 @@ const AdminInventory = () => {
                     </div>
                 </div>
 
-                <div className="w-full overflow-x-auto">
+                {/* Mobile View: Cards */}
+                <div className="md:hidden divide-y divide-slate-50 px-5">
+                    {isLoading ? (
+                        <div className="py-20 text-center flex flex-col items-center gap-4">
+                            <div className="animate-spin rounded-full h-10 w-10 border-4 border-amber-600 border-t-transparent shadow-lg"></div>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Syncing...</span>
+                        </div>
+                    ) : filteredProducts.length === 0 ? (
+                        <div className="py-20 text-center text-slate-300 font-black uppercase tracking-widest text-[10px]">No entries match your search</div>
+                    ) : (
+                        <div className="space-y-4 py-6">
+                            {filteredProducts.map((item) => {
+                                const committed = getCommittedStock(item.firebaseId);
+                                const available = Math.max(0, (item.stock || 0) - committed);
+                                return (
+                                    <div key={item.firebaseId} className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 flex flex-col gap-4">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-2xl shadow-sm border border-slate-100 shrink-0">
+                                                    {item.img ? (
+                                                        <img src={item.img} alt={item.name} className="w-9 h-9 object-contain rounded-lg" />
+                                                    ) : (
+                                                        item.category === 'Vegetables' ? '🥦' : item.category === 'Fruits' ? '🍎' : '📦'
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <span className="font-bold text-slate-900 block text-xs truncate">{item.name}</span>
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5 block">{item.category}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                <button onClick={() => handleUpdateClick(item)} className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100"><PackageSearch size={14} /></button>
+                                                <button onClick={() => handleDeleteClick(item)} className="p-2 bg-rose-50 text-rose-500 rounded-lg border border-rose-100"><Trash2 size={14} /></button>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-white">
+                                            <div className="flex flex-col gap-1.5">
+                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.1em]">On Hand</span>
+                                                <div className="flex items-center gap-2">
+                                                    <button onClick={() => handleQuickStockUpdate(item, -1)} className="w-6 h-6 flex items-center justify-center bg-white border border-slate-100 rounded text-xs"> - </button>
+                                                    <span className="text-xs font-black">{item.stock}</span>
+                                                    <button onClick={() => handleQuickStockUpdate(item, 1)} className="w-6 h-6 flex items-center justify-center bg-white border border-slate-100 rounded text-xs"> + </button>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-1.5">
+                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.1em]">Status</span>
+                                                <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full ${available === 0 ? 'bg-rose-50 text-rose-500' : available < 10 ? 'bg-amber-50 text-amber-500' : 'bg-amber-50 text-amber-600'}`}>
+                                                    {available === 0 ? 'Out' : available < 10 ? 'Low' : 'In Stock'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {/* Desktop View: Table */}
+                <div className="w-full overflow-x-auto hidden md:block">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
@@ -579,10 +637,10 @@ const AdminInventory = () => {
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsUpdateModalOpen(false)}></div>
 
                     <div className="bg-white rounded-3xl w-full max-w-5xl max-h-[90vh] overflow-y-auto relative z-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] animate-fade-in custom-scrollbar">
-                        <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 p-6 flex items-center justify-between z-20">
+                        <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 p-5 md:p-6 flex items-center justify-between z-20">
                             <div>
-                                <h2 className="text-2xl font-black text-slate-800">Update Product</h2>
-                                <p className="text-sm font-medium text-slate-500 mt-1">Modify the details of the selected item.</p>
+                                <h2 className="text-xl md:text-2xl font-black text-slate-800">Update Product</h2>
+                                <p className="text-[10px] md:text-sm font-medium text-slate-500 mt-1">Modify the details of the selected item.</p>
                             </div>
                             <button
                                 onClick={() => setIsUpdateModalOpen(false)}
@@ -592,7 +650,7 @@ const AdminInventory = () => {
                             </button>
                         </div>
 
-                        <form onSubmit={handleProductUpdate} className="p-8">
+                        <form onSubmit={handleProductUpdate} className="p-5 md:p-8">
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                                 {/* Left Column: Image Upload */}
                                 <div className="lg:col-span-1 space-y-6">
@@ -1062,44 +1120,44 @@ const AdminInventory = () => {
 
             {/* ERROR DIAGNOSTICS MODAL */}
             {syncError && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-md animate-fade-in" onClick={() => setSyncError(null)}></div>
-                    <div className="bg-white rounded-3xl w-full max-w-lg relative z-10 shadow-2xl p-6 border-2 border-rose-200 animate-fade-in">
+                <div className="fixed inset-0 z-[500] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-md" onClick={() => setSyncError(null)}></div>
+                    <div className="bg-white rounded-3xl w-full max-w-lg relative z-[501] shadow-2xl p-6 border-2 border-rose-200 animate-in fade-in duration-300">
                         <div className="flex items-center gap-4 mb-4 text-red-600">
                             <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600">
                                 <AlertTriangle size={24} strokeWidth={2.5} />
                             </div>
                             <div>
-                                <h2 className="text-xl font-black text-slate-900 leading-tight">Database Access Blocked</h2>
-                                <p className="text-xs font-bold text-slate-500">{syncError.message}</p>
+                                <h2 className="text-xl font-black text-slate-900 leading-tight">Inventory Sync Error</h2>
+                                <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest">{syncError.code === 'PERMISSION_DENIED' ? 'Access Denied' : 'Sync Failed'}</p>
                             </div>
                         </div>
-                        <p className="text-sm text-slate-600 font-medium mb-6">
-                            Your Firebase Realtime Database is rejecting reads. This is caused by locking Rules in your online Firebase Console account.
-                        </p>
 
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-6">
-                            <p className="text-xs font-black text-slate-700 mb-2">Step-by-Step Fix Instructions:</p>
-                            <ol className="text-xs font-bold text-slate-600 list-decimal pl-4 space-y-3">
-                                <li>Open your <a href="https://console.firebase.google.com/" target="_blank" rel="noreferrer" className="text-indigo-600 underline font-black">Firebase Console</a> website</li>
-                                <li>Click <span className="text-slate-900 font-extrabold">Realtime Database</span> on top of left sidebar</li>
-                                <li>Go to the <span className="text-slate-900 font-extrabold">Rules</span> tab at the top-center</li>
-                                <li>Replace everything with this code accurately:
-                                    <pre className="bg-slate-900 text-amber-400 p-3 rounded-lg mt-1 font-mono text-[10px] select-all shadow-inner">
-                                        {`{
-  "rules": {
-    ".read": true,
-    ".write": true
-  }
-}`}
-                                    </pre>
-                                </li>
-                                <li>Click the blue <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] font-black">Publish</span> button at top right!</li>
-                            </ol>
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-6 font-mono text-[10px] text-slate-500 break-all">
+                            {syncError.message}
                         </div>
 
-                        <button onClick={() => setSyncError(null)} className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-98">
-                            Close and Retry Connection
+                        {syncError.message?.toLowerCase().includes('permission') && (
+                            <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100 mb-6">
+                                <p className="text-xs font-black text-amber-700 mb-2 uppercase tracking-wide">Action Required: Fix Firebase Rules</p>
+                                <ol className="text-xs font-bold text-slate-600 list-decimal pl-4 space-y-2">
+                                    <li>Open your <a href="https://console.firebase.google.com/" target="_blank" rel="noreferrer" className="text-indigo-600 underline">Firebase Console</a></li>
+                                    <li>Go to <span className="font-black">Realtime Database Rules</span></li>
+                                    <li>Ensure rules allow public read/write if you don't have auth configured yet:
+                                        <pre className="bg-slate-900 text-amber-400 p-2 rounded mt-1 overflow-x-auto">
+                                            {`{ ".read": true, ".write": true }`}
+                                        </pre>
+                                    </li>
+                                    <li>Click <span className="font-black text-indigo-600">Publish</span></li>
+                                </ol>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95"
+                        >
+                            Retry Connection
                         </button>
                     </div>
                 </div>

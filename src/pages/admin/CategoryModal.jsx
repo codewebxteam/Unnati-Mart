@@ -81,16 +81,16 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null }) => {
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white">
+                <div className="p-5 md:p-6 border-b border-slate-100 flex items-center justify-between bg-white">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-200">
                             <Tags size={20} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black text-slate-800 tracking-tight">
+                            <h2 className="text-lg md:text-xl font-black text-slate-800 tracking-tight">
                                 {category ? 'Edit Category' : 'New Category'}
                             </h2>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                            <p className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
                                 Category Details
                             </p>
                         </div>
@@ -104,8 +104,8 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null }) => {
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="p-8 overflow-y-auto max-h-[80vh] custom-scrollbar">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <form onSubmit={handleSubmit} className="p-5 md:p-8 overflow-y-auto max-h-[80vh] custom-scrollbar">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                         {/* Left Column: Image and Status */}
                         <div className="space-y-6">
                             <div className="space-y-3">

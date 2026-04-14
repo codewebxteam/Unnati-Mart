@@ -3,7 +3,7 @@ import {
     TrendingUp, TrendingDown, Users, ShoppingBag,
     DollarSign, Package, Clock, CheckCircle,
     ArrowRight, Filter, Download as DownloadIcon, RefreshCcw,
-    ChevronRight, CreditCard, ShoppingCart, X, Database, AlertCircle
+    ChevronRight, CreditCard, ShoppingCart, X, Database, AlertCircle, AlertTriangle
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { realtimeDb as db } from '../../firebase';
@@ -35,6 +35,7 @@ const AdminDashboard = () => {
     const [messages, setMessages] = useState([]);
     const [isBulkListOpen, setIsBulkListOpen] = useState(false);
     const [viewAllBulk, setViewAllBulk] = useState(false);
+    const [syncError, setSyncError] = useState(null);
 
     // Excel Export State
     const [exportSource, setExportSource] = useState('AdminOrder');
@@ -157,11 +158,13 @@ const AdminDashboard = () => {
         }, (err) => {
             clearTimeout(safetyTimeout);
             console.error("Orders sync error:", err);
+            setSyncError(err);
             setIsLoading(false);
         });
-        const unsubProducts = onValue(productsRef, (snap) => setProducts(Object.values(snap.val() || {})));
-        const unsubUsers = onValue(usersRef, (snap) => setUsers(Object.values(snap.val() || {})));
-        const unsubCategories = onValue(categoriesRef, (snap) => setCategories(Object.values(snap.val() || {})));
+
+        const unsubProducts = onValue(productsRef, (snap) => setProducts(Object.values(snap.val() || {})), (err) => setSyncError(err));
+        const unsubUsers = onValue(usersRef, (snap) => setUsers(Object.values(snap.val() || {})), (err) => setSyncError(err));
+        const unsubCategories = onValue(categoriesRef, (snap) => setCategories(Object.values(snap.val() || {})), (err) => setSyncError(err));
 
         const unsubMessages = onValue(messagesRef, (snap) => {
             const data = snap.val();
@@ -170,7 +173,7 @@ const AdminDashboard = () => {
             } else {
                 setMessages([]);
             }
-        });
+        }, (err) => setSyncError(err));
 
         return () => {
             unsubOrders();
@@ -420,15 +423,15 @@ const AdminDashboard = () => {
         '#64748b'  // Slate
     ];
     return (
-        <div className="w-full animate-fade-in pb-12">
+        <div className="w-full animate-fade-in pb-12 px-2 sm:px-4">
             {/* Header Area */}
             <div className="mb-8">
-                <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Dashboard Overview</h1>
+                <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight mb-2">Dashboard</h1>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
+                    <div className="flex items-center gap-2 text-[10px] md:text-sm font-medium text-slate-500">
                         <span className="hover:text-amber-600 cursor-pointer transition-colors">Home</span>
                         <span>/</span>
-                        <span className="text-amber-600">Dashboard</span>
+                        <span className="text-amber-600">Overview</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <button onClick={handleClearData} className="px-5 py-2.5 bg-rose-50 text-rose-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-colors shadow-sm active:scale-95 flex items-center gap-2">
@@ -442,21 +445,21 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            {/* Excel Export Toolbar */}
-            <div className="bg-white p-6 rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-slate-100 mb-10 flex flex-wrap items-center justify-between gap-6 animate-fade-in mx-2">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
-                        <DownloadIcon size={24} strokeWidth={2.5} />
+            {/* Analytics Export Toolbar */}
+            <div className="bg-white p-5 md:p-6 rounded-3xl md:rounded-[2rem] shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-slate-100 mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-6 animate-fade-in">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner shrink-0">
+                        <DownloadIcon size={20} className="md:size-[24px]" strokeWidth={2.5} />
                     </div>
                     <div>
-                        <h2 className="text-lg font-black text-[#111827]">Analytics Export</h2>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Generate CSV/Excel Reports</p>
+                        <h2 className="text-base md:text-lg font-black text-[#111827]">Analytics</h2>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Reports</p>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4 flex-1 justify-end">
-                    <div className="flex flex-col gap-1 min-w-[140px]">
-                        <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Source</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-end gap-3 md:gap-4 flex-1 justify-end w-full">
+                    <div className="flex flex-col gap-1 w-full lg:min-w-[140px]">
+                        <label className="text-[8px] font-black uppercase text-slate-400 tracking-widest ml-1">Source</label>
                         <select
                             value={exportSource}
                             onChange={(e) => setExportSource(e.target.value)}
@@ -504,7 +507,7 @@ const AdminDashboard = () => {
 
                     <button
                         onClick={handleExportExcel}
-                        className="bg-[#111827] hover:bg-[#1e293b] text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-900/10 active:scale-95 flex items-center gap-2"
+                        className="w-full sm:w-auto bg-[#111827] hover:bg-[#1e293b] text-white px-6 py-3 rounded-xl md:rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-slate-900/10 active:scale-95 flex items-center justify-center gap-2"
                     >
                         Download Report
                     </button>
@@ -512,29 +515,29 @@ const AdminDashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 mx-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10 px-0">
                 {[
-                    { label: 'TOTAL SALES', value: `₹${stats.totalSales.toLocaleString()}`, icon: <DollarSign size={24} />, change: stats.changes.sales, color: 'amber' },
-                    { label: 'TOTAL ORDERS', value: stats.totalOrders, icon: <ShoppingBag size={24} />, change: stats.changes.orders, color: 'amber' },
-                    { label: 'CUSTOMERS', value: stats.totalCustomers, icon: <Users size={24} />, change: stats.changes.customers, color: 'amber' },
-                    { label: 'PENDING', value: stats.pendingOrders, icon: <Clock size={24} />, change: 'Active', color: 'rose' }
+                    { label: 'TOTAL SALES', value: `₹${stats.totalSales.toLocaleString()}`, icon: <DollarSign size={20} />, change: stats.changes.sales, color: 'amber' },
+                    { label: 'ORDERS', value: stats.totalOrders, icon: <ShoppingBag size={20} />, change: stats.changes.orders, color: 'amber' },
+                    { label: 'CUSTOMERS', value: stats.totalCustomers, icon: <Users size={20} />, change: stats.changes.customers, color: 'amber' },
+                    { label: 'PENDING', value: stats.pendingOrders, icon: <Clock size={20} />, change: 'Active', color: 'rose' }
                 ].map((stat, i) => {
                     const isNegative = stat.change.startsWith('-');
                     const isNeutral = stat.change === '0%' || stat.change === 'Active';
 
                     return (
-                        <div key={i} className="bg-white rounded-[2rem] p-6 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col justify-between group hover:shadow-xl transition-all">
+                        <div key={i} className="bg-white rounded-3xl p-5 md:p-6 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col justify-between group hover:shadow-xl transition-all">
                             <div className="flex items-center justify-between mb-2">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                                <div className={`w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-inner`}>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                                <div className={`w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-inner`}>
                                     <div className="transform group-hover:scale-110 transition-transform duration-500">
                                         {stat.icon}
                                     </div>
                                 </div>
                             </div>
                             <div>
-                                <h3 className="text-3xl font-black text-[#111827]">{stat.value}</h3>
-                                <div className={`flex items-center gap-1.5 text-[10px] font-black mt-2 ${isNegative ? 'text-rose-500' :
+                                <h3 className="text-xl md:text-3xl font-black text-[#111827]">{stat.value}</h3>
+                                <div className={`flex items-center gap-1.5 text-[9px] font-black mt-2 ${isNegative ? 'text-rose-500' :
                                     isNeutral ? 'text-slate-400' :
                                         'text-emerald-500'
                                     }`}>
@@ -553,7 +556,7 @@ const AdminDashboard = () => {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Sales Overview Chart */}
-                <div className="bg-white rounded-[1.5rem] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100">
+                <div className="bg-white rounded-[1.5rem] p-5 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-bold text-slate-800">Sales Overview</h2>
                         <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-3 py-1 rounded-full uppercase tracking-widest">Real-time</span>
@@ -759,9 +762,53 @@ const AdminDashboard = () => {
                     animation: fadeIn 0.4s ease-out forwards;
                 }
             ` }} />
-        </div >
+
+            {/* ERROR DIAGNOSTICS MODAL */}
+            {syncError && (
+                <div className="fixed inset-0 z-[500] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-md" onClick={() => setSyncError(null)}></div>
+                    <div className="bg-white rounded-3xl w-full max-w-lg relative z-[501] shadow-2xl p-6 border-2 border-rose-200 animate-in fade-in duration-300">
+                        <div className="flex items-center gap-4 mb-4 text-red-600">
+                            <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600">
+                                <AlertTriangle size={24} strokeWidth={2.5} />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black text-slate-900 leading-tight">Database Connectivity Error</h2>
+                                <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest">{syncError.code === 'PERMISSION_DENIED' ? 'Access Denied' : 'Sync Failed'}</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-6 font-mono text-[10px] text-slate-500 break-all">
+                            {syncError.message}
+                        </div>
+
+                        {syncError.message?.toLowerCase().includes('permission') && (
+                            <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100 mb-6">
+                                <p className="text-xs font-black text-amber-700 mb-2 uppercase tracking-wide">Action Required: Fix Firebase Rules</p>
+                                <ol className="text-xs font-bold text-slate-600 list-decimal pl-4 space-y-2">
+                                    <li>Open your <a href="https://console.firebase.google.com/" target="_blank" rel="noreferrer" className="text-indigo-600 underline">Firebase Console</a></li>
+                                    <li>Go to <span className="font-black">Realtime Database Rules</span></li>
+                                    <li>Ensure rules allow public read/write if you don't have auth configured yet:
+                                        <pre className="bg-slate-900 text-amber-400 p-2 rounded mt-1 overflow-x-auto">
+                                            {`{ ".read": true, ".write": true }`}
+                                        </pre>
+                                    </li>
+                                    <li>Click <span className="font-black text-indigo-600">Publish</span></li>
+                                </ol>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95"
+                        >
+                            Retry Connection
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
 export default AdminDashboard;
-

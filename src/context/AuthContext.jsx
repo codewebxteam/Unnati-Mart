@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }) => {
                     lastLogin: new Date().toISOString()
                 };
                 setUser(userData);
+                console.log("Auth State Changed: User detected with role:", userData.role, "Email:", userData.email);
 
                 // Persist user to Realtime Database for Admin Dashboard visibility
                 const userRef = ref(realtimeDb, `users/${currentUser.uid}`);
