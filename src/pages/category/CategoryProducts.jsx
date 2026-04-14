@@ -1,34 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Sparkles, SlidersHorizontal, Package } from 'lucide-react';
-import { dummyProducts } from '../../data/dummyProducts';
+import { realtimeDb as db } from '../../firebase';
+import { ref, onValue } from 'firebase/database';
 import ProductCard from '../../components/product/ProductCard';
 
 const CategoryProducts = () => {
     const { categoryPath } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [products, setProducts] = useState([]);
     const [categoryName, setCategoryName] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const currentPath = categoryPath || window.location.pathname.split('/').pop();
+        // Resolve category from path or dynamic param
+        const currentPath = categoryPath || location.pathname.split('/').pop();
         
         if (!currentPath) return;
 
-        const categoryData = dummyProducts[currentPath];
-        if (categoryData && categoryData.length > 0) {
-            setProducts(categoryData);
-            setCategoryName(categoryData[0].category);
-        } else {
-            // Transform common paths to readable names if data missing
-            const name = (currentPath || '')
-                .split('-')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
-            setCategoryName(name);
-            setProducts([]);
-        }
+        const productsRef = ref(db, 'products');
+        
+        const unsubscribe = onValue(productsRef, (snap) => {
+            const data = snap.val() || {};
+            const allProducts = Object.keys(data).map(key => ({
+                ...data[key],
+                firebaseId: key,
+                id: key // Essential for components using .id
+            }));
+
+            // Filter products by category mapping
+            const filtered = allProducts.filter(p => {
+                const prodCat = (p.category || '').toLowerCase();
+                const prodSlug = prodCat.replace(/[^a-z0-9]+/g, '_');
+                const pathSlug = currentPath.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                
+                // Handle special legacy path mappings
+                const isVegMatch = (pathSlug === 'vegetables' && prodSlug === 'veg') || (pathSlug === 'veg' && prodSlug === 'vegetables');
+                const isPersonalCareMatch = (pathSlug === 'personal-care' || pathSlug === 'personal_care') && (prodSlug === 'personal_care' || prodSlug === 'personal-care');
+                const isDryFruitsMatch = (pathSlug === 'dry-fruits' || pathSlug === 'dry_fruits') && (prodSlug === 'dry_fruits' || prodSlug === 'dry-fruits');
+
+                return prodSlug === pathSlug || prodCat === currentPath.toLowerCase() || isVegMatch || isPersonalCareMatch || isDryFruitsMatch;
+            });
+
+            setProducts(filtered);
+
+            // Set the readable category name
+            if (filtered.length > 0) {
+                setCategoryName(filtered[0].category);
+            } else {
+                const name = currentPath
+                    .split(/[-_]/)
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+                setCategoryName(name);
+            }
+            setIsLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [categoryPath, location.pathname]);
+
+    useEffect(() => {
         window.scrollTo(0, 0);
     }, [categoryPath]);
 
@@ -75,7 +109,9 @@ const CategoryProducts = () => {
                         >
                             <div className="text-right hidden sm:block">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Showing</p>
-                                <p className="text-lg font-black text-slate-900 tracking-tight">{products.length} Products</p>
+                                <p className="text-lg font-black text-slate-900 tracking-tight">
+                                    {isLoading ? '...' : `${products.length} Products`}
+                                </p>
                             </div>
                             <button className="p-4 bg-slate-900 text-white rounded-2xl hover:bg-amber-600 transition-colors shadow-lg shadow-slate-900/10">
                                 <SlidersHorizontal size={20} />
@@ -85,11 +121,16 @@ const CategoryProducts = () => {
                 </header>
 
                 {/* Products Grid */}
-                {products.length > 0 ? (
+                {isLoading ? (
+                    <div className="flex flex-col items-center justify-center py-32">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-amber-600 border-t-transparent shadow-lg mb-4"></div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Loading Inventory...</span>
+                    </div>
+                ) : products.length > 0 ? (
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                         {products.map((product, idx) => (
                             <motion.div
-                                key={product.id}
+                                key={product.firebaseId || product.id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.1 + idx * 0.05 }}
@@ -125,3 +166,4 @@ const CategoryProducts = () => {
 };
 
 export default CategoryProducts;
+

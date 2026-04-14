@@ -17,30 +17,6 @@ export const OrderProvider = ({ children }) => {
     const [orders, setOrders ] = useState([]); 
     const { user } = useAuth();
 
-    // Hard Reset (Requested by user to clear all orders)
-    useEffect(() => {
-        const resetKey = 'orders_reset_final_v1';
-        const hasReset = localStorage.getItem(resetKey);
-        
-        if (!hasReset) {
-            // 1. Clear local cache
-            localStorage.removeItem('local_orders');
-            
-            // 2. Clear Firebase orders node (Requires Admin/Write permissions)
-            try {
-                const ordersRef = ref(realtimeDb, 'orders');
-                set(ordersRef, null);
-                console.log("Order history wiped from database.");
-            } catch (err) {
-                console.error("Firebase wipe failed:", err);
-            }
-
-            // 3. Mark as reset and update state
-            localStorage.setItem(resetKey, 'true');
-            setOrders([]);
-        }
-    }, []);
-
     // Persist to localStorage whenever orders change
     useEffect(() => {
         if (orders.length > 0) {
@@ -93,7 +69,7 @@ export const OrderProvider = ({ children }) => {
         const newOrder = {
             id: `ORD${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
             date: now.toISOString(),
-            status: 'Pending',
+            status: 'Placed',
             customer: user?.displayName || user?.name || orderData.fullName,
             email: user?.email || orderData.email,
             mobile: orderData.mobile,

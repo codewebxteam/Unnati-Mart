@@ -459,31 +459,28 @@ const AdminCustomers = () => {
                                         </span>
                                     </td>
                                     <td className="py-4 px-6">
-                                        <div className="flex items-center gap-2.5 opacity-0 group-hover:opacity-100 transition-all transform translate-x-1 group-hover:translate-x-0">
+                                        <div className="flex items-center gap-2">
                                             <button 
                                                 onClick={() => { setSelectedCustomer(item); setIsProfileModalOpen(true); }}
-                                                className="w-9 h-9 flex items-center justify-center bg-white text-amber-600 hover:bg-amber-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-95" 
+                                                className="w-8 h-8 flex items-center justify-center bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-lg border border-amber-100 transition-colors active:scale-95" 
                                                 title="View Profile"
                                             >
-                                                <Eye size={14} strokeWidth={2.5} />
+                                                <Eye size={14} strokeWidth={3} />
                                             </button>
                                             <button 
                                                 onClick={() => { setSelectedCustomer(item); setIsMsgModalOpen(true); }}
-                                                className="w-9 h-9 flex items-center justify-center bg-white text-amber-600 hover:bg-amber-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-95" 
+                                                className="w-8 h-8 flex items-center justify-center bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-lg border border-amber-100 transition-colors active:scale-95" 
                                                 title="Message"
                                             >
-                                                <Mail size={14} strokeWidth={2.5} />
+                                                <Mail size={14} strokeWidth={3} />
                                             </button>
                                             <button 
                                                 onClick={() => handleBlockToggle(item.id)}
-                                                className={`w-9 h-9 flex items-center justify-center bg-white ${usersData[item.id]?.blocked ? 'text-red-500' : 'text-slate-400 hover:text-red-500'} hover:bg-red-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-95`} 
+                                                className={`w-8 h-8 flex items-center justify-center ${usersData[item.id]?.blocked ? 'bg-red-600 text-white' : 'bg-rose-50 text-rose-500 hover:bg-red-600 hover:text-white'} rounded-lg border ${usersData[item.id]?.blocked ? 'border-red-700' : 'border-rose-100'} transition-colors active:scale-95`} 
                                                 title={usersData[item.id]?.blocked ? "Unblock" : "Block"}
                                             >
-                                                <Ban size={14} strokeWidth={2.5} />
+                                                <Ban size={14} strokeWidth={3} />
                                             </button>
-                                        </div>
-                                        <div className="group-hover:hidden text-slate-300 flex justify-end">
-                                            <MoreVertical size={18} />
                                         </div>
                                     </td>
                                 </tr>

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-    TrendingUp, TrendingDown, Users, ShoppingBag, 
-    DollarSign, Package, Clock, CheckCircle, 
+import {
+    TrendingUp, TrendingDown, Users, ShoppingBag,
+    DollarSign, Package, Clock, CheckCircle,
     ArrowRight, Filter, Download as DownloadIcon, RefreshCcw,
     ChevronRight, CreditCard, ShoppingCart, X, Database, AlertCircle
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { realtimeDb as db } from '../../firebase';
-import { ref, onValue, push, set } from 'firebase/database';
+import { ref, onValue, push, set, remove } from 'firebase/database';
 import {
     LineChart,
     Line,
@@ -30,6 +30,7 @@ const AdminDashboard = () => {
     const [orders, setOrders] = useState([]);
     const [products, setProducts] = useState([]);
     const [users, setUsers] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [messages, setMessages] = useState([]);
     const [isBulkListOpen, setIsBulkListOpen] = useState(false);
@@ -40,24 +41,22 @@ const AdminDashboard = () => {
     const [exportTime, setExportTime] = useState('All Time');
     const [customStartDate, setCustomStartDate] = useState('');
     const [customEndDate, setCustomEndDate] = useState('');
-    
+
     // Mock seeding logic
     const handleSeedData = async () => {
         if (!window.confirm('This will populate your database with mock data. Existing items might be duplicated. Proceed?')) return;
-        
+
         try {
-
-
             // Seed Categories
             const catRef = ref(db, 'categories');
-            const categories = [
+            const seedCategories = [
                 { name: 'Fruits & Vegetables', slug: 'fruits-veg', image: 'https://images.unsplash.com/photo-1518843875459-f738682238a6?w=400', status: 'Active' },
                 { name: 'Dairy & Bakery', slug: 'dairy-bakery', image: 'https://images.unsplash.com/photo-1550583724-125581cc258b?w=400', status: 'Active' },
                 { name: 'Men\'s Wear', slug: 'mens-wear', image: 'https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?w=400', status: 'Active' },
                 { name: 'Smartphones', slug: 'smartphones', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400', status: 'Active' },
                 { name: 'Cookware', slug: 'cookware', image: 'https://images.unsplash.com/photo-1584990344319-7244ca704251?w=400', status: 'Active' }
             ];
-            for (const cat of categories) {
+            for (const cat of seedCategories) {
                 const newCatRef = push(catRef);
                 await set(newCatRef, { ...cat, firebaseId: newCatRef.key, createdAt: new Date().toISOString() });
             }
@@ -109,12 +108,32 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleClearData = async () => {
+        if (!window.confirm('WARNING: This will permanently delete ALL data (Products, Orders, Customers) from the database. Proceed?')) return;
+        if (!window.confirm('Final Confirmation: Are you absolutely sure? This cannot be undone.')) return;
+
+        try {
+            await Promise.all([
+                remove(ref(db, 'products')),
+                remove(ref(db, 'orders')),
+                remove(ref(db, 'users')),
+                remove(ref(db, 'categories')),
+                remove(ref(db, 'messages'))
+            ]);
+            alert('All database nodes cleared successfully!');
+        } catch (err) {
+            console.error('Clear error:', err);
+            alert('Failed to clear database: ' + err.message);
+        }
+    };
+
 
     useEffect(() => {
         const ordersRef = ref(db, 'orders');
         const productsRef = ref(db, 'products');
         const usersRef = ref(db, 'users');
         const messagesRef = ref(db, 'messages');
+        const categoriesRef = ref(db, 'categories');
 
         // Safety Timeout
         const safetyTimeout = setTimeout(() => {
@@ -142,6 +161,7 @@ const AdminDashboard = () => {
         });
         const unsubProducts = onValue(productsRef, (snap) => setProducts(Object.values(snap.val() || {})));
         const unsubUsers = onValue(usersRef, (snap) => setUsers(Object.values(snap.val() || {})));
+        const unsubCategories = onValue(categoriesRef, (snap) => setCategories(Object.values(snap.val() || {})));
 
         const unsubMessages = onValue(messagesRef, (snap) => {
             const data = snap.val();
@@ -156,6 +176,7 @@ const AdminDashboard = () => {
             unsubOrders();
             unsubProducts();
             unsubUsers();
+            unsubCategories();
             unsubMessages();
         };
     }, []);
@@ -209,7 +230,7 @@ const AdminDashboard = () => {
                     o.status || 'N/A'
                 ]);
             }
-        } 
+        }
         else if (exportSource === 'AdminCustomer') {
             const customerMap = {};
             orders.forEach(order => {
@@ -220,7 +241,7 @@ const AdminDashboard = () => {
                 customerMap[uid].orders += 1;
                 customerMap[uid].spent += (order.grandTotal || 0);
             });
-            
+
             users.forEach(u => {
                 const uid = u.id || u.uid;
                 if (!customerMap[uid]) {
@@ -250,32 +271,83 @@ const AdminDashboard = () => {
         const ws = XLSX.utils.aoa_to_sheet([...headers, ...filteredData]);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-        XLSX.writeFile(wb, `${exportSource}_${exportTime.replace(' ', '_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
+        XLSX.writeFile(wb, `${exportSource}_${exportTime.replace(' ', '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`);
     };
 
     // Derived Statistics
     const stats = useMemo(() => {
+        const now = new Date();
+        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+        // Sales Logic
         const totalSales = orders.reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+        const curWeekSales = orders
+            .filter(o => new Date(o.date) >= oneWeekAgo)
+            .reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+        const prevWeekSales = orders
+            .filter(o => {
+                const d = new Date(o.date);
+                return d >= twoWeeksAgo && d < oneWeekAgo;
+            })
+            .reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+
+        // Orders Logic
+        const totalOrders = orders.length;
+        const curWeekOrders = orders.filter(o => new Date(o.date) >= oneWeekAgo).length;
+        const prevWeekOrders = orders.filter(o => {
+            const d = new Date(o.date);
+            return d >= twoWeeksAgo && d < oneWeekAgo;
+        }).length;
+
+        // Customers Logic
+        const uniqueEmails = new Set(orders.map(o => o.email).filter(Boolean));
+        const totalCustomers = Math.max(users.length, uniqueEmails.size);
+        const curWeekUsers = users.filter(u => new Date(u.joinedAt) >= oneWeekAgo).length;
+        const prevWeekUsers = users.filter(u => {
+            const d = new Date(u.joinedAt);
+            return d >= twoWeeksAgo && d < oneWeekAgo;
+        }).length;
+
         const pendingOrders = orders.filter(o =>
             o.status?.toUpperCase() === 'PENDING' ||
             o.status?.toUpperCase() === 'PLACED' ||
             o.status?.toUpperCase() === 'PROCESSING'
         ).length;
-        const uniqueEmails = new Set(orders.map(o => o.email).filter(Boolean));
-        const totalCustomers = Math.max(users.length, uniqueEmails.size);
+
+        const calculateChange = (cur, prev) => {
+            if (prev === 0) return cur > 0 ? '+100%' : '0%';
+            const pct = ((cur - prev) / prev) * 100;
+            return (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+        };
 
         return {
             totalSales,
-            totalOrders: orders.length,
+            totalOrders,
             totalCustomers,
-            pendingOrders
+            pendingOrders,
+            changes: {
+                sales: calculateChange(curWeekSales, prevWeekSales),
+                orders: calculateChange(curWeekOrders, prevWeekOrders),
+                customers: calculateChange(curWeekUsers, prevWeekUsers)
+            }
         };
     }, [orders, users]);
 
     // Graph Data Processing
+    // Get last 6 months dynamically
+    const chartMonths = useMemo(() => {
+        const months = [];
+        const d = new Date();
+        for (let i = 5; i >= 0; i--) {
+            const monthDate = new Date(d.getFullYear(), d.getMonth() - i, 1);
+            months.push(monthDate.toLocaleString('default', { month: 'short' }));
+        }
+        return months;
+    }, []);
+
     const chartData = useMemo(() => {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-        return months.map(month => ({
+        return chartMonths.map(month => ({
             name: month,
             revenue: orders.filter(o => {
                 if (!o.date) return false;
@@ -283,11 +355,10 @@ const AdminDashboard = () => {
                 return date.toLocaleString('default', { month: 'short' }) === month;
             }).reduce((sum, o) => sum + (o.grandTotal || 0), 0)
         }));
-    }, [orders]);
+    }, [orders, chartMonths]);
 
     const ordersChartData = useMemo(() => {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-        return months.map(month => ({
+        return chartMonths.map(month => ({
             name: month,
             orders: orders.filter(o => {
                 if (!o.date) return false;
@@ -295,9 +366,20 @@ const AdminDashboard = () => {
                 return date.toLocaleString('default', { month: 'short' }) === month;
             }).length
         }));
-    }, [orders]);
+    }, [orders, chartMonths]);
 
-    const categoryData = useMemo(() => {
+    const taxonomyData = useMemo(() => {
+        // Show categories directly as they appear in the Categories Modal/Taxonomy
+        if (categories.length === 0) return [];
+        return categories.map(cat => ({
+            name: cat.name || 'Unnamed Category',
+            value: 1 // Each category is an equal portion of the taxonomy wheel
+        })).slice(0, 10);
+    }, [categories]);
+
+    const inventoryData = useMemo(() => {
+        // Count products per category from the actual inventory
+        if (products.length === 0) return [];
         const counts = products.reduce((acc, p) => {
             const cat = p.category || 'Uncategorized';
             acc[cat] = (acc[cat] || 0) + 1;
@@ -305,9 +387,12 @@ const AdminDashboard = () => {
         }, {});
         
         return Object.keys(counts)
-            .map(name => ({ name, value: counts[name] }))
-            .sort((a, b) => b.value - a.value)
-            .slice(0, 5);
+            .map(name => ({
+                name: name,
+                value: counts[name]
+            }))
+            .filter(item => item.value > 0)
+            .sort((a, b) => b.value - a.value);
     }, [products]);
 
     const bulkOrders = useMemo(() => {
@@ -315,17 +400,27 @@ const AdminDashboard = () => {
     }, [messages]);
 
     const bulkOrdersChartData = useMemo(() => {
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-        return months.map(month => ({
+        return chartMonths.map(month => ({
             name: month,
             orders: bulkOrders.filter(m => {
                 const date = m.timestamp ? new Date(m.timestamp) : new Date();
                 return date.toLocaleString('default', { month: 'short' }) === month;
             }).length
         }));
-    }, [bulkOrders]);
+    }, [bulkOrders, chartMonths]);
 
-    const COLORS = ['#d97706', '#10b981', '#f59e0b', '#ef4444', '#6366f1'];
+    const COLORS = [
+        '#d97706', // Amber
+        '#10b981', // Emerald
+        '#6366f1', // Indigo
+        '#ef4444', // Rose
+        '#f59e0b', // Yellow
+        '#06b6d4', // Cyan
+        '#8b5cf6', // Violet
+        '#ec4899', // Pink
+        '#3b82f6', // Blue
+        '#64748b'  // Slate
+    ];
     return (
         <div className="w-full animate-fade-in pb-12">
             {/* Header Area */}
@@ -337,9 +432,15 @@ const AdminDashboard = () => {
                         <span>/</span>
                         <span className="text-amber-600">Dashboard</span>
                     </div>
-                    <button onClick={handleSeedData} className="px-5 py-2.5 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-100 transition-colors shadow-sm active:scale-95">
-                        Seed Mock Data
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button onClick={handleClearData} className="px-5 py-2.5 bg-rose-50 text-rose-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-colors shadow-sm active:scale-95 flex items-center gap-2">
+                            <Database size={12} strokeWidth={3} />
+                            Clear All Data
+                        </button>
+                        <button onClick={handleSeedData} className="px-5 py-2.5 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-100 transition-colors shadow-sm active:scale-95">
+                            Seed Mock Data
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -354,12 +455,12 @@ const AdminDashboard = () => {
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Generate CSV/Excel Reports</p>
                     </div>
                 </div>
-                
+
                 <div className="flex flex-wrap items-center gap-4 flex-1 justify-end">
                     <div className="flex flex-col gap-1 min-w-[140px]">
                         <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Source</label>
-                        <select 
-                            value={exportSource} 
+                        <select
+                            value={exportSource}
                             onChange={(e) => setExportSource(e.target.value)}
                             className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-slate-700 focus:ring-4 focus:ring-amber-500/10 cursor-pointer"
                         >
@@ -372,8 +473,8 @@ const AdminDashboard = () => {
 
                     <div className="flex flex-col gap-1 min-w-[140px]">
                         <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Period</label>
-                        <select 
-                            value={exportTime} 
+                        <select
+                            value={exportTime}
                             onChange={(e) => setExportTime(e.target.value)}
                             className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-black uppercase text-slate-700 focus:ring-4 focus:ring-amber-500/10 cursor-pointer"
                         >
@@ -387,23 +488,23 @@ const AdminDashboard = () => {
 
                     {exportTime === 'Custom' && (
                         <div className="flex items-center gap-2">
-                            <input 
-                                type="date" 
-                                value={customStartDate} 
+                            <input
+                                type="date"
+                                value={customStartDate}
                                 onChange={(e) => setCustomStartDate(e.target.value)}
                                 className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-bold text-slate-700"
                             />
                             <span className="text-slate-300 font-bold">to</span>
-                            <input 
-                                type="date" 
-                                value={customEndDate} 
+                            <input
+                                type="date"
+                                value={customEndDate}
                                 onChange={(e) => setCustomEndDate(e.target.value)}
                                 className="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-[11px] font-bold text-slate-700"
                             />
                         </div>
                     )}
 
-                    <button 
+                    <button
                         onClick={handleExportExcel}
                         className="bg-[#111827] hover:bg-[#1e293b] text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-900/10 active:scale-95 flex items-center gap-2"
                     >
@@ -415,30 +516,40 @@ const AdminDashboard = () => {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 mx-2">
                 {[
-                    { label: 'TOTAL SALES', value: `₹${stats.totalSales.toLocaleString()}`, icon: <DollarSign size={24} />, change: '+12.5%', color: 'amber' },
-                    { label: 'TOTAL ORDERS', value: stats.totalOrders, icon: <ShoppingBag size={24} />, change: '+8.2%', color: 'amber' },
-                    { label: 'CUSTOMERS', value: stats.totalCustomers, icon: <Users size={24} />, change: '+15.3%', color: 'amber' },
-                    { label: 'PENDING', value: stats.pendingOrders, icon: <Clock size={24} />, change: 'Real-time', color: 'rose' }
-                ].map((stat, i) => (
-                    <div key={i} className="bg-white rounded-[2rem] p-6 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col justify-between group hover:shadow-xl transition-all">
-                        <div className="flex items-center justify-between mb-2">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                            <div className={`w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-inner`}>
-                                <div className="transform group-hover:scale-110 transition-transform duration-500">
-                                    {stat.icon}
+                    { label: 'TOTAL SALES', value: `₹${stats.totalSales.toLocaleString()}`, icon: <DollarSign size={24} />, change: stats.changes.sales, color: 'amber' },
+                    { label: 'TOTAL ORDERS', value: stats.totalOrders, icon: <ShoppingBag size={24} />, change: stats.changes.orders, color: 'amber' },
+                    { label: 'CUSTOMERS', value: stats.totalCustomers, icon: <Users size={24} />, change: stats.changes.customers, color: 'amber' },
+                    { label: 'PENDING', value: stats.pendingOrders, icon: <Clock size={24} />, change: 'Active', color: 'rose' }
+                ].map((stat, i) => {
+                    const isNegative = stat.change.startsWith('-');
+                    const isNeutral = stat.change === '0%' || stat.change === 'Active';
+
+                    return (
+                        <div key={i} className="bg-white rounded-[2rem] p-6 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col justify-between group hover:shadow-xl transition-all">
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                                <div className={`w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-inner`}>
+                                    <div className="transform group-hover:scale-110 transition-transform duration-500">
+                                        {stat.icon}
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-3xl font-black text-[#111827]">{stat.value}</h3>
+                                <div className={`flex items-center gap-1.5 text-[10px] font-black mt-2 ${isNegative ? 'text-rose-500' :
+                                    isNeutral ? 'text-slate-400' :
+                                        'text-emerald-500'
+                                    }`}>
+                                    {isNegative ? <TrendingDown size={12} strokeWidth={3} /> : <TrendingUp size={12} strokeWidth={3} />}
+                                    <span>{stat.change}</span>
+                                    <span className="text-slate-300 font-bold ml-1 uppercase">
+                                        {stat.label === 'PENDING' ? 'State' : 'from last week'}
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            <h3 className="text-3xl font-black text-[#111827]">{stat.value}</h3>
-                            <div className={`flex items-center gap-1.5 text-[10px] font-black mt-2 ${stat.color === 'rose' ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                <TrendingUp size={12} strokeWidth={3} />
-                                <span>{stat.change}</span>
-                                <span className="text-slate-300 font-bold ml-1 uppercase">from last week</span>
-                            </div>
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Charts Section */}
@@ -454,28 +565,28 @@ const AdminDashboard = () => {
                             <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#d97706" stopOpacity={0.2}/>
-                                        <stop offset="95%" stopColor="#d97706" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#d97706" stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor="#d97706" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis 
-                                    dataKey="name" 
-                                    axisLine={false} 
-                                    tickLine={false} 
-                                    tick={{fontSize: 10, fontWeight: 700, fill: '#94a3b8'}}
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
                                     dy={10}
                                 />
-                                <YAxis 
-                                    axisLine={false} 
-                                    tickLine={false} 
-                                    tick={{fontSize: 10, fontWeight: 700, fill: '#94a3b8'}}
-                                    tickFormatter={(value) => `₹${value/1000}k`}
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                                    tickFormatter={(value) => `₹${value / 1000}k`}
                                 />
-                                <Tooltip 
-                                    contentStyle={{ 
-                                        borderRadius: '16px', 
-                                        border: 'none', 
+                                <Tooltip
+                                    contentStyle={{
+                                        borderRadius: '16px',
+                                        border: 'none',
                                         boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
                                         background: 'rgba(255, 255, 255, 0.95)',
                                         backdropFilter: 'blur(8px)',
@@ -483,13 +594,13 @@ const AdminDashboard = () => {
                                     }}
                                     itemStyle={{ fontSize: '12px', fontWeight: 900 }}
                                 />
-                                <Area 
-                                    type="monotone" 
-                                    dataKey="revenue" 
-                                    stroke="#d97706" 
+                                <Area
+                                    type="monotone"
+                                    dataKey="revenue"
+                                    stroke="#d97706"
                                     strokeWidth={4}
-                                    fillOpacity={1} 
-                                    fill="url(#colorRevenue)" 
+                                    fillOpacity={1}
+                                    fill="url(#colorRevenue)"
                                     animationDuration={2000}
                                 />
                             </AreaChart>
@@ -497,7 +608,7 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Category Distribution Pie Chart */}
+                {/* Inventory Split Pie Chart */}
                 <div className="bg-white rounded-[1.5rem] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-bold text-slate-800">Inventory Split</h2>
@@ -507,7 +618,7 @@ const AdminDashboard = () => {
                         <ResponsiveContainer width="99%" height={300}>
                             <PieChart>
                                 <Pie
-                                    data={categoryData}
+                                    data={inventoryData}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={60}
@@ -515,7 +626,7 @@ const AdminDashboard = () => {
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
-                                    {categoryData.map((entry, index) => (
+                                    {inventoryData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
@@ -542,27 +653,45 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Bulk Orders Overview Chart */}
-                <div 
+                <div
                     onClick={() => setIsBulkListOpen(true)}
                     className="bg-white rounded-[1.5rem] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 cursor-pointer group hover:border-amber-200 transition-all"
                 >
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h2 className="text-xl font-bold text-slate-800">Bulk Orders</h2>
-                            <p className="text-xs text-slate-400 font-semibold">Click to view details</p>
+                            <h2 className="text-xl font-bold text-slate-800">Category Distribution</h2>
+                            <p className="text-xs text-slate-400 font-semibold">Overview of store taxonomy</p>
                         </div>
-                        <span className="text-[10px] font-black text-amber-600 bg-amber-100 px-3 py-1 rounded-full uppercase tracking-widest">Enquiries</span>
+                        <span className="text-[10px] font-black text-amber-600 bg-amber-100 px-3 py-1 rounded-full uppercase tracking-widest">Analytics</span>
                     </div>
                     <div className="h-[300px] w-full min-h-[300px] relative">
                         <ResponsiveContainer width="99%" height={300}>
-                            <BarChart data={bulkOrdersChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={32}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} />
-                                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                                <Bar dataKey="orders" fill="#d97706" radius={[6, 6, 0, 0]} barSize={20} />
-                            </BarChart>
+                            <PieChart>
+                                <Pie
+                                    data={taxonomyData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={100}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {taxonomyData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{
+                                        borderRadius: '16px',
+                                        border: 'none',
+                                        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                                        background: 'rgba(255, 255, 255, 0.95)',
+                                        backdropFilter: 'blur(8px)',
+                                        padding: '12px'
+                                    }}
+                                />
+                                <Legend verticalAlign="bottom" height={36} />
+                            </PieChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
@@ -572,8 +701,8 @@ const AdminDashboard = () => {
             {isBulkListOpen && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
                     <div className="bg-white rounded-3xl w-full max-w-2xl p-8 relative shadow-2xl border border-white/50 animate-fade-in max-h-[85vh] flex flex-col">
-                        <button 
-                            onClick={() => { setIsBulkListOpen(false); setViewAllBulk(false); }} 
+                        <button
+                            onClick={() => { setIsBulkListOpen(false); setViewAllBulk(false); }}
                             className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all"
                         >
                             <X size={20} />
@@ -585,7 +714,7 @@ const AdminDashboard = () => {
                                 <p className="text-xs text-slate-400 font-semibold">Total: {bulkOrders.length}</p>
                             </div>
                             {bulkOrders.length > 5 && !viewAllBulk && (
-                                <button 
+                                <button
                                     onClick={() => setViewAllBulk(true)}
                                     className="text-xs font-black text-indigo-600 hover:underline"
                                 >
@@ -622,7 +751,8 @@ const AdminDashboard = () => {
                 </div>
             )}
 
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                  @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }

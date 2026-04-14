@@ -113,7 +113,7 @@ const AdminOrders = () => {
     // Calculate stats
     const stats = {
         total: orders.length,
-        placed: orders.filter(o => o.status === 'Placed').length,
+        placed: orders.filter(o => o.status === 'Placed' || o.status === 'Pending').length,
         delivered: orders.filter(o => o.status === 'Delivered' || o.status === 'Success').length,
         cancelled: orders.filter(o => o.status === 'Cancelled').length,
         returned: orders.filter(o => o.status === 'Returned').length
@@ -206,7 +206,7 @@ const AdminOrders = () => {
 
                         {/* Status Tabs */}
                         <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
-                            {['All', 'Placed', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Returned'].map((status) => (
+                            {['All', 'Placed', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Returned'].map((status) => (
                                 <button
                                     key={status}
                                     onClick={() => setStatusFilter(status)}
@@ -295,11 +295,14 @@ const AdminOrders = () => {
                                             className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full inline-block min-w-[120px] border-none focus:ring-4 focus:ring-amber-500/10 cursor-pointer transition-all ${
                                                 (item.status === 'Delivered' || item.status === 'Success') ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' :
                                                 (item.status === 'Pending' || item.status === 'Placed') ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' :
+                                                (item.status === 'Confirmed') ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' :
                                                 (item.status === 'Cancelled' || item.status === 'Returned') ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' :
                                                 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
                                             }`}
                                         >
+                                            <option value="Pending">Pending</option>
                                             <option value="Placed">Placed</option>
+                                            <option value="Confirmed">Confirmed</option>
                                             <option value="Processing">Processing</option>
                                             <option value="Shipped">Shipped</option>
                                             <option value="Delivered">Delivered</option>
@@ -308,22 +311,30 @@ const AdminOrders = () => {
                                         </select>
                                     </td>
                                     <td className="py-5 px-8 text-right">
-                                        <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                                        <div className="flex items-center justify-end gap-2">
+                                            {(item.status === 'Pending' || item.status === 'Placed') && (
+                                                <button
+                                                    onClick={() => handleStatusChange(item, 'Confirmed')}
+                                                    className="w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-lg border border-emerald-100 transition-colors active:scale-95"
+                                                    title="Confirm Order"
+                                                >
+                                                    <Check size={14} strokeWidth={3} />
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => setSelectedOrder(item)}
-                                                className="w-9 h-9 flex items-center justify-center bg-white text-amber-600 hover:bg-amber-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-90"
+                                                className="w-8 h-8 flex items-center justify-center bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-lg border border-amber-100 transition-colors active:scale-95"
+                                                title="View Details"
                                             >
-                                                <Eye size={16} strokeWidth={2.5} />
+                                                <Eye size={14} strokeWidth={3} />
                                             </button>
                                             <button
                                                 onClick={() => handleCancelOrder(item.firebaseId)}
-                                                className="w-9 h-9 flex items-center justify-center bg-white text-rose-500 hover:bg-rose-600 hover:text-white rounded-xl shadow-sm border border-slate-200 transition-all active:scale-90"
+                                                className="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white rounded-lg border border-rose-100 transition-colors active:scale-95"
+                                                title="Cancel Order"
                                             >
-                                                <X size={16} strokeWidth={2.5} />
+                                                <X size={14} strokeWidth={3} />
                                             </button>
-                                        </div>
-                                        <div className="group-hover:hidden text-slate-300 flex justify-end">
-                                            <MoreVertical size={20} />
                                         </div>
                                     </td>
                                 </tr>

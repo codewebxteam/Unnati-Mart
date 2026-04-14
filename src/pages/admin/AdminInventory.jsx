@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { PackageSearch, AlertTriangle, TrendingDown, BoxSelect, PackageCheck, X, Plus, Upload, Trash2, Box, Layers, ShoppingCart, Activity, Search, RotateCcw, ArrowRight, MoreVertical, Download, Warehouse } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { PackageSearch, AlertTriangle, TrendingDown, BoxSelect, PackageCheck, X, Plus, Upload, Trash2, Box, Layers, ShoppingCart, Activity, Search, RotateCcw, ArrowRight, MoreVertical, Warehouse } from 'lucide-react';
 import useScrollLock from '../../hooks/useScrollLock';
 import { realtimeDb as db, storage } from '../../firebase';
 import { ref, onValue, update, push, set, remove } from 'firebase/database';
@@ -92,10 +91,21 @@ const AdminInventory = () => {
         // Source 2: Categories currently used in products
         const productCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
 
-        // Combined and Deduplicated List
-        const combined = Array.from(new Set([...dynamicNames, ...productCategories, ...DEFAULT_CATEGORIES]));
+        // Source 3: Always include Hardcoded Defaults as fallbacks/primary choices
+        const baseDefaults = DEFAULT_CATEGORIES;
 
-        return combined.sort();
+        // Combined and Deduplicated List
+        const combined = Array.from(new Set([
+            ...baseDefaults, 
+            ...dynamicNames, 
+            ...productCategories
+        ]));
+
+        return combined.sort((a, b) => {
+            if (a === "Select Category") return -1;
+            if (b === "Select Category") return 1;
+            return a.localeCompare(b);
+        });
     }, [categories, products]);
 
     useScrollLock(isUpdateModalOpen || isAddModalOpen || isClearModalOpen || isDeleteModalOpen);
@@ -328,20 +338,15 @@ const AdminInventory = () => {
 
     const filteredProducts = useMemo(() => {
         return products.filter(p => {
-            const matchesStatus = statusTab === 'All' ||
-                (statusTab === 'In Stock' && p.stock >= 10) ||
-                (statusTab === 'Low Stock' && p.stock > 0 && p.stock < 10) ||
-                (statusTab === 'Out of Stock' && (p.stock === 0 || !p.stock));
-
             const s = searchQuery.toLowerCase();
             const matchesSearch = !searchQuery ||
-                p.name.toLowerCase().includes(s) ||
+                (p.name || '').toLowerCase().includes(s) ||
                 (p.category || '').toLowerCase().includes(s) ||
                 (p.firebaseId || '').toLowerCase().includes(s);
 
-            return matchesStatus && matchesSearch;
+            return matchesSearch;
         });
-    }, [products, statusTab, searchQuery]);
+    }, [products, searchQuery]);
 
     const handleQuickStockUpdate = async (product, delta) => {
         const currentStock = parseInt(product.stock || 0);
@@ -359,27 +364,6 @@ const AdminInventory = () => {
         }
     };
 
-    const handleExportExcel = () => {
-        const headers = [["Item", "Category", "On Hand", "Committed", "Available", "Status"]];
-        const data = filteredProducts.map(p => {
-            const committed = getCommittedStock(p.firebaseId);
-            const available = Math.max(0, (p.stock || 0) - committed);
-            const status = available === 0 ? 'OUT OF STOCK' : available < 10 ? 'LOW STOCK' : 'IN STOCK';
-            return [
-                p.name,
-                p.category,
-                p.stock || 0,
-                committed,
-                available,
-                status
-            ];
-        });
-
-        const ws = XLSX.utils.aoa_to_sheet([...headers, ...data]);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Inventory");
-        XLSX.writeFile(wb, `UnnatiMart_Inventory_${new Date().toISOString().slice(0, 10)}.xlsx`);
-    };
 
     const stats = useMemo(() => {
         const lowStockItems = products.filter(p => p.stock > 0 && p.stock < 10);
@@ -425,10 +409,6 @@ const AdminInventory = () => {
                         </div>
                         <div>
                             <h2 className="text-2xl font-black text-[#111827]">Inventory Control</h2>
-                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                <Activity size={12} className="text-amber-500" />
-                                {filteredProducts.length} items logged
-                            </p>
                         </div>
                     </div>
 
@@ -446,13 +426,6 @@ const AdminInventory = () => {
 
                         <div className="flex items-center gap-3">
                             <button
-                                onClick={handleExportExcel}
-                                className="p-3.5 bg-slate-50 text-slate-500 hover:bg-amber-50 hover:text-amber-600 rounded-2xl transition-all active:scale-90"
-                                title="Export Inventory"
-                            >
-                                <Download size={18} strokeWidth={2.5} />
-                            </button>
-                            <button
                                 onClick={() => setIsAddModalOpen(true)}
                                 className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-600/20 transition-all flex items-center gap-2 active:scale-95"
                             >
@@ -461,20 +434,6 @@ const AdminInventory = () => {
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-2xl overflow-x-auto no-scrollbar">
-                            {['All', 'In Stock', 'Low Stock', 'Out of Stock'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setStatusTab(tab)}
-                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${statusTab === tab
-                                        ? 'bg-white text-amber-600 shadow-sm'
-                                        : 'text-slate-400 hover:text-slate-600'
-                                        }`}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </div>
                     </div>
                 </div>
 
@@ -555,22 +514,21 @@ const AdminInventory = () => {
                                             </span>
                                         </td>
                                         <td className="py-5 px-8 text-right">
-                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex justify-end gap-2">
                                                 <button
                                                     onClick={() => handleUpdateClick(item)}
-                                                    className="p-2.5 bg-slate-50 hover:bg-amber-50 text-slate-400 hover:text-amber-500 rounded-xl transition-all active:scale-90 border border-slate-100"
+                                                    className="w-8 h-8 flex items-center justify-center bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-lg border border-amber-100 transition-colors active:scale-95"
+                                                    title="Update Item"
                                                 >
-                                                    <PackageSearch size={18} />
+                                                    <PackageSearch size={14} strokeWidth={3} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteClick(item)}
-                                                    className="p-2.5 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl transition-all active:scale-90 border border-slate-100"
+                                                    className="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white rounded-lg border border-rose-100 transition-colors active:scale-95"
+                                                    title="Delete Item"
                                                 >
-                                                    <Trash2 size={18} />
+                                                    <Trash2 size={14} strokeWidth={3} />
                                                 </button>
-                                            </div>
-                                            <div className="group-hover:hidden">
-                                                <MoreVertical size={18} className="text-slate-300 ml-auto" />
                                             </div>
                                         </td>
                                     </tr>

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Sparkles } from 'lucide-react';
+import { realtimeDb as db } from '../../firebase';
+import { ref, onValue } from 'firebase/database';
 
 // Assets
 import vegImg from '../../assets/categories/vegetables.png';
@@ -15,113 +17,105 @@ import beveragesImg from '../../assets/categories/beverages.png';
 import personalCareImg from '../../assets/categories/personal_care.png';
 import householdImg from '../../assets/categories/household.png';
 import wellnessImg from '../../assets/categories/wellness.png';
+
+// Metadata Map for Premium Styling
+const CATEGORY_METADATA = {
+    'grocery': { name: 'Grocery & Staples', sub: 'Daily Essentials', img: grainsImg, color: 'bg-amber-600', path: '/grocery', textColor: 'text-white' },
+    'fruits': { name: 'Fresh Fruits', sub: 'Nature\'s Sweetness', img: fruitsImg, color: 'bg-orange-500', path: '/fruits', textColor: 'text-white' },
+    'veg': { name: 'Vegetables', sub: 'Farm Fresh', img: vegImg, color: 'bg-amber-600', path: '/vegetables', textColor: 'text-white' },
+    'dairy': { name: 'Dairy & Bakery', sub: 'Freshly Baked', img: dairyImg, color: 'bg-blue-500', path: '/dairy', textColor: 'text-white' },
+    'snacks': { name: 'Packaged Food & Snacks', sub: 'Quick Bites', img: snacksImg, color: 'bg-amber-500', path: '/snacks', textColor: 'text-white' },
+    'beverages': { name: 'Beverages', sub: 'Cool & Refreshing', img: beveragesImg, color: 'bg-cyan-500', path: '/beverages', textColor: 'text-white' },
+    'personal_care': { name: 'Personal Care & Hygiene', sub: 'Self Care', img: personalCareImg, color: 'bg-pink-500', path: '/personal-care', textColor: 'text-white' },
+    'household': { name: 'Household & Cleaning Products', sub: 'Home Essentials', img: householdImg, color: 'bg-indigo-500', path: '/household', textColor: 'text-white' },
+    'wellness': { name: 'Health & Wellness', sub: 'Stay Healthy', img: wellnessImg, color: 'bg-teal-500', path: '/wellness', textColor: 'text-white' },
+    'baby': { name: 'Baby Care Products', sub: 'For Little Ones', img: babyImg, color: 'bg-purple-500', path: '/baby', textColor: 'text-white' },
+    'dry_fruits': { name: 'Dry Fruits & nuts', sub: 'Healthy & Crunchy', img: nutsImg, color: 'bg-rose-500', path: '/dry-fruits', textColor: 'text-white' }
+};
+
 const Categories = () => {
     const navigate = useNavigate();
-    const [showAll, setShowAll] = React.useState(false);
+    const [dbProducts, setDbProducts] = useState([]);
+    const [dbCategories, setDbCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const categories = [
-        {
-            id: 'grocery',
-            name: 'Grocery & Staples',
-            sub: 'Daily Essentials',
-            img: grainsImg,
-            path: '/grocery',
-            color: 'bg-amber-600',
-            textColor: 'text-white'
-        },
-        {
-            id: 'fruits',
-            name: 'Fresh Fruits',
-            sub: 'Nature\'s Sweetness',
-            img: fruitsImg,
-            path: '/fruits',
-            color: 'bg-orange-500',
-            textColor: 'text-white'
-        },
-        {
-            id: 'veg',
-            name: 'Vegetables',
-            sub: 'Farm Fresh',
-            img: vegImg,
-            path: '/vegetables',
-            color: 'bg-amber-600',
-            textColor: 'text-white'
-        },
-        {
-            id: 'dairy',
-            name: 'Dairy & Bakery',
-            sub: 'Freshly Baked',
-            img: dairyImg,
-            path: '/dairy',
-            color: 'bg-blue-500',
-            textColor: 'text-white'
-        },
-        {
-            id: 'snacks',
-            name: 'Packaged Food & Snacks',
-            sub: 'Quick Bites',
-            img: snacksImg,
-            path: '/snacks',
-            color: 'bg-amber-500',
-            textColor: 'text-white'
-        },
-        {
-            id: 'beverages',
-            name: 'Beverages',
-            sub: 'Cool & Refreshing',
-            img: beveragesImg,
-            path: '/beverages',
-            color: 'bg-cyan-500',
-            textColor: 'text-white'
-        },
-        {
-            id: 'personal_care',
-            name: 'Personal Care & Hygiene',
-            sub: 'Self Care',
-            img: personalCareImg,
-            path: '/personal-care',
-            color: 'bg-pink-500',
-            textColor: 'text-white'
-        },
-        {
-            id: 'household',
-            name: 'Household & Cleaning Products',
-            sub: 'Home Essentials',
-            img: householdImg,
-            path: '/household',
-            color: 'bg-indigo-500',
-            textColor: 'text-white'
-        },
-        {
-            id: 'wellness',
-            name: 'Health & Wellness',
-            sub: 'Stay Healthy',
-            img: wellnessImg,
-            path: '/wellness',
-            color: 'bg-teal-500',
-            textColor: 'text-white'
-        },
-        {
-            id: 'baby',
-            name: 'Baby Care Products',
-            sub: 'For Little Ones',
-            img: babyImg,
-            path: '/baby',
-            color: 'bg-purple-500',
-            textColor: 'text-white'
-        },
-        {
-            id: 'dry_fruits',
-            name: 'Dry Fruits & nuts',
-            sub: 'Healthy & Crunchy',
-            img: nutsImg,
-            path: '/dry-fruits',
-            color: 'bg-rose-500',
-            textColor: 'text-white'
-        }
-    ];
+    useEffect(() => {
+        const productsRef = ref(db, 'products');
+        const categoriesRef = ref(db, 'categories');
 
-    const displayedCategories = showAll ? categories : categories.slice(0, 8);
+        const unsubP = onValue(productsRef, (snap) => {
+            const data = snap.val() || {};
+            setDbProducts(Object.values(data));
+            setIsLoading(false);
+        });
+
+        const unsubC = onValue(categoriesRef, (snap) => {
+            const data = snap.val() || {};
+            setDbCategories(Object.values(data));
+        });
+
+        return () => {
+            unsubP();
+            unsubC();
+        };
+    }, []);
+
+    const finalCategories = useMemo(() => {
+        // 1. Start with all base categories from metadata
+        const baseCategories = Object.entries(CATEGORY_METADATA).map(([id, data]) => ({
+            ...data,
+            id
+        }));
+
+        // 2. Get unique category names from products and categories node
+        const fromProducts = Array.from(new Set(dbProducts.map(p => p.category).filter(Boolean)));
+        const fromCategories = dbCategories.map(c => c.name).filter(Boolean);
+        const dynamicNames = Array.from(new Set([...fromProducts, ...fromCategories]));
+
+        // 3. Merge dynamic names into the list
+        let combined = [...baseCategories];
+
+        dynamicNames.forEach(name => {
+            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+            
+            // Find the category record in the database if it exists
+            const dbCat = dbCategories.find(c => (c.name || '').toLowerCase() === name.toLowerCase());
+            
+            // Skip hidden categories
+            if (dbCat && dbCat.status === 'Hidden') return;
+
+            const customImg = dbCat?.image || dbCat?.img; // Handle both likely naming conventions
+            const customSub = dbCat?.description || 'Premium Selection';
+
+            // Check if this category already exists in base list (by name or ID)
+            const baseIndex = combined.findIndex(c => 
+                c.name.toLowerCase() === name.toLowerCase() || 
+                c.id === slug ||
+                (CATEGORY_METADATA[c.id] && CATEGORY_METADATA[c.id].name.toLowerCase() === name.toLowerCase())
+            );
+
+            if (baseIndex !== -1) {
+                // Update base category with custom image/sub if provided
+                if (customImg) combined[baseIndex].img = customImg;
+                if (dbCat?.description) combined[baseIndex].sub = dbCat.description;
+            } else {
+                // Add as new dynamic category
+                combined.push({
+                    id: slug,
+                    name: name,
+                    sub: customSub,
+                    img: customImg || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop',
+                    path: `/category/${slug}`,
+                    color: 'bg-amber-600',
+                    textColor: 'text-white'
+                });
+            }
+        });
+
+        return combined.sort((a, b) => a.name.localeCompare(b.name));
+    }, [dbProducts, dbCategories]);
+
+
 
     return (
         <div className="min-h-screen bg-white pt-28 pb-32 px-4 md:px-8">
@@ -145,9 +139,10 @@ const Categories = () => {
                     </motion.h1>
                 </header>
 
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-12">
                     <AnimatePresence mode="popLayout">
-                        {displayedCategories.map((cat, idx) => (
+                        {finalCategories.map((cat, idx) => (
                             <motion.div
                                 key={cat.id}
                                 layout
@@ -194,18 +189,6 @@ const Categories = () => {
                     </AnimatePresence>
                 </div>
 
-                {!showAll && categories.length > 8 && (
-                    <div className="flex justify-center mt-12 pb-12">
-                        <motion.button
-                            whileHover={{ scale: 1.05, y: -2 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setShowAll(true)}
-                            className="flex items-center gap-3 px-8 py-4 bg-white border border-slate-100 text-[12px] font-black uppercase tracking-widest text-slate-900 rounded-full shadow-lg shadow-slate-100/50 hover:bg-slate-900 hover:text-white transition-all group"
-                        >
-                            See All Categories <ChevronRight size={16} className="text-amber-600 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                        </motion.button>
-                    </div>
-                )}
             </div>
         </div>
     );

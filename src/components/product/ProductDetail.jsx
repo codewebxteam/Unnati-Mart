@@ -128,24 +128,33 @@ const ProductDetail = () => {
                     }
 
                     if (finalData) {
-                        // Parse highlights
+                        // Parse highlights (Support comma separated OR newline separated)
                         let parsedHighlights = [];
-                        if (typeof finalData.highlights === 'string') {
-                            parsedHighlights = finalData.highlights.split(',').map(h => h.trim()).filter(Boolean);
-                        } else if (Array.isArray(finalData.highlights)) {
-                            parsedHighlights = finalData.highlights;
+                        const rawHighlights = finalData.highlights || "";
+                        if (typeof rawHighlights === 'string') {
+                            // Split by comma or newline
+                            parsedHighlights = rawHighlights.split(/[,\n]/).map(h => h.trim()).filter(Boolean);
+                        } else if (Array.isArray(rawHighlights)) {
+                            parsedHighlights = rawHighlights;
                         }
 
-                        // Parse specifications
+                        // Parse specifications (Structured label:value OR plain text)
                         let parsedSpecs = [];
-                        const specsText = finalData.specification || finalData.specifications;
-                        if (typeof specsText === 'string') {
+                        const specsText = finalData.specification || finalData.specifications || "";
+                        if (typeof specsText === 'string' && specsText.trim()) {
                             parsedSpecs = specsText.split('\n').map(line => {
-                                const parts = line.split(':');
-                                if (parts.length >= 2) {
-                                    return { label: parts[0].trim(), value: parts.slice(1).join(':').trim() };
+                                const trimLine = line.trim();
+                                if (!trimLine) return null;
+                                
+                                const colonIndex = trimLine.indexOf(':');
+                                if (colonIndex > 0) {
+                                    return { 
+                                        label: trimLine.substring(0, colonIndex).trim(), 
+                                        value: trimLine.substring(colonIndex + 1).trim() 
+                                    };
                                 }
-                                return null;
+                                // Fallback for plain text lines
+                                return { label: 'Detail', value: trimLine };
                             }).filter(Boolean);
                         } else if (Array.isArray(specsText)) {
                             parsedSpecs = specsText;
@@ -519,12 +528,19 @@ const ProductDetail = () => {
                                         )}
                                         {activeTab === 'specifications' && (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-                                                {(product.specifications || []).map((spec, i) => (
-                                                    <div key={i} className="flex justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{spec.label}</span>
-                                                        <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{spec.value}</span>
+                                                {product.specifications && product.specifications.length > 0 ? (
+                                                    product.specifications.map((spec, i) => (
+                                                        <div key={i} className="flex justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-amber-200 transition-colors">
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{spec.label}</span>
+                                                            <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{spec.value}</span>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="col-span-full p-8 bg-white rounded-[2rem] border border-slate-100 border-dashed text-center">
+                                                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 text-center w-full">Detailed specifications</p>
+                                                        <p className="text-slate-600 text-sm font-semibold">{product.description}</p>
                                                     </div>
-                                                ))}
+                                                )}
                                             </div>
                                         )}
                                         {activeTab === 'highlights' && (

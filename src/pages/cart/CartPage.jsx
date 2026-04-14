@@ -95,8 +95,8 @@ const CartPage = () => {
                             {item.tag}
                         </span>
                     </div>
-                    <h4 className="text-xl font-black text-slate-900 tracking-tight leading-tight group-hover/link:text-amber-600 transition-colors truncate w-full">{item.name}</h4>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">₹{item.price} / {item.unit}</p>
+                    <h4 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-tight group-hover/link:text-amber-600 transition-colors truncate w-full">{item.name}</h4>
+                    <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">₹{item.price} / {item.unit}</p>
                 </div>
             </Link>
 
@@ -164,7 +164,7 @@ const CartPage = () => {
                     </motion.div>                    <div className="flex flex-col lg:flex-row gap-12">
                         {/* Left: Cart Items */}
                         <div className="flex-1 space-y-12">
-                            <div className="bg-white rounded-[3rem] p-8 lg:p-12 shadow-sm border border-slate-100">
+                            <div className="bg-white rounded-[2rem] sm:rounded-[3rem] p-5 sm:p-8 lg:p-12 shadow-sm border border-slate-100">
                                 <div className="space-y-4">
                                     <AnimatePresence>
                                         {cartItems.map((item) => (
@@ -181,7 +181,7 @@ const CartPage = () => {
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.2 }}
-                                className="bg-[#111827] text-white rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-10 lg:p-12 sticky top-28 shadow-2xl shadow-slate-200"
+                                className="bg-[#111827] text-white rounded-[2.2rem] sm:rounded-[3.5rem] p-5 sm:p-10 lg:p-12 sticky top-28 shadow-2xl shadow-slate-200"
                             >
                                 <div className="flex items-center gap-4 mb-10">
                                     <div className="w-12 h-12 rounded-2xl bg-[#1f2937] border border-white/5 flex items-center justify-center">
