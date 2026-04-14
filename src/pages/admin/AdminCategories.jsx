@@ -18,8 +18,13 @@ const AdminCategories = () => {
     useEffect(() => {
         const catRef = ref(db, 'categories');
         const prodRef = ref(db, 'products');
+        // Safety Timeout
+        const safetyTimeout = setTimeout(() => {
+            setIsLoading(false);
+        }, 8000);
 
         const unsubCategories = onValue(catRef, (snapshot) => {
+            clearTimeout(safetyTimeout);
             const data = snapshot.val();
             if (data) {
                 setCategories(Object.entries(data).map(([key, val]) => ({
@@ -31,6 +36,7 @@ const AdminCategories = () => {
             }
             setIsLoading(false);
         }, (err) => {
+            clearTimeout(safetyTimeout);
             console.error("Categories sync error:", err);
             setSyncError(err);
             setIsLoading(false);
@@ -163,8 +169,8 @@ const AdminCategories = () => {
                                         key={status}
                                         onClick={() => setStatusTab(status)}
                                         className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${statusTab === status
-                                                ? 'bg-amber-600 text-white shadow-md'
-                                                : 'text-slate-400 hover:text-slate-600'
+                                            ? 'bg-amber-600 text-white shadow-md'
+                                            : 'text-slate-400 hover:text-slate-600'
                                             }`}
                                     >
                                         {status}

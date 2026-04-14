@@ -120,7 +120,7 @@ const AdminInventory = () => {
         // Safety Timeout
         const safetyTimeout = setTimeout(() => {
             setIsLoading(false);
-        }, 3000);
+        }, 8000);
 
         const unsubProducts = onValue(productsRef, (snapshot) => {
             clearTimeout(safetyTimeout);
@@ -130,6 +130,11 @@ const AdminInventory = () => {
                 firebaseId: key
             })).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
             setProducts(productList);
+            setIsLoading(false);
+        }, (err) => {
+            clearTimeout(safetyTimeout);
+            console.error("Products sync error:", err);
+            setSyncError(err);
             setIsLoading(false);
         });
 
@@ -147,14 +152,13 @@ const AdminInventory = () => {
                     firebaseId: key
                 }));
                 setCategories(list);
-                // Update default category for newProduct if it's currently hardcoded and choices exist
                 if (list.length > 0) {
                     setNewProduct(prev => ({ ...prev, category: prev.category || list[0].name }));
                 }
             } else {
                 setCategories([]);
             }
-        });
+        }, (err) => setSyncError(err));
 
         return () => {
             unsubProducts();

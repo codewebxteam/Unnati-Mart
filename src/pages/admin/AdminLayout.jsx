@@ -210,6 +210,7 @@ const AdminLayout = () => {
     const managementItems = [
         { name: 'Customers', path: '/admin/customers', icon: <Users size={20} /> },
         { name: 'Inventory', path: '/admin/inventory', icon: <Database size={20} /> },
+        { name: 'Payments', path: '/admin/payments', icon: <CreditCard size={20} /> },
     ];
 
     const handleLogout = async () => {

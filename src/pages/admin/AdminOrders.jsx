@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
+import { motion, AnimatePresence } from 'framer-motion';
 import { isToday, isThisWeek, isThisMonth, isThisYear, parseISO, isValid, differenceInDays, format } from 'date-fns';
 import { realtimeDb as db } from '../../firebase';
 import { ref, onValue, update, remove } from 'firebase/database';

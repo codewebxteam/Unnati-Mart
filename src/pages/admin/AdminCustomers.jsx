@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, MoreVertical, Eye, Mail, Download, Filter, Calendar, ChevronDown, Ban, AlertCircle, UserPlus } from 'lucide-react';
+import { Users, Search, MoreVertical, Eye, Mail, Download, Filter, Calendar, ChevronDown, Ban, AlertCircle, UserPlus, AlertTriangle } from 'lucide-react';
 import { realtimeDb as db } from '../../firebase';
 import { ref, onValue, update, push } from 'firebase/database';
 import UserAvatar from '../../components/common/UserAvatar';
@@ -19,6 +19,7 @@ const AdminCustomers = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusTab, setStatusTab] = useState('All');
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+    const [syncError, setSyncError] = useState(null);
 
     const handleBlockToggle = (uid) => {
         if (!uid || uid.startsWith('guest_')) {
@@ -64,14 +65,28 @@ const AdminCustomers = () => {
         const usersRef = ref(db, 'users');
         const ordersRef = ref(db, 'orders');
 
+        // Safety Timeout
+        const safetyTimeout = setTimeout(() => {
+            setIsLoading(false);
+        }, 8000);
+
         const unsubUsers = onValue(usersRef, (snap) => {
             setUsersData(snap.val() || {});
-        }, (err) => console.error("Users listener error:", err));
+        }, (err) => {
+            console.error("Users listener error:", err);
+            setSyncError(err);
+        });
 
         const unsubOrders = onValue(ordersRef, (snap) => {
+            clearTimeout(safetyTimeout);
             setOrdersData(snap.val() || {});
             setIsLoading(false);
-        }, (err) => console.error("Orders listener error:", err));
+        }, (err) => {
+            clearTimeout(safetyTimeout);
+            console.error("Orders listener error:", err);
+            setSyncError(err);
+            setIsLoading(false);
+        });
 
         return () => {
             unsubUsers();
@@ -576,6 +591,50 @@ const AdminCustomers = () => {
                                 Close Profile
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+            {/* ERROR DIAGNOSTICS MODAL */}
+            {syncError && (
+                <div className="fixed inset-0 z-[500] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-md" onClick={() => setSyncError(null)}></div>
+                    <div className="bg-white rounded-3xl w-full max-w-lg relative z-[501] shadow-2xl p-6 border-2 border-rose-200 animate-in fade-in duration-300">
+                        <div className="flex items-center gap-4 mb-4 text-red-600">
+                            <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-600">
+                                <AlertTriangle size={24} strokeWidth={2.5} />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black text-slate-900 leading-tight">Customer Sync Error</h2>
+                                <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest">{syncError.code === 'PERMISSION_DENIED' ? 'Access Denied' : 'Sync Failed'}</p>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-6 font-mono text-[10px] text-slate-500 break-all">
+                            {syncError.message}
+                        </div>
+
+                        {syncError.message?.toLowerCase().includes('permission') && (
+                            <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100 mb-6">
+                                <p className="text-xs font-black text-amber-700 mb-2 uppercase tracking-wide">Action Required: Fix Firebase Rules</p>
+                                <ol className="text-xs font-bold text-slate-600 list-decimal pl-4 space-y-2">
+                                    <li>Open your <a href="https://console.firebase.google.com/" target="_blank" rel="noreferrer" className="text-indigo-600 underline">Firebase Console</a></li>
+                                    <li>Go to <span className="font-black">Realtime Database Rules</span></li>
+                                    <li>Ensure rules allow public read/write if you don't have auth configured yet:
+                                        <pre className="bg-slate-900 text-amber-400 p-2 rounded mt-1 overflow-x-auto">
+                                            {`{ ".read": true, ".write": true }`}
+                                        </pre>
+                                    </li>
+                                    <li>Click <span className="font-black text-indigo-600">Publish</span></li>
+                                </ol>
+                            </div>
+                        )}
+
+                        <button 
+                            onClick={() => window.location.reload()} 
+                            className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95"
+                        >
+                            Retry Connection
+                        </button>
                     </div>
                 </div>
             )}

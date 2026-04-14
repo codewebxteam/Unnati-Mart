@@ -139,7 +139,7 @@ const AdminDashboard = () => {
         // Safety Timeout
         const safetyTimeout = setTimeout(() => {
             setIsLoading(false);
-        }, 3000);
+        }, 8000);
 
         const unsubOrders = onValue(ordersRef, (snap) => {
             clearTimeout(safetyTimeout);
