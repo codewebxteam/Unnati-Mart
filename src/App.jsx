@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 
 // Layout Components
-import Header from "./components/Header";
+import Header from "./components/header";
 import Footer from "./components/Footer";
 import FloatingCartButton from "./components/common/FloatingCartButton";
 import Loader from "./components/common/Loader";
@@ -20,8 +20,9 @@ import WishlistPage from "./pages/profile/WishlistPage";
 import ProductDetail from "./components/product/ProductDetail";
 import Success from "./pages/Success";
 import Categories from "./pages/category/Categories";
-import Deals from "./pages/category/Deals";
+import About from "./pages/About";
 import CategoryProducts from "./pages/category/CategoryProducts";
+
 
 
 // Context Providers
@@ -46,7 +47,6 @@ const AdminProtectedRoute = ({ children }) => {
 
   if (loading) return <Loader />;
   if (!user || user.role !== 'admin') {
-    // Redirect to login but save the current location they were trying to access
     return <Navigate to="/login" state={{ from: location, fromAdmin: true }} replace />;
   }
   return children;
@@ -58,7 +58,6 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Global Header */}
       {!isAdminRoute && <Header />}
 
       {/* Main Content */}
@@ -74,10 +73,10 @@ function AppContent() {
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/categories" element={<Categories />} />
-          <Route path="/deals" element={<Deals />} />
+          <Route path="/about" element={<About />} />
+
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/category/:categoryPath" element={<CategoryProducts />} />
-          {/* Support legacy paths used in Categories.jsx */}
           <Route path="/grocery" element={<CategoryProducts />} />
           <Route path="/fruits" element={<CategoryProducts />} />
           <Route path="/vegetables" element={<CategoryProducts />} />

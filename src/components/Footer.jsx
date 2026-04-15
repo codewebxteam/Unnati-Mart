@@ -62,7 +62,7 @@ const Footer = () => {
           {/* Quick Links */}
           <div className="col-span-1 flex flex-col gap-6 md:pl-12">
             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-2">Systems</h4>
-            {['Home', 'Categories', 'Deals', 'Orders'].map((item) => {
+            {['Home', 'Categories', 'About', 'Orders'].map((item) => {
               let route = `/${item.toLowerCase()}`;
               if (item === 'Home') route = '/';
 
@@ -120,6 +120,7 @@ const Footer = () => {
         {/* Bottom Section: Copyright & Links */}
         <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6 text-[9px] text-slate-400 font-black tracking-[0.2em] uppercase">
           <p>© {new Date().getFullYear()} Unnati Mart Lab. Systems Core v2.</p>
+          <p className="flex items-center gap-1">Made with <span className="text-red-500 text-sm">❤️</span> CodeWebX</p>
           <div className="flex items-center gap-6">
             {['Privacy', 'Terms'].map((text, idx) => (
               <button

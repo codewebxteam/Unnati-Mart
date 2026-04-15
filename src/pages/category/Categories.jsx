@@ -20,17 +20,17 @@ import wellnessImg from '../../assets/categories/wellness.png';
 
 // Metadata Map for Premium Styling
 const CATEGORY_METADATA = {
-    'grocery': { name: 'Grocery & Staples', sub: 'Daily Essentials', img: grainsImg, color: 'bg-amber-600', path: '/grocery', textColor: 'text-white' },
-    'fruits': { name: 'Fresh Fruits', sub: 'Nature\'s Sweetness', img: fruitsImg, color: 'bg-orange-500', path: '/fruits', textColor: 'text-white' },
-    'veg': { name: 'Vegetables', sub: 'Farm Fresh', img: vegImg, color: 'bg-amber-600', path: '/vegetables', textColor: 'text-white' },
-    'dairy': { name: 'Dairy & Bakery', sub: 'Freshly Baked', img: dairyImg, color: 'bg-blue-500', path: '/dairy', textColor: 'text-white' },
-    'snacks': { name: 'Packaged Food & Snacks', sub: 'Quick Bites', img: snacksImg, color: 'bg-amber-500', path: '/snacks', textColor: 'text-white' },
-    'beverages': { name: 'Beverages', sub: 'Cool & Refreshing', img: beveragesImg, color: 'bg-cyan-500', path: '/beverages', textColor: 'text-white' },
-    'personal_care': { name: 'Personal Care & Hygiene', sub: 'Self Care', img: personalCareImg, color: 'bg-pink-500', path: '/personal-care', textColor: 'text-white' },
-    'household': { name: 'Household & Cleaning Products', sub: 'Home Essentials', img: householdImg, color: 'bg-indigo-500', path: '/household', textColor: 'text-white' },
-    'wellness': { name: 'Health & Wellness', sub: 'Stay Healthy', img: wellnessImg, color: 'bg-teal-500', path: '/wellness', textColor: 'text-white' },
-    'baby': { name: 'Baby Care Products', sub: 'For Little Ones', img: babyImg, color: 'bg-purple-500', path: '/baby', textColor: 'text-white' },
-    'dry_fruits': { name: 'Dry Fruits & nuts', sub: 'Healthy & Crunchy', img: nutsImg, color: 'bg-rose-500', path: '/dry-fruits', textColor: 'text-white' }
+    'grocery': { name: 'Grocery & Staples', sub: 'Daily Essentials', img: grainsImg, gradient: 'from-amber-700 via-amber-600 to-yellow-500', path: '/grocery' },
+    'fruits': { name: 'Fresh Fruits', sub: 'Nature\'s Sweetness', img: fruitsImg, gradient: 'from-red-700 via-red-500 to-orange-400', path: '/fruits' },
+    'veg': { name: 'Vegetables', sub: 'Farm Fresh', img: vegImg, gradient: 'from-green-800 via-green-600 to-emerald-400', path: '/vegetables' },
+    'dairy': { name: 'Dairy & Bakery', sub: 'Freshly Baked', img: dairyImg, gradient: 'from-blue-700 via-blue-500 to-sky-400', path: '/dairy' },
+    'snacks': { name: 'Packaged Food & Snacks', sub: 'Quick Bites', img: snacksImg, gradient: 'from-orange-700 via-amber-500 to-yellow-400', path: '/snacks' },
+    'beverages': { name: 'Beverages', sub: 'Cool & Refreshing', img: beveragesImg, gradient: 'from-cyan-700 via-cyan-500 to-teal-400', path: '/beverages' },
+    'personal_care': { name: 'Personal Care & Hygiene', sub: 'Self Care', img: personalCareImg, gradient: 'from-pink-700 via-pink-500 to-rose-400', path: '/personal-care' },
+    'household': { name: 'Household & Cleaning', sub: 'Home Essentials', img: householdImg, gradient: 'from-indigo-700 via-indigo-500 to-violet-400', path: '/household' },
+    'wellness': { name: 'Health & Wellness', sub: 'Stay Healthy', img: wellnessImg, gradient: 'from-teal-700 via-teal-500 to-emerald-400', path: '/wellness' },
+    'baby': { name: 'Baby Care Products', sub: 'For Little Ones', img: babyImg, gradient: 'from-purple-700 via-purple-500 to-fuchsia-400', path: '/baby' },
+    'dry_fruits': { name: 'Dry Fruits & Nuts', sub: 'Healthy & Crunchy', img: nutsImg, gradient: 'from-rose-800 via-rose-600 to-amber-500', path: '/dry-fruits' }
 };
 
 const Categories = () => {
@@ -106,8 +106,7 @@ const Categories = () => {
                     sub: customSub,
                     img: customImg || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop',
                     path: `/category/${slug}`,
-                    color: 'bg-amber-600',
-                    textColor: 'text-white'
+                    gradient: 'from-amber-700 via-amber-600 to-yellow-500'
                 });
             }
         });

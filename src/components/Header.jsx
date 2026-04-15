@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, LayoutGrid, Zap, ShoppingBag, User, CircleUser, ShoppingCart, Menu, X, Search } from 'lucide-react';
+import { Home, Package, Info, ShoppingBag, User, CircleUser, ShoppingCart, Menu, X, Search } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
 import throttle from 'lodash/throttle';
 import AccountSidebar from './common/sidebar';
@@ -83,11 +83,14 @@ const Header = () => {
   };
 
 
+  // Routes where the "Products" nav button should be active
+  const productRoutes = ['/categories', '/grocery', '/fruits', '/vegetables', '/dairy', '/snacks', '/beverages', '/personal-care', '/household', '/wellness', '/baby', '/dry-fruits', '/gallery'];
+
   const navItems = [
     { name: 'Home', path: '/', icon: <Home size={22} /> },
-    { name: 'Categories', path: '/categories', icon: <LayoutGrid size={22} /> },
-    { name: 'Deals', path: '/deals', icon: <Zap size={22} /> },
+    { name: 'Products', path: '/CategoryProducts', icon: <Package size={22} /> },
     { name: 'Orders', path: '/orders', icon: <ShoppingBag size={22} /> },
+    { name: 'About', path: '/about', icon: <Info size={22} /> },
   ];
 
   return (
@@ -283,7 +286,9 @@ const Header = () => {
       >
         <div className="relative bg-white/90 backdrop-blur-3xl rounded-[2.5rem] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 flex justify-between items-center">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = item.name === 'Products'
+              ? (productRoutes.includes(location.pathname) || location.pathname.startsWith('/category/') || location.pathname.startsWith('/product/'))
+              : location.pathname === item.path;
             return (
               <button
                 key={item.name}

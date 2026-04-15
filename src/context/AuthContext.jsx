@@ -28,7 +28,15 @@ export const AuthProvider = ({ children }) => {
     const closeAuthModal = () => setIsAuthModalOpen(false);
 
     useEffect(() => {
+        const safetyTimeout = setTimeout(() => {
+            if (loading) {
+                console.warn("Auth initialization safety timeout reached.");
+                setLoading(false);
+            }
+        }, 10000);
+
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+            clearTimeout(safetyTimeout);
             if (currentUser) {
                 const isAdmin = currentUser.email === 'meraj786@gmail.com' || currentUser.email === 'admin786@gmail.com' || (currentUser.displayName || '').toLowerCase().includes('admin');
                 const userData = {
@@ -67,7 +75,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error("Login Error:", error.code, error.message);
             let errorMessage = 'Invalid email or password';
-            
+
             if (error.code === 'auth/user-not-found') {
                 errorMessage = 'Account not found. Please sign up first.';
             } else if (error.code === 'auth/wrong-password') {
@@ -79,7 +87,7 @@ export const AuthProvider = ({ children }) => {
             } else if (error.code === 'auth/too-many-requests') {
                 errorMessage = 'Too many attempts. Access temporarily blocked. Please wait a few minutes.';
             }
-            
+
             return { success: false, message: `${errorMessage} (${error.code})`, code: error.code };
         }
     }, []);
@@ -88,7 +96,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(userCredential.user, { displayName: name });
-            
+
             // Explicitly force update DB with correct name to avoid race condition with onAuthStateChanged
             const userData = {
                 id: userCredential.user.uid,
@@ -121,7 +129,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error("Google Login Error:", error.code, error.message);
             let errorMessage = 'Google Login failed';
-            
+
             if (error.code === 'auth/popup-blocked') {
                 errorMessage = 'Popup blocked by browser. Please allow popups for this site.';
             } else if (error.code === 'auth/unauthorized-domain') {
@@ -129,7 +137,7 @@ export const AuthProvider = ({ children }) => {
             } else if (error.code === 'auth/popup-closed-by-user') {
                 errorMessage = 'Login canceled by user.';
             }
-            
+
             return { success: false, message: `${errorMessage} (${error.code})`, code: error.code };
         }
     }, []);
