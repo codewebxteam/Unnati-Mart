@@ -38,6 +38,15 @@ const Categories = () => {
     const [dbProducts, setDbProducts] = useState([]);
     const [dbCategories, setDbCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [showAll, setShowAll] = useState(false);
+    const [visibleLimit, setVisibleLimit] = useState(window.innerWidth >= 768 ? 8 : 6);
+
+    // Update limit on resize
+    useEffect(() => {
+        const handleResize = () => setVisibleLimit(window.innerWidth >= 768 ? 8 : 6);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const productsRef = ref(db, 'products');
@@ -139,9 +148,9 @@ const Categories = () => {
                 </header>
 
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-12">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 mb-12">
                     <AnimatePresence mode="popLayout">
-                        {finalCategories.map((cat, idx) => (
+                        {(showAll ? finalCategories : finalCategories.slice(0, visibleLimit)).map((cat, idx) => (
                             <motion.div
                                 key={cat.id}
                                 layout
@@ -149,44 +158,74 @@ const Categories = () => {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 transition={{
-                                    opacity: { duration: 0.2 },
+                                    opacity: { duration: 0.25 },
                                     layout: { type: "spring", stiffness: 300, damping: 30 }
                                 }}
-                                whileHover={{ y: -8 }}
+                                whileHover={{ y: -6, scale: 1.02 }}
+                                whileTap={{ scale: 0.97 }}
                                 onClick={() => navigate(cat.path)}
-                                className={`group relative aspect-[4/5] ${cat.color} rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden cursor-pointer shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300 transition-all duration-500 flex flex-col`}
+                                className={`group relative aspect-[3/4] bg-gradient-to-br ${cat.gradient || 'from-amber-700 via-amber-600 to-yellow-500'} rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 ring-0 hover:ring-2 hover:ring-white/40 ring-offset-0`}
                             >
-                                {/* Text Header - FLEX ITEM 1 */}
-                                <div className="p-4 sm:p-6 relative z-20 shrink-0">
-                                    <h3 className={`text-sm min-[375px]:text-base sm:text-xl md:text-2xl font-black ${cat.textColor} tracking-tighter leading-tight sm:leading-[1.1] mb-0.5 sm:mb-1 line-clamp-2`}>
+                                {/* Product Image — fills the card */}
+                                <div className="absolute inset-0 flex items-center justify-center p-5 sm:p-6 pt-4 pb-20">
+                                    <motion.img
+                                        src={cat.img}
+                                        alt={cat.name}
+                                        className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-2"
+                                    />
+                                </div>
+
+                                {/* Top-right arrow indicator */}
+                                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 w-8 h-8 sm:w-9 sm:h-9 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:scale-100 scale-75 border border-white/30">
+                                    <ChevronRight size={16} className="text-white" />
+                                </div>
+
+                                {/* Bottom gradient overlay for text readability */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
+
+                                {/* Shimmer effect on hover */}
+                                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-500 pointer-events-none" />
+
+                                {/* Text at the bottom */}
+                                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 z-10">
+                                    <h3 className="text-sm sm:text-base font-black text-white tracking-tight leading-tight mb-0.5 line-clamp-2 drop-shadow-lg">
                                         {cat.name}
                                     </h3>
-                                    <p className={`text-[8px] sm:text-[10px] font-bold ${cat.textColor} opacity-70 uppercase tracking-widest`}>
+                                    <p className="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase tracking-widest group-hover:hidden transition-all">
                                         {cat.sub}
                                     </p>
+                                    {/* "Explore" pill appears on hover */}
+                                    <div className="hidden group-hover:flex items-center gap-1.5 mt-1 transition-all">
+                                        <span className="text-[9px] sm:text-[10px] font-black text-amber-400 uppercase tracking-widest">
+                                            Explore Now
+                                        </span>
+                                        <ChevronRight size={12} className="text-amber-400 animate-pulse" />
+                                    </div>
                                 </div>
-
-                                {/* Image container - FLEX ITEM 2 (Pushed to bottom) */}
-                                <div className="mt-auto px-3 pb-3 sm:px-4 sm:pb-4 relative z-10 overflow-hidden">
-                                    <motion.div
-                                        whileHover={{ scale: 1.05, rotate: -2 }}
-                                        className="relative w-full aspect-square bg-white/95 rounded-[1.5rem] sm:rounded-[2rem] p-3 sm:p-4 shadow-2xl flex items-center justify-center overflow-hidden"
-                                    >
-                                        <img
-                                            src={cat.img}
-                                            alt={cat.name}
-                                            className="w-full h-full object-contain brightness-110 drop-shadow-xl transition-transform duration-700 group-hover:rotate-3"
-                                        />
-                                    </motion.div>
-                                </div>
-
-                                {/* Overlays should be absolute */}
-                                <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20 opacity-40 group-hover:opacity-20 transition-opacity pointer-events-none" />
-                                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" />
                             </motion.div>
                         ))}
                     </AnimatePresence>
                 </div>
+
+                {/* Explore More Button */}
+                {!showAll && finalCategories.length > visibleLimit && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex justify-center mb-12"
+                    >
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setShowAll(true)}
+                            className="group flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-slate-900 to-amber-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-amber-600/20 hover:shadow-2xl hover:shadow-amber-600/30 transition-all duration-300"
+                        >
+                            <Sparkles size={16} />
+                            Explore More Categories
+                            <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                        </motion.button>
+                    </motion.div>
+                )}
 
             </div>
         </div>

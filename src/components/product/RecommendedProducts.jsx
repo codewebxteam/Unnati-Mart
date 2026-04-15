@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { realtimeDb as db } from '../../firebase';
 import { ref, get, query, orderByChild, equalTo, limitToFirst } from 'firebase/database';
-import { dummyProducts } from '../../data/dummyProducts';
+
 import ProductCard from './ProductCard';
 
 const RecommendedProducts = ({ currentProductId, category }) => {
@@ -51,12 +51,7 @@ const RecommendedProducts = ({ currentProductId, category }) => {
     const isMushroom = String(category || '').toLowerCase().includes('mushroom');
     const isDairy = String(category || '').toLowerCase().includes('dairy');
 
-    const allProducts = [
-        ...firebaseProducts,
-        ...Object.values(dummyProducts).flat()
-    ];
-
-    const recommended = allProducts
+    const recommended = firebaseProducts
         .filter(p => {
             if (p.id === currentProductId) return false;
             return String(p.category || '').toLowerCase() === String(category || '').toLowerCase();

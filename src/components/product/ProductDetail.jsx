@@ -10,7 +10,7 @@ import RecommendedProducts from './RecommendedProducts';
 import ProductSkeleton from './ProductSkeleton';
 import { realtimeDb as db } from '../../firebase';
 import { ref, get, onValue } from 'firebase/database';
-import { dummyProducts } from '../../data/dummyProducts';
+
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -19,22 +19,9 @@ const ProductDetail = () => {
     const { user, openAuthModal } = useAuth();
     const { toggleWishlist, isInWishlist } = useWishlist();
 
-    const [product, setProduct] = useState(() => {
-        // Instant priority to dummy products if they match the ID
-        const allDummyProducts = Object.values(dummyProducts).flat();
-        const initialDummy = allDummyProducts.find(p => p.id === id);
-        return initialDummy ? {
-            ...initialDummy,
-            id: id,
-            img: initialDummy.img || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
-            unit: initialDummy.unit || 'Kg',
-            highlights: typeof initialDummy.highlights === 'string' ? initialDummy.highlights.split(',').filter(Boolean) : (initialDummy.highlights || []),
-            specifications: Array.isArray(initialDummy.specifications) ? initialDummy.specifications : [],
-            longDescription: initialDummy.description || ''
-        } : null;
-    });
+    const [product, setProduct] = useState(null);
 
-    const [isLoading, setIsLoading] = useState(!product); // Only load if not in dummy
+    const [isLoading, setIsLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
     const [isAdded, setIsAdded] = useState(false);
@@ -86,26 +73,6 @@ const ProductDetail = () => {
         setIsLoading(true);
         setProduct(null);
 
-        // 2. IMMEDIATE DUMMY DATA LOOKUP (Fast Initial Load)
-        try {
-            const allDummyProducts = Object.values(dummyProducts).flat();
-            const localDummy = allDummyProducts.find(p => p.id === id);
-            if (localDummy && isMounted) {
-                const initialEnriched = {
-                    ...localDummy,
-                    highlights: Array.isArray(localDummy.highlights) ? localDummy.highlights : [],
-                    specifications: Array.isArray(localDummy.specifications) ? localDummy.specifications : [],
-                    reviews: localDummy.reviews || [],
-                    longDescription: localDummy.description || ''
-                };
-                setProduct(initialEnriched);
-                // SET LOADING TO FALSE IMMEDIATELY if we have local data for instant feel
-                setIsLoading(false);
-            }
-        } catch (e) {
-            console.warn("Local dummy lookup failed:", e);
-        }
-
         // 3. SAFETY TIMEOUT (Don't let the user wait forever)
         const safetyTimeout = setTimeout(() => {
             if (isMounted) setIsLoading(false);
@@ -117,79 +84,70 @@ const ProductDetail = () => {
             unsubscribe = onValue(productRef, (snapshot) => {
                 if (!isMounted) return;
 
-                try {
-                    const data = snapshot.val();
-                    let finalData = data;
+                    try {
+                        const data = snapshot.val();
 
-                    // Fallback to dummy data if not in Firebase
-                    if (!finalData) {
-                        const allDummyProducts = Object.values(dummyProducts).flat();
-                        finalData = allDummyProducts.find(p => p.id === id);
-                    }
+                        if (!data) {
+                            setProduct(null);
+                        } else {
+                            // Parse highlights (Support comma separated OR newline separated)
+                            let parsedHighlights = [];
+                            const rawHighlights = data.highlights || "";
+                            if (typeof rawHighlights === 'string') {
+                                parsedHighlights = rawHighlights.split(/[,\n]/).map(h => h.trim()).filter(Boolean);
+                            } else if (Array.isArray(rawHighlights)) {
+                                parsedHighlights = rawHighlights;
+                            }
 
-                    if (finalData) {
-                        // Parse highlights (Support comma separated OR newline separated)
-                        let parsedHighlights = [];
-                        const rawHighlights = finalData.highlights || "";
-                        if (typeof rawHighlights === 'string') {
-                            // Split by comma or newline
-                            parsedHighlights = rawHighlights.split(/[,\n]/).map(h => h.trim()).filter(Boolean);
-                        } else if (Array.isArray(rawHighlights)) {
-                            parsedHighlights = rawHighlights;
-                        }
-
-                        // Parse specifications (Structured label:value OR plain text)
-                        let parsedSpecs = [];
-                        const specsText = finalData.specification || finalData.specifications || "";
-                        if (typeof specsText === 'string' && specsText.trim()) {
-                            parsedSpecs = specsText.split('\n').map(line => {
-                                const trimLine = line.trim();
-                                if (!trimLine) return null;
+                            // Parse specifications (Structured label:value OR plain text)
+                            let parsedSpecs = [];
+                            const specsText = data.specification || data.specifications || "";
+                            if (typeof specsText === 'string' && specsText.trim()) {
+                                parsedSpecs = specsText.split('\n').map(line => {
+                                    const trimLine = line.trim();
+                                    if (!trimLine) return null;
                                 
-                                const colonIndex = trimLine.indexOf(':');
-                                if (colonIndex > 0) {
-                                    return { 
-                                        label: trimLine.substring(0, colonIndex).trim(), 
-                                        value: trimLine.substring(colonIndex + 1).trim() 
-                                    };
-                                }
-                                // Fallback for plain text lines
-                                return { label: 'Detail', value: trimLine };
-                            }).filter(Boolean);
-                        } else if (Array.isArray(specsText)) {
-                            parsedSpecs = specsText;
+                                    const colonIndex = trimLine.indexOf(':');
+                                    if (colonIndex > 0) {
+                                        return { 
+                                            label: trimLine.substring(0, colonIndex).trim(), 
+                                            value: trimLine.substring(colonIndex + 1).trim() 
+                                        };
+                                    }
+                                    return { label: 'Detail', value: trimLine };
+                                }).filter(Boolean);
+                            } else if (Array.isArray(specsText)) {
+                                parsedSpecs = specsText;
+                            }
+
+                            const enrichedProduct = {
+                                ...data,
+                                id: id,
+                                img: data.img || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
+                                unit: data.unit || 'Kg',
+                                highlights: parsedHighlights,
+                                specifications: parsedSpecs,
+                                reviews: data.reviews || [],
+                                longDescription: data.description || ''
+                            };
+
+                            setProduct(enrichedProduct);
+
+                            // --- Track Recently Viewed ---
+                            const recentKey = 'unnatimart_recently_viewed';
+                            const saved = localStorage.getItem(recentKey);
+                            let recentList = saved ? JSON.parse(saved) : [];
+                            const minimalProduct = {
+                                id: enrichedProduct.id,
+                                name: enrichedProduct.name,
+                                img: enrichedProduct.img,
+                                category: enrichedProduct.category,
+                                price: enrichedProduct.price
+                            };
+                            recentList = [minimalProduct, ...recentList.filter(p => p.id !== minimalProduct.id)].slice(0, 10);
+                            localStorage.setItem(recentKey, JSON.stringify(recentList));
                         }
-
-                        const enrichedProduct = {
-                            ...finalData,
-                            id: id,
-                            img: finalData.img || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
-                            unit: finalData.unit || 'Kg',
-                            highlights: parsedHighlights,
-                            specifications: parsedSpecs,
-                            reviews: finalData.reviews || [],
-                            longDescription: finalData.description || ''
-                        };
-
-                        setProduct(enrichedProduct);
-
-                        // --- Track Recently Viewed ---
-                        const recentKey = 'unnatimart_recently_viewed';
-                        const saved = localStorage.getItem(recentKey);
-                        let recentList = saved ? JSON.parse(saved) : [];
-                        const minimalProduct = {
-                            id: enrichedProduct.id,
-                            name: enrichedProduct.name,
-                            img: enrichedProduct.img,
-                            category: enrichedProduct.category,
-                            price: enrichedProduct.price
-                        };
-                        recentList = [minimalProduct, ...recentList.filter(p => p.id !== minimalProduct.id)].slice(0, 10);
-                        localStorage.setItem(recentKey, JSON.stringify(recentList));
-                    } else {
-                        setProduct(null);
-                    }
-                } catch (innerError) {
+                    } catch (innerError) {
                     console.error("Data processing error:", innerError);
                 } finally {
                     setIsLoading(false);
