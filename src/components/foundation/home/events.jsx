@@ -6,8 +6,8 @@ import useScrollLock from '../../../hooks/useScrollLock';
 
 // Import Legacy Images
 import legacy1 from '../../../assets/foundation/legacy/grand_opening.png';
-import legacy2 from '../../../assets/categories/grains.png';
-import legacy3 from '../../../assets/categories/vegetables.png';
+const legacy2 = 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&q=80';
+const legacy3 = 'https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=500&q=80';
 import legacy4 from '../../../assets/foundation/unnati_hero.png';
 
 const Events = () => {

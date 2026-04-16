@@ -184,7 +184,7 @@ const CategoryModal = ({ isOpen, onClose, onSave, category = null }) => {
                                         onClick={() => setFormData(prev => ({ ...prev, status: 'Active' }))}
                                         className={`flex-1 flex items-center justify-center gap-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${formData.status === 'Active' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
                                     >
-                                        <Eye size={14} /> Active
+                                        <Eye size={14} /> {formData.status === 'Hidden' ? 'Unhide' : 'Active'}
                                     </button>
                                     <button
                                         type="button"

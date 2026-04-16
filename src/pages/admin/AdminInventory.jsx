@@ -44,21 +44,6 @@ const compressImage = (file, maxWidth = 500, maxHeight = 500, quality = 0.6) => 
     });
 };
 
-const DEFAULT_CATEGORIES = [
-    "Select Category",
-    "grocery",
-    "fruits",
-    "veg",
-    "dairy",
-    "snacks",
-    "beverages",
-    "personal_care",
-    "household",
-    "wellness",
-    "baby",
-    "dry_fruits"
-];
-
 const AdminInventory = () => {
     const [products, setProducts] = useState([]);
     const [orders, setOrders] = useState([]);
@@ -92,12 +77,9 @@ const AdminInventory = () => {
         // Source 2: Categories currently used in products
         const productCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
 
-        // Source 3: Always include Hardcoded Defaults as fallbacks/primary choices
-        const baseDefaults = DEFAULT_CATEGORIES;
-
         // Combined and Deduplicated List
         const combined = Array.from(new Set([
-            ...baseDefaults,
+            "Select Category",
             ...dynamicNames,
             ...productCategories
         ]));
@@ -332,7 +314,7 @@ const AdminInventory = () => {
             await push(ref(db, 'products'), productData);
             setIsAddModalOpen(false);
             setNewProduct({
-                name: '', price: '', discount: '', description: '', image: null, stock: '', category: 'Vegetables', specification: '', highlights: ''
+                name: '', price: '', discount: '', description: '', image: null, stock: '', category: '', specification: '', highlights: ''
             });
         } catch (err) {
             console.error("Add product failed:", err);

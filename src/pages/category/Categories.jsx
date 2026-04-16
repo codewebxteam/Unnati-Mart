@@ -5,33 +5,7 @@ import { ChevronRight, Sparkles } from 'lucide-react';
 import { realtimeDb as db } from '../../firebase';
 import { ref, onValue } from 'firebase/database';
 
-// Assets
-import vegImg from '../../assets/categories/vegetables.png';
-import fruitsImg from '../../assets/categories/fruits.png';
-import grainsImg from '../../assets/categories/grains.png';
-import nutsImg from '../../assets/categories/nuts.png';
-import dairyImg from '../../assets/categories/dairy.png';
-import babyImg from '../../assets/categories/baby.png';
-import snacksImg from '../../assets/categories/snacks.png';
-import beveragesImg from '../../assets/categories/beverages.png';
-import personalCareImg from '../../assets/categories/personal_care.png';
-import householdImg from '../../assets/categories/household.png';
-import wellnessImg from '../../assets/categories/wellness.png';
 
-// Metadata Map for Premium Styling
-const CATEGORY_METADATA = {
-    'grocery': { name: 'Grocery & Staples', sub: 'Daily Essentials', img: grainsImg, gradient: 'from-amber-700 via-amber-600 to-yellow-500', path: '/grocery' },
-    'fruits': { name: 'Fresh Fruits', sub: 'Nature\'s Sweetness', img: fruitsImg, gradient: 'from-red-700 via-red-500 to-orange-400', path: '/fruits' },
-    'veg': { name: 'Vegetables', sub: 'Farm Fresh', img: vegImg, gradient: 'from-green-800 via-green-600 to-emerald-400', path: '/vegetables' },
-    'dairy': { name: 'Dairy & Bakery', sub: 'Freshly Baked', img: dairyImg, gradient: 'from-blue-700 via-blue-500 to-sky-400', path: '/dairy' },
-    'snacks': { name: 'Packaged Food & Snacks', sub: 'Quick Bites', img: snacksImg, gradient: 'from-orange-700 via-amber-500 to-yellow-400', path: '/snacks' },
-    'beverages': { name: 'Beverages', sub: 'Cool & Refreshing', img: beveragesImg, gradient: 'from-cyan-700 via-cyan-500 to-teal-400', path: '/beverages' },
-    'personal_care': { name: 'Personal Care & Hygiene', sub: 'Self Care', img: personalCareImg, gradient: 'from-pink-700 via-pink-500 to-rose-400', path: '/personal-care' },
-    'household': { name: 'Household & Cleaning', sub: 'Home Essentials', img: householdImg, gradient: 'from-indigo-700 via-indigo-500 to-violet-400', path: '/household' },
-    'wellness': { name: 'Health & Wellness', sub: 'Stay Healthy', img: wellnessImg, gradient: 'from-teal-700 via-teal-500 to-emerald-400', path: '/wellness' },
-    'baby': { name: 'Baby Care Products', sub: 'For Little Ones', img: babyImg, gradient: 'from-purple-700 via-purple-500 to-fuchsia-400', path: '/baby' },
-    'dry_fruits': { name: 'Dry Fruits & Nuts', sub: 'Healthy & Crunchy', img: nutsImg, gradient: 'from-rose-800 via-rose-600 to-amber-500', path: '/dry-fruits' }
-};
 
 const Categories = () => {
     const navigate = useNavigate();
@@ -70,19 +44,12 @@ const Categories = () => {
     }, []);
 
     const finalCategories = useMemo(() => {
-        // 1. Start with all base categories from metadata
-        const baseCategories = Object.entries(CATEGORY_METADATA).map(([id, data]) => ({
-            ...data,
-            id
-        }));
-
-        // 2. Get unique category names from products and categories node
+        // 1. Get unique category names from products and categories node
         const fromProducts = Array.from(new Set(dbProducts.map(p => p.category).filter(Boolean)));
         const fromCategories = dbCategories.map(c => c.name).filter(Boolean);
         const dynamicNames = Array.from(new Set([...fromProducts, ...fromCategories]));
 
-        // 3. Merge dynamic names into the list
-        let combined = [...baseCategories];
+        let combined = [];
 
         dynamicNames.forEach(name => {
             const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
@@ -93,31 +60,17 @@ const Categories = () => {
             // Skip hidden categories
             if (dbCat && dbCat.status === 'Hidden') return;
 
-            const customImg = dbCat?.image || dbCat?.img; // Handle both likely naming conventions
+            const customImg = dbCat?.image || dbCat?.img; 
             const customSub = dbCat?.description || 'Premium Selection';
 
-            // Check if this category already exists in base list (by name or ID)
-            const baseIndex = combined.findIndex(c => 
-                c.name.toLowerCase() === name.toLowerCase() || 
-                c.id === slug ||
-                (CATEGORY_METADATA[c.id] && CATEGORY_METADATA[c.id].name.toLowerCase() === name.toLowerCase())
-            );
-
-            if (baseIndex !== -1) {
-                // Update base category with custom image/sub if provided
-                if (customImg) combined[baseIndex].img = customImg;
-                if (dbCat?.description) combined[baseIndex].sub = dbCat.description;
-            } else {
-                // Add as new dynamic category
-                combined.push({
-                    id: slug,
-                    name: name,
-                    sub: customSub,
-                    img: customImg || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop',
-                    path: `/category/${slug}`,
-                    gradient: 'from-amber-700 via-amber-600 to-yellow-500'
-                });
-            }
+            combined.push({
+                id: slug,
+                name: name,
+                sub: customSub,
+                img: customImg || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop',
+                path: `/category/${slug}`,
+                gradient: 'from-amber-700 via-amber-600 to-yellow-500' // Default fallback gradient
+            });
         });
 
         return combined.sort((a, b) => a.name.localeCompare(b.name));
