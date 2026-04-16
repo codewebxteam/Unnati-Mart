@@ -35,31 +35,37 @@ const CategoryProducts = () => {
             }));
 
             // Filter products by category mapping
-            const filtered = allProducts.filter(p => {
-                const prodCat = (p.category || '').toLowerCase();
-                const prodSlug = prodCat.replace(/[^a-z0-9]+/g, '_');
-                const pathSlug = currentPath.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+            let filtered = [];
+            if (currentPath === 'products') {
+                filtered = allProducts;
+                setCategoryName('All Products');
+            } else {
+                filtered = allProducts.filter(p => {
+                    const prodCat = (p.category || '').toLowerCase();
+                    const prodSlug = prodCat.replace(/[^a-z0-9]+/g, '_');
+                    const pathSlug = currentPath.toLowerCase().replace(/[^a-z0-9]+/g, '_');
 
-                // Handle special legacy path mappings
-                const isVegMatch = (pathSlug === 'vegetables' && prodSlug === 'veg') || (pathSlug === 'veg' && prodSlug === 'vegetables');
-                const isPersonalCareMatch = (pathSlug === 'personal-care' || pathSlug === 'personal_care') && (prodSlug === 'personal_care' || prodSlug === 'personal-care');
-                const isDryFruitsMatch = (pathSlug === 'dry-fruits' || pathSlug === 'dry_fruits') && (prodSlug === 'dry_fruits' || prodSlug === 'dry-fruits');
+                    // Handle special legacy path mappings
+                    const isVegMatch = (pathSlug === 'vegetables' && prodSlug === 'veg') || (pathSlug === 'veg' && prodSlug === 'vegetables');
+                    const isPersonalCareMatch = (pathSlug === 'personal-care' || pathSlug === 'personal_care') && (prodSlug === 'personal_care' || prodSlug === 'personal-care');
+                    const isDryFruitsMatch = (pathSlug === 'dry-fruits' || pathSlug === 'dry_fruits') && (prodSlug === 'dry_fruits' || prodSlug === 'dry-fruits');
 
-                return prodSlug === pathSlug || prodCat === currentPath.toLowerCase() || isVegMatch || isPersonalCareMatch || isDryFruitsMatch;
-            });
+                    return prodSlug === pathSlug || prodCat === currentPath.toLowerCase() || isVegMatch || isPersonalCareMatch || isDryFruitsMatch;
+                });
+
+                // Set the readable category name
+                if (filtered.length > 0) {
+                    setCategoryName(filtered[0].category);
+                } else {
+                    const name = currentPath
+                        .split(/[-_]/)
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(' ');
+                    setCategoryName(name);
+                }
+            }
 
             setProducts(filtered);
-
-            // Set the readable category name
-            if (filtered.length > 0) {
-                setCategoryName(filtered[0].category);
-            } else {
-                const name = currentPath
-                    .split(/[-_]/)
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(' ');
-                setCategoryName(name);
-            }
             setIsLoading(false);
         }, (err) => {
             clearTimeout(safetyTimeout);

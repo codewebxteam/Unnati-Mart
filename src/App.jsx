@@ -77,6 +77,7 @@ function AppContent() {
 
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/category/:categoryPath" element={<CategoryProducts />} />
+          <Route path="/products" element={<CategoryProducts />} />
           <Route path="/grocery" element={<CategoryProducts />} />
           <Route path="/fruits" element={<CategoryProducts />} />
           <Route path="/vegetables" element={<CategoryProducts />} />
