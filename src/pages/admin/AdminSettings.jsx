@@ -248,7 +248,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" name="maintenanceMode" checked={formData.maintenanceMode} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-rose-600"></div>
+                                                        <div className="w-14 h-7 bg-slate-300/50 border border-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:shadow-md after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
                                                     </label>
                                                 </div>
                                                 {formData.maintenanceMode && (
@@ -349,7 +349,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" name="enableCOD" checked={formData.enableCOD} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                                                        <div className="w-11 h-6 bg-slate-300/50 border border-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:shadow-sm after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
 
@@ -365,7 +365,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" name="enableUPI" checked={formData.enableUPI} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                                                        <div className="w-11 h-6 bg-slate-300/50 border border-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:shadow-sm after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
 
@@ -381,7 +381,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" name="enableCards" checked={formData.enableCards} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                                                        <div className="w-11 h-6 bg-slate-300/50 border border-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:shadow-sm after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
 
@@ -397,7 +397,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" name="enableBank" checked={formData.enableBank} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                                                        <div className="w-11 h-6 bg-slate-300/50 border border-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:shadow-sm after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
 
@@ -413,7 +413,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" name="enableWallet" checked={formData.enableWallet} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                                                        <div className="w-11 h-6 bg-slate-300/50 border border-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:shadow-sm after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
                                             </div>
@@ -437,7 +437,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer mt-1">
                                                         <input type="checkbox" name="orderEmails" checked={formData.orderEmails} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        <div className="w-11 h-6 bg-slate-300/50 border border-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:shadow-sm after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                                     </label>
                                                 </div>
 
@@ -448,7 +448,7 @@ const AdminSettings = () => {
                                                     </div>
                                                     <label className="relative inline-flex items-center cursor-pointer mt-1">
                                                         <input type="checkbox" name="promotionalEmails" checked={formData.promotionalEmails} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                                                        <div className="w-11 h-6 bg-slate-300/50 border border-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:shadow-sm after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                                                     </label>
                                                 </div>
                                             </div>

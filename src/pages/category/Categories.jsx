@@ -69,11 +69,21 @@ const Categories = () => {
                 sub: customSub,
                 img: customImg || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop',
                 path: `/category/${slug}`,
-                gradient: 'from-amber-700 via-amber-600 to-yellow-500' // Default fallback gradient
+                gradient: 'from-amber-700 via-amber-600 to-yellow-500', // Default fallback gradient
+                createdAt: dbCat?.createdAt
             });
         });
 
-        return combined.sort((a, b) => a.name.localeCompare(b.name));
+        // Sort by createdAt descending (Newest First), fallback to alphabetical if missing
+        return combined.sort((a, b) => {
+            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            
+            if (timeA !== timeB) {
+                return timeB - timeA; // Newest first
+            }
+            return a.name.localeCompare(b.name);
+        });
     }, [dbProducts, dbCategories]);
 
 

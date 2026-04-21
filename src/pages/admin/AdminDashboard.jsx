@@ -67,20 +67,20 @@ const AdminDashboard = () => {
             // Seed Products
             const prodRef = ref(db, 'products');
             const products = [
-                { name: 'Premium Organic Broccoli', price: 85, stock: 150, category: 'Vegetables', unit: '500g', img: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=400' },
-                { name: 'Fresh Green Spinach', price: 45, stock: 135, category: 'Vegetables', unit: '250g', img: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400' },
-                { name: 'Local Sweet Carrots', price: 60, stock: 120, category: 'Vegetables', unit: '1kg', img: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400' },
-                { name: 'Organic Red Tomatoes', price: 40, stock: 105, category: 'Vegetables', unit: '1kg', img: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400' },
-                { name: 'Farm Fresh Red Apples', price: 180, stock: 90, category: 'Fruits', unit: '1kg', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6bccb?w=400' },
-                { name: 'Sweet Valencia Oranges', price: 120, stock: 75, category: 'Fruits', unit: '1kg', img: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=400' },
-                { name: 'Golden Bananas', price: 60, stock: 60, category: 'Fruits', unit: '1 doz', img: 'https://images.unsplash.com/photo-1571771894821-ad9b58864c9a?w=400' },
-                { name: 'Fresh Pomegranate', price: 220, stock: 45, category: 'Fruits', unit: '1kg', img: 'https://images.unsplash.com/photo-1615484477771-3183778a873c?w=400' },
-                { name: 'Premium Toor Dal', price: 160, stock: 30, category: 'Grocery & Staples', unit: '1kg', img: 'https://images.unsplash.com/photo-1585994192703-f3908889ff6a?w=400' },
-                { name: 'Organic Moong Dal', price: 140, stock: 15, category: 'Grocery & Staples', unit: '1kg', img: 'https://images.unsplash.com/photo-1542601906990-b4d3fb75bb44?w=400' }
+                { name: 'Aashirvaad Superior Mp Atta', price: 245, stock: 100, category: 'Essential', unit: '5kg', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80' },
+                { name: 'Shimla Apple - Royal Gala', price: 180, stock: 85, category: 'Farm Fresh', unit: '1kg', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6bccb?w=800&q=80' },
+                { name: 'Fresh Potato (Jyoti)', price: 40, stock: 120, category: 'Farm Fresh', unit: '1kg', img: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=800&q=80' },
+                { name: 'Amul Gold Full Cream Milk', price: 66, stock: 50, category: 'Fresh', unit: '1L', img: 'https://images.unsplash.com/photo-1550583724-125581cc258b?w=800&q=80' },
+                { name: 'Kurkure Masala Munch', price: 20, stock: 200, category: 'Spicy', unit: '90g', img: 'https://images.unsplash.com/photo-1599490659223-930b44aa002a?w=800&q=80' },
+                { name: 'Coca-Cola Original Less Sugar', price: 40, stock: 150, category: 'Chilled', unit: '750ml', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=800&q=80' },
+                { name: 'Dove Cream Beauty Bar Soap', price: 150, stock: 60, category: 'Gentle', unit: '3x100g', img: 'https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=800&q=80' },
+                { name: 'Surf Excel Matic Top Load Detergent', price: 210, stock: 40, category: 'Power Clean', unit: '1kg', img: 'https://images.unsplash.com/photo-1550989460-0adf9ea622e2?w=800&q=80' }
             ];
             for (const prod of products) {
                 const status = prod.stock === 0 ? 'Out of Stock' : prod.stock < 10 ? 'Low Stock' : 'Active';
                 await push(prodRef, { ...prod, status, createdAt: new Date().toISOString() });
+                // Small delay to ensure unique sequential push IDs if needed
+                await new Promise(r => setTimeout(r, 100));
             }
 
             // Seed Orders
@@ -412,66 +412,6 @@ const AdminDashboard = () => {
         }));
     }, [bulkOrders, chartMonths]);
 
-    const [settings, setSettings] = useState({ maintenanceMode: false, serviceablePincodes: '' });
-    const [newPincode, setNewPincode] = useState('');
-
-    useEffect(() => {
-        const settingsRef = ref(db, 'settings');
-        return onValue(settingsRef, (snap) => {
-            if (snap.exists()) setSettings(snap.val());
-        });
-    }, []);
-
-    const handleAddPincode = async () => {
-        if (!newPincode.trim()) return;
-        try {
-            const currentList = settings.serviceablePincodes ? settings.serviceablePincodes.split(',').map(p => p.trim()).filter(Boolean) : [];
-            if (!currentList.includes(newPincode.trim())) {
-                const newList = [...currentList, newPincode.trim()].join(', ');
-                await set(ref(db, 'settings/serviceablePincodes'), newList);
-                setNewPincode('');
-                // Removed alert to keep it smooth, visual chips will update
-            } else {
-                alert("Pincode already exists!");
-            }
-        } catch (err) {
-            console.error("Error adding pincode:", err);
-            alert("Failed to add pincode.");
-        }
-    };
-
-    const handleRemovePincode = async (pinToRemove) => {
-        try {
-            const currentList = settings.serviceablePincodes ? settings.serviceablePincodes.split(',').map(p => p.trim()).filter(Boolean) : [];
-            const newList = currentList.filter(p => p !== pinToRemove).join(', ');
-            await set(ref(db, 'settings/serviceablePincodes'), newList);
-        } catch (err) {
-            console.error("Error removing pincode:", err);
-            alert("Failed to remove pincode.");
-        }
-    };
-
-    const handleToggleMaintenance = async (e) => {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        console.log("Toggle button clicked. Current mode:", settings.maintenanceMode);
-        try {
-            const newStatus = !settings.maintenanceMode;
-            console.log("Attempting to set maintenance mode to:", newStatus);
-            
-            // Use set directly on the path
-            await set(ref(db, 'settings/maintenanceMode'), newStatus);
-            
-            console.log("Successfully updated Firebase.");
-            alert(`Maintenance Mode has been ${newStatus ? 'ENABLED' : 'DISABLED'}`);
-        } catch (err) {
-            console.error("Error toggling maintenance:", err);
-            alert("Failed to update maintenance mode: " + err.message);
-        }
-    };
-
     const COLORS = [
         '#d97706', // Amber
         '#10b981', // Emerald
@@ -484,78 +424,12 @@ const AdminDashboard = () => {
         '#3b82f6', // Blue
         '#64748b'  // Slate
     ];
+
+
     return (
         <div className="w-full animate-fade-in pb-12">
-            {/* Quick Controls Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 mx-2">
-                <div className={`p-6 rounded-[2rem] border transition-all flex items-center justify-between ${settings.maintenanceMode ? 'bg-rose-50 border-rose-200 shadow-rose-100' : 'bg-white border-slate-100 shadow-slate-100'} shadow-lg`}>
-                    <div className="flex items-center gap-4">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${settings.maintenanceMode ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                            <AlertCircle size={28} />
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-black text-slate-900">Maintenance Mode</h3>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{settings.maintenanceMode ? 'Store is Hidden' : 'Store is Live'}</p>
-                        </div>
-                    </div>
-                    <button 
-                        onClick={(e) => handleToggleMaintenance(e)}
-                        className={`relative z-[100] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer active:scale-95 ${settings.maintenanceMode ? 'bg-rose-600 text-white shadow-lg shadow-rose-200' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
-                    >
-                        {settings.maintenanceMode ? 'Disable Now' : 'Enable Now'}
-                    </button>
-                </div>
 
-                <div className="p-6 rounded-[2rem] bg-white border border-slate-100 shadow-lg shadow-slate-100 flex flex-col gap-6">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="flex items-center gap-4 w-full sm:w-auto">
-                            <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                                <Database size={28} />
-                            </div>
-                            <div className="min-w-0">
-                                <h3 className="text-lg font-black text-slate-900">Delivery Zones</h3>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    {settings.serviceablePincodes ? `${settings.serviceablePincodes.split(',').length} Serviceable Areas` : 'No restrictions'}
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <input 
-                                type="text" 
-                                placeholder="Enter Pin"
-                                value={newPincode}
-                                onChange={(e) => setNewPincode(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleAddPincode()}
-                                className="bg-slate-50 border-none rounded-xl px-4 py-3 text-xs font-bold w-full sm:w-32 focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                            />
-                            <button 
-                                onClick={handleAddPincode}
-                                className="bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700 transition-all shrink-0 shadow-lg shadow-indigo-100 active:scale-95"
-                            >
-                                <Plus size={18} />
-                            </button>
-                        </div>
-                    </div>
 
-                    {/* Pincode Chips */}
-                    <div className="flex flex-wrap gap-2">
-                        {settings.serviceablePincodes ? settings.serviceablePincodes.split(',').map(p => p.trim()).filter(Boolean).map(pin => (
-                            <div key={pin} className="flex items-center gap-2 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-full group hover:border-indigo-200 hover:bg-indigo-50/30 transition-all">
-                                <span className="text-xs font-black text-slate-600 group-hover:text-indigo-600">{pin}</span>
-                                <button 
-                                    onClick={() => handleRemovePincode(pin)}
-                                    className="p-0.5 rounded-full hover:bg-rose-100 text-slate-300 hover:text-rose-600 transition-all"
-                                >
-                                    <X size={12} />
-                                </button>
-                            </div>
-                        )) : (
-                            <p className="text-[10px] font-bold text-slate-300 uppercase italic">Add your first serviceable pincode above</p>
-                        )}
-                    </div>
-                </div>
-            </div>
             {/* Header Area */}
             <div className="mb-8">
                 <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight mb-2">Dashboard</h1>

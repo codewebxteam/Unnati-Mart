@@ -142,20 +142,10 @@ const Success = () => {
 
                             <p className="text-[14px] text-[#212121] mt-2 font-medium text-slate-700">Phone number: {orderDetails.address?.mobile || orderDetails.mobile || 'N/A'}</p>
 
-                            <button
-                                onClick={() => navigate('/orders')}
-                                className="text-blue-600 text-[14px] font-medium mt-4 hover:underline self-start cursor-pointer transition-colors"
-                            >
-                                Change or Add number
-                            </button>
+
                         </div>
 
-                        <button
-                            onClick={() => navigate('/profile')}
-                            className="px-5 py-2 border border-[#e0e0e0] rounded-[2px] bg-white text-blue-600 text-[14px] font-medium hover:shadow-[0_1px_2px_0_rgba(0,0,0,0.1)] hover:bg-slate-50 transition-all cursor-pointer"
-                        >
-                            Change
-                        </button>
+
                     </div>
                 </div>
 
@@ -168,13 +158,7 @@ const Success = () => {
                         CONTINUE SHOPPING
                     </button>
 
-                    <button
-                        onClick={handleShareOrder}
-                        className="flex items-center gap-2 px-6 py-3.5 bg-white text-blue-600 text-[14px] font-medium rounded-sm hover:bg-blue-50 transition-colors cursor-pointer active:scale-[0.98] border border-blue-100"
-                    >
-                        <Share2 size={16} />
-                        Share Order Details
-                    </button>
+
                 </div>
 
             </div>

@@ -82,7 +82,7 @@ const CartPage = () => {
             <Link to={`/product/${item.id}`} className="flex flex-col sm:flex-row items-center gap-5 flex-1 group/link cursor-pointer min-w-0 pointer-events-auto">
                 {/* Product Image */}
                 <div className="w-24 h-24 bg-slate-50 rounded-[1.8rem] overflow-hidden shrink-0 flex items-center justify-center border border-slate-100 group-hover/link:scale-105 transition-transform">
-                    <img src={item.img} alt={item.name} className="w-full h-full object-contain p-3 drop-shadow-xl" />
+                    <img src={item.img || item.image || item.compressedImage || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80'} alt={item.name} className="w-full h-full object-contain p-3 drop-shadow-xl" />
                 </div>
 
                 {/* Product Info */}
