@@ -44,7 +44,7 @@ const Header = () => {
         setFirebaseProducts(Object.entries(data).map(([id, val]) => ({
           ...val,
           id,
-          img: val.img || val.image || 'https://images.unsplash.com/photo-1550583794-a2b7142647ec?w=500'
+          img: val.img || val.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80'
         })));
       }
     });

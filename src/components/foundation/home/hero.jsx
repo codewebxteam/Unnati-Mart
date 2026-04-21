@@ -1,54 +1,90 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, LayoutGrid, Zap, ShoppingBag } from 'lucide-react';
+import { Truck, Star, Info, ShieldCheck, ChevronRight } from 'lucide-react';
+import { realtimeDb as db } from '../../../firebase';
+import { ref, onValue } from 'firebase/database';
+
+// Local fallbacks
 import heroStorefront from '../../../assets/foundation/hero_storefront.png';
 import heroFresh from '../../../assets/foundation/hero_fresh_new.png';
-import vegImg from '../../../assets/categories/vegetables.png';
-import SearchBar from '../../../components/common/SearchBar';
+import heroLifestyle from '../../../assets/foundation/hero_lifestyle.png';
+
+const ICON_MAP = {
+  truck: <Truck size={18} className="text-slate-900" />,
+  star: <Star size={18} className="text-slate-900" />,
+  info: <Info size={18} className="text-slate-900" />,
+  shield: <ShieldCheck size={18} className="text-slate-900" />,
+};
 
 const Hero = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const [isOpen, setIsOpen] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const slides = [vegImg, heroStorefront, heroFresh];
-
-  const navItems = [
-    { name: 'Home', path: '/', icon: <Home size={22} /> },
-    { name: 'Categories', path: '/categories', icon: <LayoutGrid size={22} /> },
-    { name: 'Deals', path: '/deals', icon: <Zap size={22} /> },
-    { name: 'Orders', path: '/orders', icon: <ShoppingBag size={22} /> },
-  ];
+  const [heroContent, setHeroContent] = useState({
+    slides: [heroStorefront, heroFresh, heroLifestyle],
+    title: 'Explore \n Unnati Mart. \n Freshness.',
+    description: 'Step into a world of curated quality. From farm-fresh produce to everyday essentials, Unnati Mart is your foundation for a better lifestyle.',
+    badges: [
+      { icon: 'truck', text: 'Free Delivery Above ₹499' },
+      { icon: 'star', text: '4.9/5 Customer Reviews' }
+    ]
+  });
 
   useEffect(() => {
+    // Fetch dynamic content from RTDB
+    const heroRef = ref(db, 'settings/hero');
+    const unsubHero = onValue(heroRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setHeroContent(prev => ({
+          ...prev,
+          ...data,
+          // Ensure slides are always an array even if data is partial
+          slides: data.slides || prev.slides,
+          badges: data.badges || prev.badges
+        }));
+      }
+    });
+
     const checkStatus = () => {
       const now = new Date();
       const hours = now.getHours();
       const minutes = now.getMinutes();
-
       const currentMinutes = hours * 60 + minutes;
       const openTime = 6 * 60;   // 6:00 AM
       const closeTime = 23 * 60; // 11:00 PM
-
       setIsOpen(currentMinutes >= openTime && currentMinutes <= closeTime);
     };
 
     checkStatus();
-    const interval = setInterval(checkStatus, 60000); // Check every minute
-    return () => clearInterval(interval);
+    const interval = setInterval(checkStatus, 60000);
+    
+    return () => {
+      unsubHero();
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
     const slideInterval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000); // Slightly longer for a more cinematic feel
+      setCurrentSlide((prev) => (prev + 1) % heroContent.slides.length);
+    }, 8000);
     return () => clearInterval(slideInterval);
-  }, []);
+  }, [heroContent.slides.length]);
+
+  // Helper to render title with breaks
+  const renderTitle = (title) => {
+    return title.split('\\n').map((line, i) => {
+      if (line.includes('Unnati Mart.')) {
+        return <React.Fragment key={i}><span className="text-amber-500">{line}</span> <br /></React.Fragment>;
+      }
+      return <React.Fragment key={i}>{line} <br /></React.Fragment>;
+    });
+  };
 
   return (
     <section className="relative w-full bg-white pt-20 pb-8 lg:pt-28 lg:pb-16 overflow-hidden">
-      {/* Background Aesthetic Blobs - Subtle depth */}
+      {/* Background Aesthetic Blobs */}
       <div className="absolute top-20 left-[-10%] w-72 h-72 bg-amber-50 rounded-full blur-[120px] -z-10 animate-pulse"></div>
       <div className="absolute bottom-10 right-[-5%] w-64 h-64 bg-teal-50 rounded-full blur-[100px] -z-10"></div>
 
@@ -57,131 +93,103 @@ const Hero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="relative w-full h-[550px] lg:h-[700px] rounded-[3rem] lg:rounded-[4.5rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] bg-slate-900 group"
+          className="relative w-full h-[550px] lg:h-[620px] rounded-[3.5rem] lg:rounded-[4rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] bg-slate-900 group"
         >
-          {/* Slider Background with Dynamic Scaling */}
+          {/* Slider Background */}
           <div className="absolute inset-0 z-0">
             <AnimatePresence mode="wait">
               <motion.img
                 key={currentSlide}
-                src={slides[currentSlide]}
+                src={heroContent.slides[currentSlide]}
                 alt={`Hero Slide ${currentSlide + 1}`}
-                initial={{ opacity: 0, scale: 1.15 }}
+                initial={{ opacity: 0, scale: 1.1 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.05 }}
                 transition={{ duration: 1.5, ease: "easeInOut" }}
-                className="w-full h-full object-cover object-center transition-all duration-1000 brightness-[0.75] group-hover:scale-105"
+                className="w-full h-full object-cover object-center transition-all duration-1000 brightness-[0.7] group-hover:scale-105"
               />
             </AnimatePresence>
 
             {/* Cinematic Overlays */}
-            <div className="absolute inset-0 bg-black/40"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent"></div>
           </div>
 
           {/* Content Layer */}
           <div className="relative z-10 h-full flex flex-col justify-center px-10 sm:px-20 lg:px-32">
             {/* Typography Section */}
-            <motion.h1
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="text-5xl sm:text-7xl lg:text-8xl font-black text-white leading-[1.1] tracking-tighter mb-10"
-            >
-              Experience Freshness <br />
-              <span className="text-amber-500 italic drop-shadow-sm">
-                at Unnati Mart
-              </span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 1 }}
-              className="text-lg lg:text-2xl text-slate-200 font-medium leading-relaxed max-w-xl mb-14"
-            >
-              Farm-fresh groceries delivered to your doorstep.
-            </motion.p>
-
-            {/* Interactive Buttons */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2, duration: 0.8 }}
-              className="flex flex-col sm:flex-row items-center gap-6"
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+              className="max-w-3xl"
             >
-              <Link
-                to="/categories"
-                className="w-full sm:w-auto relative group px-12 sm:px-16 py-5 bg-amber-600 text-white text-[12px] sm:text-[14px] font-black uppercase tracking-[0.2em] rounded-2xl overflow-hidden transition-all active:scale-95 shadow-2xl shadow-amber-600/40 text-center"
-              >
-                <span className="relative z-10 transition-colors duration-300 group-hover:text-slate-900">Shop Now</span>
-                <div className="absolute inset-0 bg-white translate-y-[101%] group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-              </Link>
-            </motion.div>
-          </div>
+              <h1 className="text-5xl sm:text-7xl lg:text-[84px] font-black text-white leading-[0.9] tracking-tighter mb-6 drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]">
+                {renderTitle(heroContent.title)}
+              </h1>
 
-          {/* Navigation Controls */}
-          <div className="absolute bottom-12 right-12 flex items-center gap-6 z-20">
-            <div className="flex gap-3">
-              {slides.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`h-1.5 rounded-full transition-all duration-500 ${currentSlide === index ? 'w-14 bg-amber-500' : 'w-4 bg-white/20 hover:bg-white/50'}`}
-                  aria-label={`Go to slide ${index + 1}`}
-                ></button>
+              <div className="flex gap-6 items-start mb-12">
+                <div className="w-1.5 h-16 bg-amber-500 rounded-full shrink-0"></div>
+                <p className="text-base lg:text-lg text-slate-200 font-bold leading-relaxed max-w-lg drop-shadow-lg">
+                  {heroContent.description}
+                </p>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="mb-8"
+              >
+                <Link
+                  to="/products"
+                  className="inline-flex items-center gap-4 px-8 py-4 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-2xl text-[12px] font-black uppercase tracking-[0.2em] transition-all shadow-2xl shadow-amber-500/20 active:scale-95 group"
+                >
+                  Shop Now
+                  <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </motion.div>
+            </motion.div>
+
+            {/* Interactive Badges & Status */}
+            <div className="flex flex-wrap items-center gap-4 sm:gap-8 mt-4">
+              {heroContent.badges.map((badge, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    {ICON_MAP[badge.icon] || <Star size={18} className="text-slate-900" />}
+                  </div>
+                  <p className="text-[10px] font-black text-white uppercase tracking-[0.2em]">{badge.text}</p>
+                </div>
               ))}
             </div>
           </div>
 
-          {/* Status Indicator */}
-          <div className="absolute bottom-12 left-12 z-20">
-            <div className={`flex items-center gap-3 px-5 py-2 rounded-full backdrop-blur-xl border ${isOpen ? 'border-teal-500/30 bg-teal-500/10' : 'border-red-500/30 bg-red-500/10 shadow-lg'}`}>
-              <div className={`w-2 h-2 rounded-full ${isOpen ? 'bg-teal-400 animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.6)]' : 'bg-red-400'}`}></div>
-              <p className={`text-[10px] font-black uppercase tracking-widest ${isOpen ? 'text-teal-400' : 'text-red-400'}`}>
+          {/* Bottom Floating Stats & Nav Controls */}
+          <div className="absolute bottom-12 left-12 right-12 z-20 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-6">
+            {/* Live Status */}
+            <div className={`flex items-center gap-3 px-6 py-3 rounded-full backdrop-blur-2xl border ${isOpen ? 'border-teal-500/30 bg-black/40' : 'border-red-500/30 bg-red-500/10'} shadow-2xl`}>
+              <div className={`w-2.5 h-2.5 rounded-full ${isOpen ? 'bg-teal-400 animate-pulse shadow-[0_0_12px_rgba(45,212,191,0.6)]' : 'bg-red-400'}`}></div>
+              <p className={`text-[11px] font-black uppercase tracking-[0.2em] ${isOpen ? 'text-teal-400' : 'text-red-400'}`}>
                 Live Status: {isOpen ? 'Open Now' : 'Closed'}
               </p>
             </div>
-          </div>
-        </motion.div>
 
-        {/* Bottom Navigation - Moved outside Hero for better hierarchy */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4, duration: 0.8 }}
-          className="mt-12 flex justify-center w-full"
-        >
-          <div className="bg-white rounded-[2.5rem] p-2 shadow-[0_15px_40px_rgba(0,0,0,0.08)] border border-slate-100 flex justify-between items-center w-full max-w-[440px]">
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
+            {/* Slide Indicators */}
+            <div className="flex gap-3">
+              {heroContent.slides.map((_, index) => (
                 <button
-                  key={item.name}
-                  onClick={() => navigate(item.path)}
-                  className={`relative flex flex-col items-center justify-center py-3 flex-1 rounded-2xl transition-all ${isActive ? 'text-white' : 'text-slate-500 hover:text-amber-600'}`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="hero-nav-active-pill"
-                      className="absolute inset-1 bg-amber-600 rounded-[1.8rem]"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <span className="relative z-10">{item.icon}</span>
-                  <span className="relative z-10 text-[9px] font-black uppercase tracking-widest mt-1">
-                    {item.name}
-                  </span>
-                </button>
-              );
-            })}
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`h-1.5 rounded-full transition-all duration-700 ${currentSlide === index ? 'w-16 bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'w-4 bg-white/30 hover:bg-white/60'}`}
+                  aria-label={`Go to slide ${index + 1}`}
+                ></button>
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>
     </section>
   );
 };
-
 
 export default Hero;
 
