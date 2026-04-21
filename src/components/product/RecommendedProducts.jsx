@@ -34,7 +34,7 @@ const RecommendedProducts = ({ currentProductId, category }) => {
                 const list = Object.keys(data).map(key => ({
                     ...data[key],
                     id: key,
-                    img: data[key].img || data[key].image || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
+                    img: data[key].img || data[key].image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80',
                     unit: data[key].unit || 'Kg'
                 }));
                 setFirebaseProducts(list);

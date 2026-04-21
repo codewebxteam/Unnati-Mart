@@ -46,23 +46,27 @@ const ProductCard = ({ product }) => {
                 {/* Image Container */}
                 <div className="relative aspect-square rounded-2xl bg-slate-50 mb-3 sm:mb-4 flex items-center justify-center overflow-hidden p-2 sm:p-6 lg:p-8 shrink-0">
                     <motion.img
-                        src={product.img}
+                        src={product.img || product.image || product.compressedImage || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80'}
                         alt={product.name}
                         loading="lazy"
                         decoding="async"
                         whileHover={{ scale: 1.1 }}
                         className="w-full h-full object-contain drop-shadow-md"
+                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80'; }}
                     />
 
                     {/* Wishlist Button */}
                     <button
                         onClick={handleWishlistToggle}
-                        className={`absolute top-2 right-2 sm:top-3 sm:right-3 p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl border border-white shadow-sm backdrop-blur-md transition-all z-10 ${isInWishlist(product.id, product.category)
-                                ? 'bg-rose-50 text-rose-500 border-rose-100'
-                                : 'bg-white/80 text-slate-300 hover:text-rose-500'
+                        className={`absolute top-3 right-3 p-2 sm:p-3 rounded-full border border-white/40 shadow-lg backdrop-blur-xl transition-all duration-300 z-10 group/heart ${isInWishlist(product.id, product.category)
+                                ? 'bg-rose-500 text-white border-rose-400'
+                                : 'bg-white/90 text-slate-400 hover:text-rose-500 hover:bg-white'
                             }`}
                     >
-                        <Heart size={14} className="sm:w-4 sm:h-4" fill={isInWishlist(product.id, product.category) ? 'currentColor' : 'none'} />
+                        <Heart 
+                            size={18} 
+                            className={`sm:w-5 sm:h-5 transition-transform duration-300 group-active/heart:scale-125 ${isInWishlist(product.id, product.category) ? 'fill-current' : 'fill-none'}`} 
+                        />
                     </button>
                 </div>
 

@@ -123,7 +123,7 @@ const ProductDetail = () => {
                             const enrichedProduct = {
                                 ...data,
                                 id: id,
-                                img: data.img || 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?w=500',
+                                img: data.img || data.image || data.compressedImage || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80',
                                 unit: data.unit || 'Kg',
                                 highlights: parsedHighlights,
                                 specifications: parsedSpecs,
@@ -140,7 +140,7 @@ const ProductDetail = () => {
                             const minimalProduct = {
                                 id: enrichedProduct.id,
                                 name: enrichedProduct.name,
-                                img: enrichedProduct.img,
+                                img: enrichedProduct.img || enrichedProduct.image || enrichedProduct.compressedImage,
                                 category: enrichedProduct.category,
                                 price: enrichedProduct.price
                             };
