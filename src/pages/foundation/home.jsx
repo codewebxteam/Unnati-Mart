@@ -4,6 +4,7 @@ import HomeCategories from '../category/Categories';
 import Story from '../../components/foundation/home/story';
 import Events from '../../components/foundation/home/events';
 import Testimonials from '../../components/foundation/home/testimonials';
+import FeaturedProducts from '../../components/foundation/home/FeaturedProducts';
 
 const Home = () => {
   return (
@@ -11,7 +12,10 @@ const Home = () => {
       {/* 1. First Impression */}
       <Hero />
 
-      {/* 2. Shop by Category */}
+      {/* 2. Curated For You */}
+      <FeaturedProducts />
+
+      {/* 3. Shop by Category */}
       <HomeCategories />
 
       {/* 3. The Human Connection & Brand Story */}
