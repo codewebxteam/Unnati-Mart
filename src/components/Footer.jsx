@@ -62,9 +62,10 @@ const Footer = () => {
           {/* Quick Links */}
           <div className="col-span-1 flex flex-col gap-6 md:pl-12">
             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-2">Systems</h4>
-            {['Home', 'Categories', 'About', 'Orders'].map((item) => {
-              let route = `/${item.toLowerCase()}`;
+            {['Home', 'Categories', 'Deals', 'Orders', 'Admin Login'].map((item) => {
+              let route = `/${item.toLowerCase().replace(' ', '-')}`;
               if (item === 'Home') route = '/';
+              if (item === 'Admin Login') route = '/admin';
 
               return (
                 <button
@@ -119,8 +120,10 @@ const Footer = () => {
 
         {/* Bottom Section: Copyright & Links */}
         <div className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6 text-[9px] text-slate-400 font-black tracking-[0.2em] uppercase">
-          <p>© {new Date().getFullYear()} Unnati Mart Lab. Systems Core v2.</p>
-          <p className="flex items-center gap-1">Made with <span className="text-red-500 text-sm">❤️</span> CodeWebX</p>
+          <div className="flex flex-col items-center md:items-start gap-1">
+            <p>© {new Date().getFullYear()} Unnati Mart Lab. Systems Core v2.</p>
+            <p className="text-slate-400 normal-case tracking-normal font-medium">Made with ❤️ by <a href="https://www.codewebx.in" target="_blank" rel="noopener noreferrer" className="text-amber-600 font-black hover:underline">CodeWebX</a></p>
+          </div>
           <div className="flex items-center gap-6">
             {['Privacy', 'Terms'].map((text, idx) => (
               <button

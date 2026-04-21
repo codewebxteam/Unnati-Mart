@@ -111,12 +111,10 @@ export const OrderProvider = ({ children }) => {
         // Optimistic update
         setOrders(prev => [newOrder, ...prev]);
 
-        try {
-            await set(newOrderRef, newOrder);
-        } catch (error) {
+        // Fire-and-forget to prevent UI blocking if Firebase is slow or offline
+        set(newOrderRef, newOrder).catch(error => {
             console.error("Firebase order save failed, but saved locally:", error);
-            alert("⚠️ Warning: Order placed on website didn't sync into database due to permission rules!\n" + error.message);
-        }
+        });
 
         return { ...newOrder, firebaseId: newOrderRef.key };
     };

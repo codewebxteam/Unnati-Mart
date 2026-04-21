@@ -8,6 +8,8 @@ import {
 import { useOrders } from '../../context/OrderContext';
 import { useNavigate } from 'react-router-dom';
 import useScrollLock from '../../hooks/useScrollLock';
+import ReviewModal from '../../components/product/ReviewModal';
+import { useAuth } from '../../context/AuthContext';
 
 const OrdersPage = () => {
     const { orders } = useOrders();
@@ -16,6 +18,8 @@ const OrdersPage = () => {
     const selectedOrder = orders.find(o => o.id === selectedOrderId);
     const [isEditingPhone, setIsEditingPhone] = useState(false);
     const [newPhone, setNewPhone] = useState('');
+    const { user } = useAuth();
+    const [reviewingProduct, setReviewingProduct] = useState(null);
 
     useScrollLock(!!selectedOrder);
 
@@ -116,11 +120,25 @@ const OrdersPage = () => {
                                         </span>
                                     </div>
 
-                                    {/* Items Preview */}
-                                    <div className="flex items-center gap-3 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+                                    <div className="flex items-center gap-6 mb-8 overflow-x-auto pb-4 scrollbar-hide">
                                         {order.items.map((item, idx) => (
-                                            <div key={idx} className="w-40 h-40 bg-white rounded-[2.5rem] border border-slate-100 p-6 shrink-0 shadow-sm group-hover:border-amber-100 transition-all duration-500">
-                                                <img src={item.img} alt={item.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
+                                            <div key={idx} className="flex flex-col items-center gap-3 shrink-0">
+                                                <div className="w-40 h-40 bg-white rounded-[2.5rem] border border-slate-100 p-6 shadow-sm group-hover:border-amber-100 transition-all duration-500 relative overflow-hidden">
+                                                    <img src={item.img} alt={item.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
+                                                </div>
+                                                {order.status === 'Delivered' && (
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setReviewingProduct(item);
+                                                        }}
+                                                        className="px-4 py-2 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-100 transition-all border border-amber-100 flex items-center gap-2"
+                                                    >
+                                                        Rate Product
+                                                    </motion.button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -231,6 +249,20 @@ const OrdersPage = () => {
                             <div className="h-4 bg-white shrink-0" />
                         </motion.div>
                     </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {reviewingProduct && (
+                    <ReviewModal 
+                        product={reviewingProduct}
+                        user={user}
+                        onClose={() => setReviewingProduct(null)}
+                        onReviewSubmitted={() => {
+                            // Optionally show a success toast here
+                            setReviewingProduct(null);
+                        }}
+                    />
                 )}
             </AnimatePresence>
         </div>

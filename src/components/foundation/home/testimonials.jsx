@@ -2,32 +2,38 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Quote, Star, CheckCircle2, Award, Users, ThumbsUp } from 'lucide-react';
 
+// Import local testimonial images
+import raviImg from '../../../assets/testimonials/ravi.png';
+import priyaImg from '../../../assets/testimonials/priya.png';
+import amitImg from '../../../assets/testimonials/amit.png';
+import avatarsImg from '../../../assets/testimonials/avatars.png';
+
 const Testimonials = () => {
   const reviews = [
     {
-      name: "Aryan Sharma",
-      role: "Regular Customer",
-      msg: "Unnati Mart se groceries mangwana mere liye best decision tha. Har piece fresh aur premium quality ka hota hai. Unka delivery system bhi bahut fast hai.",
+      name: "Ravi Kumar",
+      role: "Software Engineer",
+      msg: "I was looking for fresh organic produce in Gorakhpur and Unnati Mart delivered exactly what I needed. The quality of fruits is unmatched.",
       tag: "Verified Shopper",
-      img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400\u0026h=400\u0026fit=crop",
+      img: raviImg,
       accent: "from-amber-500 to-orange-600",
       delay: 0.1
     },
     {
-      name: "Sneha Gupta",
-      role: "Home Maker",
-      msg: "Market mein bahut milawat hai, par Unnati Mart ki quality par mujhe 100% bharosa hai. Fresh vegetables aur fruits hamesha top-notch hote hain. Best store in town!",
+      name: "Priya Singh",
+      role: "Lifestyle Blogger",
+      msg: "The variety and freshness at Unnati Mart are incredible. Their delivery is always on time, which is a lifesaver for my busy schedule.",
       tag: "Quality Enthusiast",
-      img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400\u0026h=400\u0026fit=crop",
+      img: priyaImg,
       accent: "from-amber-400 to-amber-600",
       delay: 0.2
     },
     {
-      name: "Vikram Singh",
-      role: "Professional Chef",
-      msg: "As a chef, I only trust the best ingredients. Unnati Mart's selection of organic spices and fresh produce is consistently excellent. Highly recommended for food lovers.",
+      name: "Amit Patel",
+      role: "Local Business Owner",
+      msg: "Supporting local businesses is important to me, and Unnati Mart makes it easy with their high-quality local produce. Best grocery app I've used.",
       tag: "Verified Buyer",
-      img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400\u0026h=400\u0026fit=crop",
+      img: amitImg,
       accent: "from-amber-500 to-orange-500",
       delay: 0.3
     }
@@ -41,7 +47,7 @@ const Testimonials = () => {
   ];
 
   return (
-    <section id="testimonials" className="w-full bg-slate-50 py-16 lg:py-24 overflow-hidden relative border-t border-slate-100">
+    <section id="testimonials" className="w-full bg-slate-50 py-12 lg:py-16 overflow-hidden relative border-t border-slate-100">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl -mr-48 -mt-48" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl -ml-48 -mb-48" />
@@ -170,11 +176,9 @@ const Testimonials = () => {
         >
           <div className="inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-8 px-8 py-4 bg-slate-900 text-white rounded-[2rem] shadow-2xl">
             <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-800 overflow-hidden">
-                  <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="mini avatar" className="w-full h-full object-cover opacity-60" />
-                </div>
-              ))}
+              <div className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-800 overflow-hidden">
+                <img src={avatarsImg} alt="customer avatars" className="w-full h-full object-cover" />
+              </div>
               <div className="w-8 h-8 rounded-full border-2 border-slate-900 bg-amber-600 flex items-center justify-center text-[10px] font-bold">
                 +2k
               </div>

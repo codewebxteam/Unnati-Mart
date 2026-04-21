@@ -4,7 +4,7 @@ import {
     X, User, MapPin, CreditCard, ChevronRight, ChevronLeft, Plus,
     CheckCircle2, ShoppingBag, Calendar, Clock, FileText,
     ShieldCheck, Smartphone, Landmark, Wallet, Banknote,
-    AlertCircle, Info, Sparkles, MousePointer2, Box, MessageCircle
+    AlertCircle, Info, Sparkles, MousePointer2, Box, MessageCircle, Share2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
@@ -32,11 +32,31 @@ const CheckoutModal = ({ onClose }) => {
         timeSlot: '9 AM - 12 PM',
         selectedAddressId: 1
     });
+    const [pincodeVerified, setPincodeVerified] = useState(null); // null, 'success', 'error'
 
     const [isBankDropdownOpen, setIsBankDropdownOpen] = useState(false);
     const [isWalletDropdownOpen, setIsWalletDropdownOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState(null);
+
+    const handleShareSummary = () => {
+        const itemsList = cartItems.map(item => `- ${item.name} (x${item.quantity})`).join('\n');
+        const message = `🛒 *Cart Summary - Unnati Mart*\n\n` +
+            `Check out these items I'm about to order!\n\n` +
+            `*Items:*\n${itemsList}\n\n` +
+            `*Total Amount:* ₹${grandTotal.toLocaleString('en-IN')}\n\n` +
+            `Shop now at: ${window.location.origin}`;
+
+        if (navigator.share) {
+            navigator.share({
+                title: 'My Unnati Mart Cart',
+                text: message,
+            }).catch(console.error);
+        } else {
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+        }
+    };
 
     useEffect(() => {
         const settingsRef = ref(db, 'settings');
@@ -104,6 +124,7 @@ const CheckoutModal = ({ onClose }) => {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
         if (error) setError(null);
+        if (name === 'pincode') setPincodeVerified(null);
     };
 
     const handleNextStep = () => {
@@ -130,6 +151,30 @@ const CheckoutModal = ({ onClose }) => {
                     document.getElementById('mobileInput')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     document.getElementById('mobileInput')?.focus();
                 }, 100);
+                return;
+            }
+        }
+        if (step === 2) {
+            if (!formData.pincode || !formData.pincode.trim()) {
+                setError("Pincode is mandatory.");
+                return;
+            }
+            if (!formData.locality || !formData.locality.trim()) {
+                setError("Locality is mandatory to fill.");
+                return;
+            }
+            if (!formData.street || !formData.street.trim()) {
+                setError("Address (Area and Street) is mandatory to fill.");
+                return;
+            }
+            if (!formData.city || !formData.city.trim()) {
+                setError("City / Town is mandatory to fill.");
+                return;
+            }
+            const serviceablePincodes = settings.serviceablePincodes || "272175, 272001, 272002";
+            const allowedPincodes = serviceablePincodes.split(',').map(p => p.trim());
+            if (!allowedPincodes.includes(formData.pincode.trim())) {
+                setError("Sorry, we don’t deliver to this pincode yet.");
                 return;
             }
         }
@@ -302,9 +347,18 @@ Please send the QR code for payment.`;
 
                         {/* Order Summary Sidebar Block */}
                         <div className="mb-10">
-                            <h4 className="text-xl sm:text-[24px] font-bold text-[#3a3f30] mb-6 flex items-center gap-3">
-                                <Box size={20} className="text-[#a4a87a]" /> Order Summary
-                            </h4>
+                            <div className="flex items-center justify-between mb-6">
+                                <h4 className="text-xl sm:text-[24px] font-bold text-[#3a3f30] flex items-center gap-3">
+                                    <Box size={20} className="text-[#a4a87a]" /> Summary
+                                </h4>
+                                <button 
+                                    onClick={handleShareSummary}
+                                    className="p-2 bg-white rounded-xl border border-amber-100 text-amber-600 hover:bg-amber-50 transition-all shadow-sm"
+                                    title="Share Cart Summary"
+                                >
+                                    <Share2 size={18} />
+                                </button>
+                            </div>
 
                             <div className="bg-white/60 backdrop-blur-sm rounded-[2rem] p-6 border border-[#f1efe1] shadow-sm">
                                 <h5 className="text-[11px] font-bold text-slate-900 mb-6 uppercase tracking-widest">Cart Items ({cartCount})</h5>
@@ -377,6 +431,52 @@ Please send the QR code for payment.`;
                     {/* Right Content - Form Steps */}
                     <div className="flex-1 p-8 lg:p-12 relative">
 
+                        {/* No Delivery State */}
+                        {step === 'no_delivery' && (
+                            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-2xl py-20 text-center">
+                                <div className="text-center py-10 bg-white rounded-[3rem] p-12 border border-slate-100 shadow-xl shadow-slate-50">
+                                    <h2 className="text-2xl font-semibold text-red-500">
+                                        Delivery Not Available ❌
+                                    </h2>
+                                    <p className="text-gray-600 mt-2">
+                                        Sorry, we don’t deliver to this pincode yet.
+                                    </p>
+
+                                    <div className="max-w-xs mx-auto space-y-4">
+                                        <input
+                                            type="text"
+                                            value={formData.pincode}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, pincode: e.target.value }))}
+                                            placeholder="Enter another pincode"
+                                            className="mt-4 border px-4 py-2 rounded-lg w-full text-center"
+                                        />
+
+                                        <button 
+                                            onClick={() => {
+                                                if (settings.serviceablePincodes) {
+                                                    const allowedPincodes = settings.serviceablePincodes.split(',').map(p => p.trim());
+                                                    if (allowedPincodes.includes(formData.pincode.trim())) {
+                                                        setStep(2); // Go back to address step
+                                                        setError(null);
+                                                    }
+                                                }
+                                            }}
+                                            className="mt-3 bg-green-600 text-white px-5 py-2 rounded-lg w-full font-bold"
+                                        >
+                                            Check Availability
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => setStep(2)}
+                                            className="text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors block mx-auto"
+                                        >
+                                            Go Back
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
                         {/* Step 1: Personal Info */}
                         {step === 1 && (
                             <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} className="max-w-2xl pb-16">
@@ -401,7 +501,7 @@ Please send the QR code for payment.`;
                                             <input
                                                 name="mobile" value={formData.mobile} onChange={handleChange}
                                                 placeholder="10-digit mobile number" id="mobileInput"
-                                                className={`w-full pl-16 pr-6 py-4 bg-white border rounded-3xl text-[16px] font-bold focus:outline-none transition-all shadow-sm ${error && (!formData.mobile?.trim() || formData.mobile?.trim().length !== 10) ? 'border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/5' : 'border-slate-100 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5'}`}
+                                                className={`w-full pl-16 pr-6 py-4 bg-white border rounded-3xl text-[16px] font-bold focus:outline-none transition-all shadow-sm ${error && (!formData.mobile?.trim() || formData.mobile?.trim().length !== 10) ? 'border-red-400' : 'border-slate-100'}`}
                                             />
                                         </div>
                                     </div>
@@ -503,40 +603,64 @@ Please send the QR code for payment.`;
                                                 <input
                                                     name="mobile" value={formData.mobile} onChange={handleChange}
                                                     placeholder="9999999999"
-                                                    className="w-full px-4 py-3.5 bg-white border border-[#e0e0e0] rounded-lg text-[16px] font-medium text-[#212121] font-sans placeholder:text-[#878787] placeholder:font-medium focus:outline-none focus:border-[#2874f0] transition-colors"
+                                                    readOnly={true}
+                                                    className="w-full px-4 py-3.5 bg-slate-50 border border-[#e0e0e0] rounded-lg text-[16px] font-medium text-[#212121] font-sans placeholder:text-[#878787] cursor-not-allowed opacity-70 focus:outline-none"
                                                 />
                                             </div>
                                             <div className="space-y-1.5">
-                                                <label className="text-[13px] font-bold text-[#878787] uppercase tracking-wider block ml-1 font-sans">Pincode</label>
-                                                <input
-                                                    name="pincode" value={formData.pincode} onChange={handleChange}
-                                                    placeholder="6-digit pincode"
-                                                    className="w-full px-4 py-3.5 bg-white border border-[#e0e0e0] rounded-lg text-[16px] font-medium text-[#212121] font-sans placeholder:text-[#878787] placeholder:font-medium focus:outline-none focus:border-[#2874f0] transition-colors"
-                                                />
+                                                <label className="text-[13px] font-bold text-[#878787] uppercase tracking-wider block ml-1 font-sans">Pincode *</label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        name="pincode" value={formData.pincode} onChange={handleChange}
+                                                        placeholder="6-digit pincode"
+                                                        className={`w-full px-4 py-3.5 bg-white border rounded-lg text-[16px] font-medium text-[#212121] font-sans placeholder:text-[#878787] focus:outline-none transition-colors ${error && !formData.pincode?.trim() ? 'border-red-400' : 'border-[#e0e0e0] focus:border-[#2874f0]'}`}
+                                                    />
+                                                    <button 
+                                                        onClick={() => {
+                                                            if (!formData.pincode || formData.pincode.trim().length !== 6) {
+                                                                setError("Please enter a valid 6-digit pincode.");
+                                                                setPincodeVerified('error');
+                                                                return;
+                                                            }
+                                                            const serviceablePincodes = settings.serviceablePincodes || "272175, 272001, 272002";
+                                                            const allowedPincodes = serviceablePincodes.split(',').map(p => p.trim());
+                                                            if (allowedPincodes.includes(formData.pincode.trim())) {
+                                                                setPincodeVerified('success');
+                                                                setError(null);
+                                                            } else {
+                                                                setError("Sorry, we don’t deliver to this pincode yet.");
+                                                                setPincodeVerified('error');
+                                                            }
+                                                        }}
+                                                        className={`px-4 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${pincodeVerified === 'success' ? 'bg-green-100 text-green-700' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                                                    >
+                                                        {pincodeVerified === 'success' ? 'Verified ✓' : 'Verify'}
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div className="space-y-1.5">
-                                                <label className="text-[13px] font-bold text-[#878787] uppercase tracking-wider block ml-1 font-sans">Locality</label>
+                                                <label className="text-[13px] font-bold text-[#878787] uppercase tracking-wider block ml-1 font-sans">Locality *</label>
                                                 <input
                                                     name="locality" value={formData.locality} onChange={handleChange}
                                                     placeholder="Locality / Area"
-                                                    className="w-full px-4 py-3.5 bg-white border border-[#e0e0e0] rounded-lg text-[16px] font-medium text-[#212121] font-sans placeholder:text-[#878787] placeholder:font-medium focus:outline-none focus:border-[#2874f0] transition-colors"
+                                                    className={`w-full px-4 py-3.5 bg-white border rounded-lg text-[16px] font-medium text-[#212121] font-sans placeholder:text-[#878787] placeholder:font-medium focus:outline-none transition-colors ${error && !formData.locality?.trim() ? 'border-red-400' : 'border-[#e0e0e0] focus:border-[#2874f0]'}`}
                                                 />
                                             </div>
                                             <div className="md:col-span-2 space-y-1.5">
-                                                <label className="text-[13px] font-bold text-[#878787] uppercase tracking-wider block ml-1 font-sans">Address (Area and Street)</label>
+                                                <label className="text-[13px] font-bold text-[#878787] uppercase tracking-wider block ml-1 font-sans">Address (Area and Street) *</label>
                                                 <textarea
                                                     name="street" value={formData.street} onChange={handleChange}
                                                     placeholder="Flat / House No / Street Name"
                                                     rows={3}
-                                                    className="w-full px-4 py-3.5 bg-white border border-[#e0e0e0] rounded-lg text-[16px] font-medium text-[#212121] font-sans placeholder:text-[#878787] placeholder:font-medium focus:outline-none focus:border-[#2874f0] transition-colors resize-none"
+                                                    className={`w-full px-4 py-3.5 bg-white border rounded-lg text-[16px] font-medium text-[#212121] font-sans placeholder:text-[#878787] placeholder:font-medium focus:outline-none transition-colors resize-none ${error && !formData.street?.trim() ? 'border-red-400' : 'border-[#e0e0e0] focus:border-[#2874f0]'}`}
                                                 />
                                             </div>
                                             <div className="space-y-1.5">
-                                                <label className="text-[13px] font-bold text-[#878787] uppercase tracking-wider block ml-1 font-sans">City / Town</label>
+                                                <label className="text-[13px] font-bold text-[#878787] uppercase tracking-wider block ml-1 font-sans">City / Town *</label>
                                                 <input
                                                     name="city" value={formData.city} onChange={handleChange}
                                                     placeholder="City"
-                                                    className="w-full px-4 py-3.5 bg-white border border-[#e0e0e0] rounded-lg text-[16px] font-medium text-[#212121] font-sans placeholder:text-[#878787] placeholder:font-medium focus:outline-none focus:border-[#2874f0] transition-colors"
+                                                    className={`w-full px-4 py-3.5 bg-white border rounded-lg text-[16px] font-medium text-[#212121] font-sans placeholder:text-[#878787] placeholder:font-medium focus:outline-none transition-colors ${error && !formData.city?.trim() ? 'border-red-400' : 'border-[#e0e0e0] focus:border-[#2874f0]'}`}
                                                 />
                                             </div>
                                             <div className="space-y-1.5">
@@ -589,9 +713,46 @@ Please send the QR code for payment.`;
                                                 </div>
                                             </div>
 
+                                            {/* Timeslot Selection */}
+                                            <div className="md:col-span-2 space-y-2 pt-4">
+                                                <label className="text-[13px] font-bold text-[#878787] uppercase tracking-wider block ml-1 font-sans flex items-center gap-2">
+                                                    <Clock size={14} /> Preferred Delivery Timeslot
+                                                </label>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    {(settings.timeSlots || "6 AM - 9 AM, 4 PM - 7 PM").split(',').map(slot => (
+                                                        <button
+                                                            key={slot}
+                                                            type="button"
+                                                            onClick={() => setFormData(prev => ({ ...prev, timeSlot: slot.trim() }))}
+                                                            className={`px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all text-left ${formData.timeSlot === slot.trim() 
+                                                                ? 'border-amber-500 bg-amber-50 text-amber-700' 
+                                                                : 'border-slate-100 bg-white text-slate-600 hover:border-slate-200'}`}
+                                                        >
+                                                            {slot.trim()}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
                                             <div className="md:col-span-2 pt-6 grid grid-cols-2 gap-4">
                                                 <button
-                                                    onClick={() => { setIsAddingNew(false); setStep(3); }}
+                                                    onClick={() => {
+                                                        if (!formData.pincode || !formData.pincode.trim() ||
+                                                            !formData.locality || !formData.locality.trim() ||
+                                                            !formData.street || !formData.street.trim() ||
+                                                            !formData.city || !formData.city.trim()) {
+                                                            setError("All address fields marked with * are mandatory.");
+                                                            return;
+                                                        }
+                                                        const serviceablePincodes = settings.serviceablePincodes || "272175, 272001, 272002";
+                                                        const allowedPincodes = serviceablePincodes.split(',').map(p => p.trim());
+                                                        if (!allowedPincodes.includes(formData.pincode.trim())) {
+                                                            setError("Sorry, we don’t deliver to this pincode yet.");
+                                                            return;
+                                                        }
+                                                        setIsAddingNew(false);
+                                                        setStep(3);
+                                                    }}
                                                     className="w-full py-4 bg-amber-600 text-white text-[13px] sm:text-[16px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-amber-100 hover:bg-amber-700 transition-all flex items-center justify-center text-center"
                                                 >
                                                     Save & Deliver

@@ -53,7 +53,7 @@ const AdminInventory = () => {
     const [newStock, setNewStock] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [newProduct, setNewProduct] = useState({
-        name: '', price: '', discount: '', description: '', image: null, stock: '', category: '', specification: '', highlights: ''
+        name: '', price: '', discount: '', description: '', image: null, stock: '', category: 'Vegetables', specification: '', highlights: '', compressedImage: null, isProcessingImage: false
     });
     const [syncError, setSyncError] = useState(null);
     const [isClearModalOpen, setIsClearModalOpen] = useState(false);
@@ -63,7 +63,7 @@ const AdminInventory = () => {
     const [itemToDelete, setItemToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [editProduct, setEditProduct] = useState({
-        name: '', price: '', discount: '', description: '', image: null, stock: '', category: '', specification: '', highlights: ''
+        name: '', price: '', discount: '', description: '', image: null, stock: '', category: 'Vegetables', specification: '', highlights: '', compressedImage: null, isProcessingImage: false
     });
     const [searchQuery, setSearchQuery] = useState('');
     const [statusTab, setStatusTab] = useState('All');
@@ -183,7 +183,9 @@ const AdminInventory = () => {
             category: item.category || 'Dairy Product',
             specification: item.specification || '',
             highlights: item.highlights || '',
-            image: null
+            image: null,
+            compressedImage: null,
+            isProcessingImage: false
         });
         setIsUpdateModalOpen(true);
     };
@@ -193,10 +195,17 @@ const AdminInventory = () => {
         setEditProduct(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleEditImageChange = (e) => {
+    const handleEditImageChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            setEditProduct(prev => ({ ...prev, image: file }));
+            setEditProduct(prev => ({ ...prev, image: file, isProcessingImage: true }));
+            try {
+                const compressed = await compressImage(file);
+                setEditProduct(prev => ({ ...prev, compressedImage: compressed, isProcessingImage: false }));
+            } catch (err) {
+                console.error("Image processing failed:", err);
+                setEditProduct(prev => ({ ...prev, isProcessingImage: false }));
+            }
         }
     };
 
@@ -211,12 +220,14 @@ const AdminInventory = () => {
         else if (stockNum < 10) status = 'Low Stock';
 
         let imageUrl = selectedItem.img || '';
-        if (editProduct.image) {
+        if (editProduct.compressedImage) {
+            imageUrl = editProduct.compressedImage;
+        } else if (editProduct.image) {
+            // Fallback: if somehow it wasn't pre-processed
             try {
-                const compressedImage = await compressImage(editProduct.image);
-                imageUrl = compressedImage;
+                imageUrl = await compressImage(editProduct.image);
             } catch (err) {
-                console.error("Image processing failed:", err);
+                console.error("Fallback image processing failed:", err);
                 setIsPublishing(false);
                 return;
             }
@@ -226,14 +237,14 @@ const AdminInventory = () => {
             ...selectedItem,
             name: editProduct.name,
             category: editProduct.category,
-            price: parseFloat(editProduct.price),
+            price: parseFloat(editProduct.price) || 0,
             stock: stockNum,
             status: status,
             img: imageUrl,
             description: editProduct.description,
             specification: editProduct.specification,
             highlights: editProduct.highlights,
-            discount: editProduct.discount || 0,
+            discount: parseFloat(editProduct.discount) || 0,
             updatedAt: new Date().toISOString()
         };
 
@@ -243,6 +254,7 @@ const AdminInventory = () => {
             setSelectedItem(null);
         } catch (err) {
             console.error("Update product failed:", err);
+            alert("❌ Update failed: " + err.message);
         } finally {
             setIsPublishing(false);
         }
@@ -272,10 +284,17 @@ const AdminInventory = () => {
         setNewProduct(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleImageChange = (e) => {
+    const handleImageChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            setNewProduct(prev => ({ ...prev, image: file }));
+            setNewProduct(prev => ({ ...prev, image: file, isProcessingImage: true }));
+            try {
+                const compressed = await compressImage(file);
+                setNewProduct(prev => ({ ...prev, compressedImage: compressed, isProcessingImage: false }));
+            } catch (err) {
+                console.error("Image processing failed:", err);
+                setNewProduct(prev => ({ ...prev, isProcessingImage: false }));
+            }
         }
     };
 
@@ -285,28 +304,40 @@ const AdminInventory = () => {
         setIsPublishing(true);
 
         let imageUrl = '';
-        if (newProduct.image) {
+        if (newProduct.compressedImage) {
+            imageUrl = newProduct.compressedImage;
+        } else if (newProduct.image) {
+            // Fallback
             try {
                 imageUrl = await compressImage(newProduct.image);
             } catch (err) {
-                console.error("Image processing failed:", err);
+                console.error("Fallback image processing failed:", err);
                 setIsPublishing(false);
                 return;
             }
         }
 
+        const priceNum = parseFloat(newProduct.price);
         const stockNum = parseInt(newProduct.stock, 10);
+        const discountNum = parseFloat(newProduct.discount || 0);
+
+        if (isNaN(priceNum) || isNaN(stockNum)) {
+            alert("⚠️ Please enter valid numbers for Price and Stock.");
+            setIsPublishing(false);
+            return;
+        }
+
         const productData = {
             name: newProduct.name,
             category: newProduct.category,
-            price: parseFloat(newProduct.price),
+            price: priceNum,
             stock: stockNum,
             status: stockNum === 0 ? 'Out of Stock' : stockNum < 10 ? 'Low Stock' : 'Active',
             img: imageUrl,
             description: newProduct.description,
             specification: newProduct.specification,
             highlights: newProduct.highlights,
-            discount: newProduct.discount || 0,
+            discount: isNaN(discountNum) ? 0 : discountNum,
             createdAt: new Date().toISOString()
         };
 
@@ -314,10 +345,11 @@ const AdminInventory = () => {
             await push(ref(db, 'products'), productData);
             setIsAddModalOpen(false);
             setNewProduct({
-                name: '', price: '', discount: '', description: '', image: null, stock: '', category: '', specification: '', highlights: ''
+                name: '', price: '', discount: '', description: '', image: null, stock: '', category: 'Vegetables', specification: '', highlights: '', compressedImage: null, isProcessingImage: false
             });
         } catch (err) {
             console.error("Add product failed:", err);
+            alert("❌ Failed to add product: " + err.message);
         } finally {
             setIsPublishing(false);
         }
@@ -643,12 +675,14 @@ const AdminInventory = () => {
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 mb-2">Product Image (Leave empty to keep current)</label>
                                         <div className="border-2 border-dashed border-slate-200 rounded-2xl h-64 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group relative overflow-hidden">
-                                            {editProduct.image ? (
+                                            {editProduct.isProcessingImage ? (
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                                                    <span className="text-sm font-bold text-slate-400">Processing...</span>
+                                                </div>
+                                            ) : editProduct.compressedImage ? (
                                                 <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center">
-                                                    <span className="text-4xl mb-2">📸</span>
-                                                    <span className="text-sm font-semibold text-slate-600 px-4 text-center truncate w-full">
-                                                        {editProduct.image.name}
-                                                    </span>
+                                                    <img src={editProduct.compressedImage} alt="Preview" className="w-3/4 h-3/4 object-contain" />
                                                 </div>
                                             ) : selectedItem.img ? (
                                                 <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center">
@@ -883,15 +917,17 @@ const AdminInventory = () => {
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 mb-2">Product Image</label>
                                         <div className="border-2 border-dashed border-slate-200 rounded-2xl h-64 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group relative overflow-hidden">
-                                            {newProduct.image ? (
+                                            {newProduct.isProcessingImage ? (
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                                                    <span className="text-sm font-bold text-slate-400">Optimizing...</span>
+                                                </div>
+                                            ) : newProduct.compressedImage ? (
                                                 <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center">
-                                                    <span className="text-4xl mb-2">📸</span>
-                                                    <span className="text-sm font-semibold text-slate-600 px-4 text-center truncate w-full">
-                                                        {newProduct.image.name}
-                                                    </span>
+                                                     <img src={newProduct.compressedImage} alt="Preview" className="w-3/4 h-3/4 object-contain" />
                                                 </div>
                                             ) : (
-                                                <div className="flex flex-col items-center text-slate-400 group-hover:text-indigo-500 transition-colors">
+                                                <div className="flex flex-col items-center text-slate-400 group-hover:text-emerald-500 transition-colors">
                                                     <Upload size={32} className="mb-3" />
                                                     <span className="text-sm font-semibold">Click to upload image</span>
                                                     <span className="text-xs font-medium mt-1">SVG, PNG, JPG or GIF</span>

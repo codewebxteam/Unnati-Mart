@@ -12,6 +12,14 @@ import { ref, update } from 'firebase/database';
 import Loader from '../components/common/Loader';
 
 
+const adminEmails = ['meraj786@gmail.com', 'admin786@gmail.com', 'unnatimart.admin@gmail.com'];
+
+export const isAdminEmail = (email) => {
+    if (!email) return false;
+    const lowerEmail = email.toLowerCase();
+    return adminEmails.includes(lowerEmail) || lowerEmail.includes('admin');
+};
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -38,11 +46,12 @@ export const AuthProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             clearTimeout(safetyTimeout);
             if (currentUser) {
-                const isAdmin = currentUser.email === 'meraj786@gmail.com' || currentUser.email === 'admin786@gmail.com' || (currentUser.displayName || '').toLowerCase().includes('admin');
+                const isAdmin = isAdminEmail(currentUser.email) || (currentUser.displayName || '').toLowerCase().includes('admin');
+                
                 const userData = {
                     id: currentUser.uid,
                     email: currentUser.email,
-                    name: isAdmin ? 'Meraj Hussain' : (currentUser.displayName || currentUser.email.split('@')[0]),
+                    name: currentUser.displayName || currentUser.email.split('@')[0],
                     photo: currentUser.photoURL,
                     role: isAdmin ? 'admin' : 'member',
                     joinedAt: currentUser.metadata.creationTime,
@@ -51,14 +60,10 @@ export const AuthProvider = ({ children }) => {
                 setUser(userData);
                 console.log("Auth State Changed: User detected with role:", userData.role, "Email:", userData.email);
 
-                // Persist user to Realtime Database for Admin Dashboard visibility
+                // Persist user to Realtime Database
                 const userRef = ref(realtimeDb, `users/${currentUser.uid}`);
                 update(userRef, userData).catch(error => {
-                    if (error.message.includes('permission_denied')) {
-                        console.warn("Firebase Permission Denied: Please update your Security Rules in the Firebase Console to allow writing to /users/.");
-                    } else {
-                        console.error("Error persisting user to DB:", error);
-                    }
+                    console.warn("DB Update Error (likely permissions):", error.message);
                 });
             } else {
                 setUser(null);

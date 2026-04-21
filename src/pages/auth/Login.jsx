@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Github } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, isAdminEmail } from '../../context/AuthContext';
 import { useEffect } from 'react';
 
 const Login = () => {
@@ -53,8 +53,7 @@ const Login = () => {
             if (result.success) {
                 // The useEffect will handle redirection if user object updates,
                 // but for immediate response using the same logic as AuthContext:
-                const isAdmin = email === 'meraj786@gmail.com' || email === 'admin786@gmail.com' || email.toLowerCase().includes('admin');
-                if (isAdmin) {
+                if (isAdminEmail(email)) {
                     navigate('/admin', { replace: true });
                 } else {
                     navigate(from, { replace: true });

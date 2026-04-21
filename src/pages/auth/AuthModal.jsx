@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, Eye, EyeOff, X } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, isAdminEmail } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import useScrollLock from '../../hooks/useScrollLock';
 
 const AuthModal = ({ isOpen, onClose, initialView = 'login' }) => {
-    const { login, signup, loginWithGoogle } = useAuth();
+    const { user, login, signup, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
     const [view, setView] = useState(initialView); // 'login' or 'signup'
     const [isAdminLogin, setIsAdminLogin] = useState(false);
@@ -37,13 +37,8 @@ const AuthModal = ({ isOpen, onClose, initialView = 'login' }) => {
                 const result = await login(formData.email, formData.password);
                 if (result.success) {
                     onClose();
-                    // Robust admin check matching AuthContext logic
-                    const isAdmin = formData.email === 'meraj786@gmail.com' || formData.email === 'admin786@gmail.com' || formData.email.toLowerCase().includes('admin');
-                    if (isAdmin) {
+                    if (isAdminEmail(formData.email)) {
                         navigate('/admin');
-                    } else {
-                        // Stay on current page or go home if needed
-                        // navigate('/'); 
                     }
                 }
                 else setError(result.message || 'Invalid email or password');

@@ -22,6 +22,9 @@ import Success from "./pages/Success";
 import Categories from "./pages/category/Categories";
 import About from "./pages/About";
 import CategoryProducts from "./pages/category/CategoryProducts";
+import Maintenance from "./pages/Maintenance";
+import { realtimeDb as db } from "./firebase";
+import { ref, onValue } from "firebase/database";
 
 
 
@@ -53,8 +56,45 @@ const AdminProtectedRoute = ({ children }) => {
 };
 
 function AppContent() {
+  const { user, loading: authLoading } = useAuth();
   const location = useLocation();
+  const [settings, setSettings] = React.useState({});
+  const [settingsLoading, setSettingsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const settingsRef = ref(db, 'settings');
+    const unsubscribe = onValue(settingsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setSettings(snapshot.val());
+      }
+      setSettingsLoading(false);
+    }, (error) => {
+      console.error("Settings fetch error:", error);
+      setSettingsLoading(false);
+    });
+
+    // Safety timeout: If settings take too long, continue anyway
+    const timeout = setTimeout(() => {
+      setSettingsLoading(false);
+    }, 5000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
+  }, []);
+
   const isAdminRoute = location.pathname.startsWith("/admin");
+  const isMaintenanceMode = settings?.maintenanceMode === true;
+  const isUserAdmin = user?.role === 'admin';
+
+  if (authLoading || settingsLoading) return <Loader />;
+
+  // Show maintenance page if mode is active and user is not admin
+  // But always allow admin routes to be accessed by admins
+  if (isMaintenanceMode && !isUserAdmin && !isAdminRoute && location.pathname !== '/login') {
+    return <Maintenance />;
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col">

@@ -1,17 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, ArrowRight, Github } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, isAdminEmail } from '../../context/AuthContext';
 
 const Signup = () => {
     const navigate = useNavigate();
-    const { signup, loginWithGoogle } = useAuth();
+    const { user, loading, signup, loginWithGoogle } = useAuth();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (!loading && user) {
+            if (user.role === 'admin') {
+                navigate('/admin', { replace: true });
+            } else {
+                navigate('/', { replace: true });
+            }
+        }
+    }, [user, loading, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -41,7 +51,11 @@ const Signup = () => {
         try {
             const result = await signup(name, email, password);
             if (result.success) {
-                navigate('/');
+                if (isAdminEmail(email)) {
+                    navigate('/admin');
+                } else {
+                    navigate('/');
+                }
             } else {
                 setError(result.message || 'Signup failed. Email might already be in use.');
             }

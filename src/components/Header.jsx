@@ -110,11 +110,11 @@ const Header = () => {
             className="flex flex-col cursor-pointer shrink-0"
             onClick={() => navigate('/')}
           >
-            <span className="text-xl font-black tracking-tighter text-slate-900 leading-none uppercase">
-              UNNATI <span className="text-amber-600 italic">MART</span>
+            <span className="text-xl font-black tracking-tighter text-slate-900 leading-none uppercase flex items-center gap-1">
+              <span className="bg-amber-600 text-white px-1.5 py-0.5 rounded-lg not-italic">U</span>NNATI <span className="text-amber-600 italic">MART</span>
             </span>
-            <span className="text-[7px] font-black uppercase tracking-[0.4em] text-slate-400 mt-1">
-              Freshness Forever
+            <span className="text-[7px] font-black uppercase tracking-[0.5em] text-slate-400 mt-1.5">
+              Purely Fresh. Daily Delivered.
             </span>
           </motion.div>
 

@@ -111,7 +111,7 @@ const Events = () => {
   ];
 
   return (
-    <section className="w-full bg-white py-20 lg:py-32 overflow-hidden relative border-t border-slate-50">
+    <section className="w-full bg-white py-12 lg:py-16 overflow-hidden relative border-t border-slate-50">
       <div className="container mx-auto px-6">
 
         {/* Foundation Header */}

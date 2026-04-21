@@ -144,7 +144,7 @@ const CartPage = () => {
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex flex-col sm:flex-row items-baseline justify-between mb-12 gap-4 border-b border-slate-100 pb-8"
+                        className="flex flex-col sm:flex-row items-baseline justify-between mb-6 gap-4 border-b border-slate-100 pb-6"
                     >
                         <div className="flex items-baseline gap-4">
                             <h1 className="text-[32px] font-black text-slate-900 tracking-tighter italic leading-none">
@@ -161,10 +161,12 @@ const CartPage = () => {
                                 Clear Entire Cart
                             </button>
                         </div>
-                    </motion.div>                    <div className="flex flex-col lg:flex-row gap-12">
+                    </motion.div>
+                    
+                    <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
                         {/* Left: Cart Items */}
-                        <div className="flex-1 space-y-8 sm:space-y-12">
-                            <div className="bg-white rounded-[1.5rem] sm:rounded-[3rem] p-3 sm:p-8 lg:p-12 shadow-sm border border-slate-100">
+                        <div className="flex-1 space-y-8">
+                            <div className="bg-white rounded-[2rem] sm:rounded-[3rem] p-4 sm:p-6 lg:p-8 shadow-sm border border-slate-100">
                                 <div className="space-y-4">
                                     <AnimatePresence>
                                         {cartItems.map((item) => (

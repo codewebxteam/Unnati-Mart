@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Save, Store, MapPin, CreditCard, Bell,
     Mail, Smartphone, ShieldCheck, Clock, CheckCircle2,
-    Landmark, Wallet, AlertTriangle
+    Landmark, Wallet, AlertTriangle, AlertCircle
 } from 'lucide-react';
 import { realtimeDb as db } from '../../firebase';
 import { ref, onValue, set } from 'firebase/database';
@@ -109,10 +109,10 @@ const AdminSettings = () => {
 
     // Define the tabs available
     const tabs = [
-        { id: 'general', label: 'General', icon: <Store size={18} /> },
-        { id: 'shipping', label: 'Shipping', icon: <MapPin size={18} /> },
-        { id: 'payments', label: 'Payments', icon: <CreditCard size={18} /> },
-        { id: 'notifications', label: 'Notifications', icon: <Bell size={18} /> },
+        { id: 'general', label: 'General & Maintenance', icon: <Store size={18} /> },
+        { id: 'shipping', label: 'Shipping & Delivery', icon: <MapPin size={18} /> },
+        { id: 'payments', label: 'Payment Gateways', icon: <CreditCard size={18} /> },
+        { id: 'notifications', label: 'Admin Alerts', icon: <Bell size={18} /> },
     ];
 
     return (
@@ -235,15 +235,28 @@ const AdminSettings = () => {
                                                 <ShieldCheck className="text-rose-500" size={24} /> Danger Zone
                                             </h3>
 
-                                            <div className="p-6 border border-rose-100 bg-rose-50/50 rounded-2xl flex items-center justify-between">
-                                                <div>
-                                                    <h4 className="text-sm font-bold text-slate-800">Maintenance Mode</h4>
-                                                    <p className="text-xs text-slate-500 mt-1">Prevent customers from placing new orders while you update the farm store.</p>
+                                            <div className={`p-8 rounded-[2.5rem] border-2 transition-all ${formData.maintenanceMode ? 'bg-rose-50 border-rose-200 shadow-rose-100' : 'bg-slate-50 border-slate-100'} shadow-lg`}>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${formData.maintenanceMode ? 'bg-rose-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                                                            <ShieldCheck size={28} />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-lg font-black text-slate-900">Global Maintenance Mode</h4>
+                                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Toggle store visibility for customers</p>
+                                                        </div>
+                                                    </div>
+                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" name="maintenanceMode" checked={formData.maintenanceMode} onChange={handleToggle} className="sr-only peer" />
+                                                        <div className="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-rose-600"></div>
+                                                    </label>
                                                 </div>
-                                                <label className="relative inline-flex items-center cursor-pointer">
-                                                    <input type="checkbox" name="maintenanceMode" checked={formData.maintenanceMode} onChange={handleToggle} className="sr-only peer" />
-                                                    <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500 shadow-inner"></div>
-                                                </label>
+                                                {formData.maintenanceMode && (
+                                                    <div className="mt-6 p-4 bg-rose-100/50 rounded-2xl border border-rose-200 text-rose-700 text-[11px] font-black uppercase tracking-wider flex items-center gap-3">
+                                                        <AlertCircle size={16} />
+                                                        Only authorized administrators can access the store while this is enabled.
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </motion.div>
@@ -290,14 +303,25 @@ const AdminSettings = () => {
                                                 <p className="text-[10px] text-slate-400 font-semibold px-2">Comma separated list of slots.</p>
                                             </div>
 
-                                            <div className="space-y-2">
-                                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Serviceable Pincodes</label>
-                                                <textarea
-                                                    name="serviceablePincodes" value={formData.serviceablePincodes} onChange={handleChange} rows="3"
-                                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all resize-none"
-                                                    placeholder="e.g. 272175, 272002"
-                                                />
-                                                <p className="text-[10px] text-slate-400 font-semibold px-2">Only users with these pincodes can checkout. Leave empty to serve all.</p>
+                                            <div className="p-8 bg-blue-50/30 rounded-[2.5rem] border-2 border-blue-100/50 shadow-sm shadow-blue-50/20">
+                                                <div className="flex items-center gap-4 mb-6">
+                                                    <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center">
+                                                        <MapPin size={24} />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-lg font-black text-slate-900">Geographic Restrictions</h4>
+                                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Manage serviceable locations</p>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Serviceable Pincodes (Comma Separated)</label>
+                                                    <textarea
+                                                        name="serviceablePincodes" value={formData.serviceablePincodes} onChange={handleChange} rows="4"
+                                                        placeholder="e.g., 272175, 272001, 272002"
+                                                        className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus:outline-none focus:border-blue-600 transition-all resize-none shadow-inner"
+                                                    />
+                                                    <p className="text-[10px] text-slate-400 font-medium italic ml-2 mt-1">Leave empty to allow all pincodes. Users outside these areas won't be able to checkout.</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </motion.div>

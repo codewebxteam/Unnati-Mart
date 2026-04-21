@@ -67,6 +67,13 @@ const AccountSidebar = ({ isOpen, onClose }) => {
       path: '/cart',
       badge: cartCount > 0 ? cartCount : null
     },
+    ...(user?.role === 'admin' ? [{
+      id: 'admin',
+      label: 'Admin Console',
+      desc: 'Management Dashboard',
+      icon: <ShieldCheck size={20} className="text-amber-600" />,
+      path: '/admin'
+    }] : []),
   ];
 
 

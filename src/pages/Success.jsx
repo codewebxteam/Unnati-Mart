@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Check, Sparkles, ChevronRight } from 'lucide-react';
+import { Check, Sparkles, ChevronRight, Share2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const Success = () => {
@@ -16,13 +16,11 @@ const Success = () => {
     const orderDetails = location.state?.orderDetails || {};
 
     // Extract address data
-    const name = orderDetails.address?.fullName || orderDetails.fullName || 'Meraj Hussain';
-    const street = orderDetails.address?.street || orderDetails.street || '12th Main, 4th Cross';
-    const locality = orderDetails.address?.locality || orderDetails.locality || 'Indiranagar';
-    const city = orderDetails.address?.city || orderDetails.city || 'Bengaluru';
-    const state = orderDetails.address?.state || orderDetails.state || 'Uttar Pradesh';
-    const pincode = orderDetails.address?.pincode || orderDetails.pincode || '560001';
-    const mobile = orderDetails.address?.mobile || orderDetails.mobile || '9876543210';
+    const name = orderDetails.address?.fullName || orderDetails.fullName || 'Customer';
+    const street = orderDetails.address?.street || orderDetails.street || '';
+    const city = orderDetails.address?.city || orderDetails.city || '';
+    const state = orderDetails.address?.state || orderDetails.state || '';
+    const pincode = orderDetails.address?.pincode || orderDetails.pincode || '';
 
     // Calculate delivery date (2 days from now)
     const getDeliveryDateStr = () => {
@@ -41,6 +39,26 @@ const Success = () => {
     };
 
     const deliveryDateStr = getDeliveryDateStr();
+
+    const handleShareOrder = () => {
+        const itemsList = orderDetails.items?.map(item => `- ${item.name} (x${item.quantity})`).join('\n') || '';
+        const message = `🛍️ *Order Confirmation - Unnati Mart*\n\n` +
+            `Hello! I've placed an order on Unnati Mart.\n\n` +
+            `*Order Summary:*\n${itemsList}\n\n` +
+            `*Total Amount:* ₹${orderDetails.grandTotal?.toLocaleString('en-IN') || 'N/A'}\n` +
+            `*Expected Delivery:* ${deliveryDateStr}\n\n` +
+            `Track orders here: ${window.location.origin}/orders`;
+
+        if (navigator.share) {
+            navigator.share({
+                title: 'Unnati Mart Order',
+                text: message,
+            }).catch(console.error);
+        } else {
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+        }
+    };
 
     return (
         <div className="min-h-screen bg-[#f1f3f6] font-sans pb-16 pt-28 flex justify-center w-full">
@@ -118,12 +136,11 @@ const Success = () => {
 
                             <div className="text-[14px] text-[#212121] leading-relaxed max-w-[400px]">
                                 <p>{street}</p>
-                                <p>{locality}</p>
                                 <p>{city}</p>
                                 <p>{state} - {pincode}</p>
                             </div>
 
-                            <p className="text-[14px] text-[#212121] mt-2 font-medium text-slate-700">Phone number: {mobile}</p>
+                            <p className="text-[14px] text-[#212121] mt-2 font-medium text-slate-700">Phone number: {orderDetails.address?.mobile || orderDetails.mobile || 'N/A'}</p>
 
                             <button
                                 onClick={() => navigate('/orders')}
@@ -152,11 +169,11 @@ const Success = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate('/orders')}
-                        className="flex items-center gap-2 px-6 py-3.5 bg-white text-[#212121] text-[14px] font-medium rounded-sm hover:text-blue-600 transition-colors cursor-pointer active:scale-[0.98]"
+                        onClick={handleShareOrder}
+                        className="flex items-center gap-2 px-6 py-3.5 bg-white text-blue-600 text-[14px] font-medium rounded-sm hover:bg-blue-50 transition-colors cursor-pointer active:scale-[0.98] border border-blue-100"
                     >
-                        Send Order Details
-                        <ChevronRight size={16} />
+                        <Share2 size={16} />
+                        Share Order Details
                     </button>
                 </div>
 
