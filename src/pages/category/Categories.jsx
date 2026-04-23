@@ -113,7 +113,7 @@ const Categories = () => {
                 </header>
 
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12 mb-12">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 md:gap-12 mb-12">
                     <AnimatePresence mode="popLayout">
                         {(showAll ? finalCategories : finalCategories.slice(0, visibleLimit)).map((cat, idx) => (
                             <motion.div
@@ -129,7 +129,7 @@ const Categories = () => {
                                 }}
                                 whileHover={{ y: -10 }}
                                 onClick={() => navigate(cat.path)}
-                                className="group relative bg-white rounded-[3rem] p-7 lg:p-10 cursor-pointer border-2 border-white shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12)] hover:shadow-[0_40px_100px_-20px_rgba(245,158,11,0.2)] transition-all duration-700 hover:border-amber-100 flex flex-col items-center text-center overflow-hidden"
+                                className="group relative bg-white rounded-3xl sm:rounded-[3rem] p-4 sm:p-7 lg:p-10 cursor-pointer border-2 border-white shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12)] hover:shadow-[0_40px_100px_-20px_rgba(245,158,11,0.2)] transition-all duration-700 hover:border-amber-100 flex flex-col items-center text-center overflow-hidden"
                             >
                                 {/* Subtle Background Accent */}
                                 <div className="absolute top-0 right-0 w-40 h-40 bg-amber-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
@@ -140,7 +140,7 @@ const Categories = () => {
                                 </div>
 
                                 {/* Category Image Container */}
-                                <div className="relative w-full aspect-square mb-10 p-5 lg:p-8 bg-slate-50 rounded-[2.5rem] group-hover:bg-amber-50 group-hover:scale-105 transition-all duration-700 shadow-[inset_0_4px_12px_rgba(0,0,0,0.02)]">
+                                <div className="relative w-full aspect-square mb-4 sm:mb-10 p-4 sm:p-5 lg:p-8 bg-slate-50 rounded-2xl sm:rounded-[2.5rem] group-hover:bg-amber-50 group-hover:scale-105 transition-all duration-700 shadow-[inset_0_4px_12px_rgba(0,0,0,0.02)]">
                                     <motion.img
                                         src={cat.img}
                                         alt={cat.name}
@@ -150,19 +150,19 @@ const Categories = () => {
 
                                 {/* Text Content */}
                                 <div className="relative z-10 w-full">
-                                    <h3 className="text-lg lg:text-xl font-black text-slate-900 tracking-tight mb-2 group-hover:text-amber-600 transition-colors truncate px-2">
+                                    <h3 className="text-sm sm:text-lg lg:text-xl font-black text-slate-900 tracking-tight mb-1 sm:mb-2 group-hover:text-amber-600 transition-colors truncate px-1 sm:px-2">
                                         {cat.name}
                                     </h3>
                                     
-                                    <div className="flex items-center justify-center gap-3">
+                                    <div className="flex items-center justify-center gap-1.5 sm:gap-3">
                                         <div className="flex items-center gap-1">
                                             <div className="w-1 h-1 rounded-full bg-amber-500" />
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                            <span className="text-[8px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                                 Premium
                                             </span>
                                         </div>
                                         <div className="w-[1px] h-3 bg-slate-100" />
-                                        <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">
+                                        <span className="text-[8px] sm:text-[10px] font-black text-amber-600 uppercase tracking-widest">
                                             Handpicked
                                         </span>
                                     </div>
