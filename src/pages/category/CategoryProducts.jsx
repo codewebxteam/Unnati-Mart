@@ -82,7 +82,7 @@ const CategoryProducts = () => {
     }, [categoryPath]);
 
     return (
-        <div className="min-h-screen bg-white pt-28 pb-20 px-4 md:px-8">
+        <div className="min-h-screen bg-white pt-36 pb-20 px-4 md:px-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header Section */}
                 <header className="mb-12">
@@ -142,7 +142,7 @@ const CategoryProducts = () => {
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Loading Inventory...</span>
                     </div>
                 ) : products.length > 0 ? (
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                         {products.map((product, idx) => (
                             <motion.div
                                 key={product.firebaseId || product.id}

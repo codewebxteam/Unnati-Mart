@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { realtimeDb as db } from '../../../firebase';
 import { ref, onValue, query, limitToLast } from 'firebase/database';
 import { useCart } from '../../../context/CartContext';
+import ProductCard from '../../product/ProductCard';
 
 const FeaturedProducts = () => {
     const [products, setProducts] = useState([]);
@@ -83,66 +84,9 @@ const FeaturedProducts = () => {
                 </div>
 
                 {/* Product Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 mb-16">
                     {products.map((product, index) => (
-                        <motion.div
-                            key={product.id}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.1 }}
-                            className="group relative bg-white rounded-[2.5rem] p-4 border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 hover:-translate-y-2"
-                        >
-                            {/* Product Image */}
-                            <div 
-                                onClick={() => navigate(`/product/${product.id}`)}
-                                className="relative aspect-square rounded-[2rem] bg-slate-50 overflow-hidden mb-6 cursor-pointer"
-                            >
-                                <img
-                                    src={product.img || product.compressedImage || product.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80'}
-                                    alt={product.name}
-                                    className="w-full h-full object-contain p-6 group-hover:scale-110 transition-transform duration-700"
-                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80'; }}
-                                />
-                                {product.discount && (
-                                    <div className="absolute top-4 left-4 bg-rose-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg">
-                                        -{product.discount}%
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Product Info */}
-                            <div className="px-2">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
-                                        {product.category}
-                                    </span>
-                                    <div className="flex items-center gap-1 text-slate-400">
-                                        <span className="text-[10px] font-black">5.0</span>
-                                    </div>
-                                </div>
-                                
-                                <h3 
-                                    onClick={() => navigate(`/product/${product.id}`)}
-                                    className="text-lg font-black text-slate-900 mb-4 line-clamp-1 cursor-pointer group-hover:text-amber-600 transition-colors"
-                                >
-                                    {product.name}
-                                </h3>
-
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-xl font-black text-slate-900 leading-none">₹{product.price}</p>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Per {product.unit || 'Unit'}</p>
-                                    </div>
-                                    <button
-                                        onClick={() => addToCart(product)}
-                                        className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center hover:bg-amber-600 transition-all shadow-lg active:scale-90 group/btn"
-                                    >
-                                        <ShoppingCart size={20} className="group-hover/btn:rotate-12 transition-transform" />
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
+                        <ProductCard key={product.id} product={product} />
                     ))}
                 </div>
 

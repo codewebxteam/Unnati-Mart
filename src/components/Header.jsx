@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { realtimeDb as db } from '../firebase';
 import { ref, onValue } from 'firebase/database';
+import Logo from '../assets/foundation/legacy/Logo.webp';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -110,10 +111,11 @@ const Header = () => {
             className="flex flex-col cursor-pointer shrink-0"
             onClick={() => navigate('/')}
           >
-            <span className="text-xl font-black tracking-tighter text-slate-900 leading-none uppercase flex items-center gap-1">
-              <span className="bg-amber-600 text-white px-1.5 py-0.5 rounded-lg not-italic">U</span>NNATI <span className="text-amber-600 italic">MART</span>
+            <span className="text-xl font-black tracking-tighter text-slate-900 leading-none uppercase flex items-center gap-1.5">
+              <img src={Logo} alt="Unnati Mart" className="h-13 w-auto object-contain" />
+              <span className="hidden md:inline">UNNATI <span className="text-amber-600 italic">MART</span></span>
             </span>
-            <span className="text-[7px] font-black uppercase tracking-[0.5em] text-slate-400 mt-1.5">
+            <span className="text-[7px] font-black uppercase tracking-[0.5em] text-slate-400 mt-1.5 hidden md:block">
               Purely Fresh. Daily Delivered.
             </span>
           </motion.div>

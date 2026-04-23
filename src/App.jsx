@@ -15,6 +15,7 @@ import CartPage from "./pages/cart/CartPage";
 import Dashboard from "./pages/profile/dashboard";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
+import AdminLogin from "./pages/auth/AdminLogin";
 import OrdersPage from "./pages/profile/OrdersPage";
 import WishlistPage from "./pages/profile/WishlistPage";
 import ProductDetail from "./components/product/ProductDetail";
@@ -50,7 +51,7 @@ const AdminProtectedRoute = ({ children }) => {
 
   if (loading) return <Loader />;
   if (!user || user.role !== 'admin') {
-    return <Navigate to="/login" state={{ from: location, fromAdmin: true }} replace />;
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
   return children;
 };
@@ -92,8 +93,8 @@ function AppContent() {
 
   // Show maintenance page if mode is active and user is not admin
   // But always allow admin routes to be accessed by admins
-  if (isMaintenanceMode && !isUserAdmin && !isAdminRoute && location.pathname !== '/login') {
-    return <Maintenance />;
+  if (isMaintenanceMode && !isUserAdmin && !isAdminRoute && location.pathname !== '/login' && location.pathname !== '/admin/login') {
+    return <Maintenance message={settings?.maintenanceMessage} />;
   }
 
   return (
@@ -109,6 +110,7 @@ function AppContent() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/profile" element={<Dashboard />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/wishlist" element={<WishlistPage />} />

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Settings, Clock, MessageCircle, ArrowRight } from 'lucide-react';
 
-const Maintenance = () => {
+const Maintenance = ({ message }) => {
   return (
     <div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center p-6 font-sans">
       <div className="max-w-2xl w-full text-center">
@@ -11,8 +11,9 @@ const Maintenance = () => {
           animate={{ scale: 1, opacity: 1 }}
           className="mb-12 relative"
         >
-          <div className="w-32 h-32 bg-amber-100 rounded-[3rem] mx-auto flex items-center justify-center relative z-10">
-            <Settings size={48} className="text-amber-600 animate-[spin_8s_linear_infinite]" />
+          <div className="w-32 h-32 bg-amber-100 rounded-[3rem] mx-auto flex items-center justify-center relative z-10"
+               onClick={() => window.location.href = '/admin/login'}>
+            <Settings size={48} className="text-amber-600 animate-[spin_8s_linear_infinite] cursor-pointer" />
           </div>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-amber-50 rounded-full blur-3xl opacity-50" />
         </motion.div>
@@ -33,7 +34,7 @@ const Maintenance = () => {
           transition={{ delay: 0.3 }}
           className="text-lg text-slate-500 font-medium mb-12 max-w-lg mx-auto leading-relaxed"
         >
-          Unnati Mart is currently under scheduled maintenance to bring you a better shopping experience. We'll be back shortly!
+          {message || "Unnati Mart is currently under scheduled maintenance to bring you a better shopping experience. We'll be back shortly!"}
         </motion.p>
 
         <motion.div

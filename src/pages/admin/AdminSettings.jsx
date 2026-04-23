@@ -40,7 +40,8 @@ const AdminSettings = () => {
         // Notification Settings
         orderEmails: true,
         promotionalEmails: false,
-        adminAlertsEmail: 'admin@unnatimart.com'
+        adminAlertsEmail: 'admin@unnatimart.com',
+        maintenanceMessage: 'Unnati Mart is currently under scheduled maintenance to bring you a better shopping experience. We\'ll be back shortly!'
     });
 
     useEffect(() => {
@@ -251,10 +252,24 @@ const AdminSettings = () => {
                                                         <div className="w-14 h-7 bg-slate-300/50 border border-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:shadow-md after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
                                                     </label>
                                                 </div>
+
                                                 {formData.maintenanceMode && (
-                                                    <div className="mt-6 p-4 bg-rose-100/50 rounded-2xl border border-rose-200 text-rose-700 text-[11px] font-black uppercase tracking-wider flex items-center gap-3">
-                                                        <AlertCircle size={16} />
-                                                        Only authorized administrators can access the store while this is enabled.
+                                                    <div className="mt-6 space-y-4">
+                                                        <div className="space-y-2">
+                                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Maintenance Message</label>
+                                                            <textarea
+                                                                name="maintenanceMessage"
+                                                                value={formData.maintenanceMessage}
+                                                                onChange={handleChange}
+                                                                rows="3"
+                                                                className="w-full px-5 py-4 bg-white border border-rose-100 rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/5 transition-all resize-none shadow-sm"
+                                                                placeholder="Enter message for your customers..."
+                                                            />
+                                                        </div>
+                                                        <div className="p-4 bg-rose-100/50 rounded-2xl border border-rose-200 text-rose-700 text-[11px] font-black uppercase tracking-wider flex items-center gap-3">
+                                                            <AlertCircle size={16} />
+                                                            Only authorized administrators can access the store while this is enabled.
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
@@ -320,7 +335,7 @@ const AdminSettings = () => {
                                                         placeholder="e.g., 272175, 272001, 272002"
                                                         className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus:outline-none focus:border-blue-600 transition-all resize-none shadow-inner"
                                                     />
-                                                    <p className="text-[10px] text-slate-400 font-medium italic ml-2 mt-1">Leave empty to allow all pincodes. Users outside these areas won't be able to checkout.</p>
+                                                    <p className="text-[10px] text-slate-400 font-medium italic ml-2 mt-1">IMPORTANT: Leave empty to allow ALL pincodes for delivery. If you enter pincodes, delivery will ONLY be available in those specific areas.</p>
                                                 </div>
                                             </div>
                                         </div>

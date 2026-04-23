@@ -27,9 +27,8 @@ const OrdersPage = () => {
         switch (status) {
             case 'Pending': return 'bg-amber-100 text-amber-600';
             case 'Placed': return 'bg-blue-100 text-blue-600';
-            case 'Confirmed': return 'bg-purple-100 text-purple-600';
             case 'Shipped': return 'bg-indigo-100 text-indigo-600';
-            case 'Delivered': return 'bg-amber-100 text-amber-600';
+            case 'Delivered': return 'bg-green-100 text-green-600';
             case 'Cancelled': return 'bg-red-100 text-red-600';
             default: return 'bg-slate-100 text-slate-600';
         }
@@ -55,7 +54,7 @@ const OrdersPage = () => {
         return formatted;
     };
 
-    const statusHierarchy = { 'Pending': 0, 'Placed': 1, 'Confirmed': 2, 'Shipped': 3, 'Delivered': 4 };
+    const statusHierarchy = { 'Pending': 0, 'Placed': 1, 'Shipped': 2, 'Delivered': 3 };
 
     return (
         <div className="min-h-screen bg-[#fdfdfd] pb-24">

@@ -70,9 +70,13 @@ const Success = () => {
                 <div className="bg-white px-8 py-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.1)] rounded-sm flex items-center justify-between">
                     <div className="flex flex-col">
                         <h1 className="text-[24px] font-semibold text-[#212121] mb-4 tracking-tight">
-                            Thanks for shopping with us!
+                            {orderDetails.status === 'Pending' ? 'Order Requested!' : 'Thanks for shopping with us!'}
                         </h1>
-                        <p className="text-[14px] text-[#212121] mb-2 font-medium">Delivery by {deliveryDateStr}</p>
+                        <p className="text-[14px] text-[#212121] mb-2 font-medium">
+                            {orderDetails.status === 'Pending' 
+                                ? 'Your order is awaiting admin confirmation.' 
+                                : `Delivery by ${deliveryDateStr}`}
+                        </p>
                         <button
                             onClick={() => navigate('/orders')}
                             className="text-blue-600 font-medium text-[14px] hover:underline self-start mt-1"

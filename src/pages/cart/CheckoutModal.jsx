@@ -171,11 +171,13 @@ const CheckoutModal = ({ onClose }) => {
                 setError("City / Town is mandatory to fill.");
                 return;
             }
-            const serviceablePincodes = settings.serviceablePincodes || "272175, 272001, 272002";
-            const allowedPincodes = serviceablePincodes.split(',').map(p => p.trim());
-            if (!allowedPincodes.includes(formData.pincode.trim())) {
-                setError("Sorry, we don’t deliver to this pincode yet.");
-                return;
+            const serviceablePincodes = settings.serviceablePincodes;
+            if (serviceablePincodes && serviceablePincodes.trim() !== '') {
+                const allowedPincodes = serviceablePincodes.split(',').map(p => p.trim());
+                if (!allowedPincodes.includes(formData.pincode.trim())) {
+                    setError("Sorry, we don’t deliver to this pincode yet.");
+                    return;
+                }
             }
         }
         setError(null);
@@ -622,7 +624,12 @@ Please send the QR code for payment.`;
                                                                 setPincodeVerified('error');
                                                                 return;
                                                             }
-                                                            const serviceablePincodes = settings.serviceablePincodes || "272175, 272001, 272002";
+                                                            const serviceablePincodes = settings.serviceablePincodes;
+                                                            if (!serviceablePincodes || serviceablePincodes.trim() === '') {
+                                                                setPincodeVerified('success');
+                                                                setError(null);
+                                                                return;
+                                                            }
                                                             const allowedPincodes = serviceablePincodes.split(',').map(p => p.trim());
                                                             if (allowedPincodes.includes(formData.pincode.trim())) {
                                                                 setPincodeVerified('success');

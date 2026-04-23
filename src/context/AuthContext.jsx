@@ -17,7 +17,7 @@ const adminEmails = ['meraj786@gmail.com', 'admin786@gmail.com', 'unnatimart.adm
 export const isAdminEmail = (email) => {
     if (!email) return false;
     const lowerEmail = email.toLowerCase();
-    return adminEmails.includes(lowerEmail) || lowerEmail.includes('admin');
+    return adminEmails.includes(lowerEmail);
 };
 
 const AuthContext = createContext();
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             clearTimeout(safetyTimeout);
             if (currentUser) {
-                const isAdmin = isAdminEmail(currentUser.email) || (currentUser.displayName || '').toLowerCase().includes('admin');
+                const isAdmin = isAdminEmail(currentUser.email);
                 
                 const userData = {
                     id: currentUser.uid,

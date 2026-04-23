@@ -39,8 +39,8 @@ const About = () => {
                         <Star size={12} className="fill-amber-500" />
                         Our Story
                     </span>
-                    <h1 className="text-5xl sm:text-7xl font-black text-slate-900 tracking-tighter leading-[0.95] mb-6">
-                        Freshness is not <br />
+                    <h1 className="text-[38px] min-[426px]:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9] mb-6">
+                        Freshness is not <br className="min-[426px]:hidden" />
                         <span className="text-amber-600 italic">a promise.</span><br />
                         It's our <span className="text-amber-600 italic">identity.</span>
                     </h1>

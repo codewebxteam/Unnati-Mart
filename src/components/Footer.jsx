@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Instagram, Facebook, ShieldCheck } from 'lucide-react';
 import LegalModal from './common/LegalModal';
+import Logo from '../assets/foundation/legacy/Logo.webp';
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -30,12 +31,15 @@ const Footer = () => {
       <div className="w-full max-w-6xl relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-[60px] mb-12 w-full">
           <div className="col-span-1 md:col-span-1 flex flex-col gap-6">
-            <h3
-              className="text-3xl font-black tracking-tighter cursor-pointer select-none text-slate-900 uppercase italic"
+            <div
+              className="flex items-center gap-3 cursor-pointer select-none"
               onClick={() => navigate('/')}
             >
-              Unnati<br /><span className="text-amber-600">Mart.</span>
-            </h3>
+              <img src={Logo} alt="Unnati Mart" className="h-10 w-auto object-contain" />
+              <h3 className="text-2xl font-black tracking-tighter text-slate-900 uppercase italic">
+                Unnati<span className="text-amber-600">Mart.</span>
+              </h3>
+            </div>
             <p className="text-[11px] text-slate-500 leading-relaxed font-bold uppercase tracking-wider opacity-80">
               Redefining purity in the modern age. Fresh farm produce optimized for your doorstep.
             </p>
@@ -65,7 +69,7 @@ const Footer = () => {
             {['Home', 'Categories', 'Deals', 'Orders', 'Admin Login'].map((item) => {
               let route = `/${item.toLowerCase().replace(' ', '-')}`;
               if (item === 'Home') route = '/';
-              if (item === 'Admin Login') route = '/admin';
+              if (item === 'Admin Login') route = '/admin/login';
 
               return (
                 <button

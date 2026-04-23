@@ -43,6 +43,44 @@ const AdminOrders = () => {
                         firebaseId: key,
                         orderId: data[key].orderId || data[key].id || key
                     }));
+                    
+                    // Auto-update logic based on days
+                    orderList.forEach(order => {
+                        if (!order.date || order.status === 'Cancelled' || order.status === 'Returned' || order.status === 'Delivered' || order.status === 'Pending') return;
+                        
+                        const orderDate = parseISO(order.date);
+                        if (!isValid(orderDate)) return;
+                        
+                        const daysDiff = differenceInDays(new Date(), orderDate);
+                        let nextStatus = null;
+
+                        if (order.status === 'Placed' && daysDiff >= 2) {
+                            nextStatus = 'Shipped';
+                        } else if (order.status === 'Shipped' && daysDiff >= 5) {
+                            nextStatus = 'Delivered';
+                        }
+
+                        if (nextStatus) {
+                            const orderRef = ref(db, `orders/${order.firebaseId}`);
+                            let updatedTimeline = order.timeline ? [...order.timeline] : [];
+                            const statusHierarchy = { 'Pending': 0, 'Placed': 1, 'Shipped': 2, 'Delivered': 3 };
+                            const targetIndex = statusHierarchy[nextStatus];
+
+                            if (updatedTimeline.length > 0 && targetIndex !== undefined) {
+                                updatedTimeline = updatedTimeline.map((step, idx) => {
+                                    if (idx <= targetIndex) {
+                                        return { ...step, completed: true };
+                                    }
+                                    return step;
+                                });
+                            }
+
+                            const updates = { status: nextStatus };
+                            if (updatedTimeline.length > 0) updates.timeline = updatedTimeline;
+                            update(orderRef, updates);
+                        }
+                    });
+
                     setOrders(orderList.reverse());
                 } else {
                     setOrders([]);
@@ -68,8 +106,8 @@ const AdminOrders = () => {
 
         // Update timeline if it exists
         let updatedTimeline = order.timeline ? [...order.timeline] : [];
-        const statusMap = { 'Placed': 0, 'Confirmed': 1, 'Shipped': 2, 'Delivered': 3 };
-        const targetIndex = statusMap[newStatus];
+        const statusHierarchy = { 'Pending': 0, 'Placed': 1, 'Shipped': 2, 'Delivered': 3 };
+        const targetIndex = statusHierarchy[newStatus];
 
         if (updatedTimeline.length > 0 && targetIndex !== undefined) {
             updatedTimeline = updatedTimeline.map((step, idx) => {
@@ -111,7 +149,7 @@ const AdminOrders = () => {
     };
 
 
-    // Removed auto-update order status logic as per user request to prevent "self-changing" values.
+    // Re-implemented auto-update order status logic based on days passed.
 
 
     // Calculate stats
@@ -210,13 +248,13 @@ const AdminOrders = () => {
 
                         {/* Status Tabs */}
                         <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
-                            {['All', 'Placed', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Returned'].map((status) => (
+                            {['All', 'Placed', 'Pending', 'Shipped', 'Delivered', 'Cancelled', 'Returned'].map((status) => (
                                 <button
                                     key={status}
                                     onClick={() => setStatusFilter(status)}
                                     className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${statusFilter === status
-                                            ? 'bg-white text-amber-600 shadow-sm'
-                                            : 'text-slate-400 hover:text-slate-600'
+                                        ? 'bg-white text-amber-600 shadow-sm'
+                                        : 'text-slate-400 hover:text-slate-600'
                                         }`}
                                 >
                                     {status}
@@ -286,16 +324,13 @@ const AdminOrders = () => {
                                                 value={item.status === 'Success' ? 'Delivered' : item.status}
                                                 onChange={(e) => handleStatusChange(item, e.target.value)}
                                                 className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full border-none focus:ring-0 cursor-pointer appearance-none text-center ${(item.status === 'Delivered' || item.status === 'Success') ? 'bg-amber-600 text-white' :
-                                                        (item.status === 'Pending' || item.status === 'Placed') ? 'bg-amber-500 text-white' :
-                                                            (item.status === 'Confirmed') ? 'bg-emerald-500 text-white' :
-                                                                (item.status === 'Cancelled' || item.status === 'Returned') ? 'bg-rose-500 text-white' :
-                                                                    'bg-amber-600 text-white'
+                                                    (item.status === 'Pending' || item.status === 'Placed') ? 'bg-amber-500 text-white' :
+                                                        (item.status === 'Cancelled' || item.status === 'Returned') ? 'bg-rose-500 text-white' :
+                                                            'bg-amber-600 text-white'
                                                     }`}
                                             >
                                                 <option value="Pending">Pending</option>
                                                 <option value="Placed">Placed</option>
-                                                <option value="Confirmed">Confirmed</option>
-                                                <option value="Processing">Processing</option>
                                                 <option value="Shipped">Shipped</option>
                                                 <option value="Delivered">Delivered</option>
                                                 <option value="Cancelled">Cancelled</option>
@@ -354,16 +389,13 @@ const AdminOrders = () => {
                                             value={item.status === 'Success' ? 'Delivered' : item.status}
                                             onChange={(e) => handleStatusChange(item, e.target.value)}
                                             className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full inline-block min-w-[120px] border-none focus:ring-4 focus:ring-amber-500/10 cursor-pointer transition-all ${(item.status === 'Delivered' || item.status === 'Success') ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' :
-                                                    (item.status === 'Pending' || item.status === 'Placed') ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' :
-                                                        (item.status === 'Confirmed') ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' :
-                                                            (item.status === 'Cancelled' || item.status === 'Returned') ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' :
-                                                                'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
+                                                (item.status === 'Pending' || item.status === 'Placed') ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' :
+                                                        (item.status === 'Cancelled' || item.status === 'Returned') ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' :
+                                                            'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
                                                 }`}
                                         >
                                             <option value="Pending">Pending</option>
                                             <option value="Placed">Placed</option>
-                                            <option value="Confirmed">Confirmed</option>
-                                            <option value="Processing">Processing</option>
                                             <option value="Shipped">Shipped</option>
                                             <option value="Delivered">Delivered</option>
                                             <option value="Cancelled">Cancelled</option>
@@ -372,11 +404,11 @@ const AdminOrders = () => {
                                     </td>
                                     <td className="py-5 px-8 text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            {(item.status === 'Pending' || item.status === 'Placed') && (
+                                            {item.status === 'Pending' && (
                                                 <button
-                                                    onClick={() => handleStatusChange(item, 'Confirmed')}
+                                                    onClick={() => handleStatusChange(item, 'Placed')}
                                                     className="w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-lg border border-emerald-100 transition-colors active:scale-95"
-                                                    title="Confirm Order"
+                                                    title="Approve Order"
                                                 >
                                                     <Check size={14} strokeWidth={3} />
                                                 </button>

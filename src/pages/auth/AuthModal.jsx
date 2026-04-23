@@ -20,6 +20,13 @@ const AuthModal = ({ isOpen, onClose, initialView = 'login' }) => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    // Sync internal view state with initialView prop when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setView(initialView);
+        }
+    }, [isOpen, initialView]);
+
     useScrollLock(isOpen);
 
     const handleInputChange = (e) => {
@@ -113,7 +120,7 @@ const AuthModal = ({ isOpen, onClose, initialView = 'login' }) => {
                             <div className="text-center mb-6">
                                 <h2 className="text-3xl font-black tracking-tight mb-2">
                                     <span className="bg-gradient-to-r from-amber-600 to-amber-500 bg-clip-text text-transparent italic">
-                                        {view === 'login' ? (isAdminLogin ? 'Admin Portal' : 'Welcome Back') : 'Create Account'}
+                                        {view === 'login' ? 'Welcome Back' : 'Create Account'}
                                     </span>
                                 </h2>
                                 <p className="text-slate-500 text-sm font-semibold">
@@ -121,21 +128,7 @@ const AuthModal = ({ isOpen, onClose, initialView = 'login' }) => {
                                 </p>
                             </div>
 
-                            {/* Admin Toggle */}
-                            {view === 'login' && (
-                                <div className="flex justify-center mb-6">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsAdminLogin(!isAdminLogin)}
-                                        className={`text-[10px] uppercase font-black tracking-widest px-4 py-2 rounded-full border-2 transition-all ${isAdminLogin
-                                            ? 'border-amber-500 bg-amber-50 text-amber-600'
-                                            : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300'
-                                            }`}
-                                    >
-                                        {isAdminLogin ? 'Admin Login Mode Active' : 'Login as Admin'}
-                                    </button>
-                                </div>
-                            )}
+
 
                             {error && (
                                 <div className="mb-4 text-[10px] font-black uppercase tracking-widest text-red-500 text-center">

@@ -27,6 +27,26 @@ const ProductDetail = () => {
     const [isAdded, setIsAdded] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [selectedSize, setSelectedSize] = useState(null);
+    const [realReviews, setRealReviews] = useState([]);
+
+    // Fetch Reviews from Firebase
+    useEffect(() => {
+        if (!id) return;
+        const reviewsRef = ref(db, `reviews/${id}`);
+        const unsubscribe = onValue(reviewsRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const list = Object.entries(data).map(([rid, val]) => ({
+                    id: rid,
+                    ...val
+                })).sort((a, b) => new Date(b.date) - new Date(a.date));
+                setRealReviews(list);
+            } else {
+                setRealReviews([]);
+            }
+        });
+        return () => unsubscribe();
+    }, [id]);
 
     const sizeOptions = {
         'Litre': [
@@ -249,7 +269,7 @@ const ProductDetail = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50/50 pt-24 pb-12 lg:pt-32 overflow-x-hidden">
+        <div className="min-h-screen bg-slate-50/50 pt-32 pb-12 lg:pt-40 overflow-x-hidden">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Navigation / Breadcrumbs */}
@@ -339,10 +359,12 @@ const ProductDetail = () => {
                                 </div>
                                 <div className="flex items-center gap-1">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={10} className="fill-amber-500 text-amber-500" />
+                                        <Star key={i} size={10} className={`${i < (realReviews.reduce((acc, r) => acc + r.rating, 0) / (realReviews.length || 1)) ? 'fill-amber-500 text-amber-500' : 'text-slate-200'}`} />
                                     ))}
-                                    <span className="text-[10px] font-black text-slate-900 ml-1">5.0</span>
-                                    <span className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-widest">({product.reviews?.length || 0} REVIEWS)</span>
+                                    <span className="text-[10px] font-black text-slate-900 ml-1">
+                                        {realReviews.length > 0 ? (realReviews.reduce((acc, r) => acc + r.rating, 0) / realReviews.length).toFixed(1) : '5.0'}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-widest">({realReviews.length} REVIEWS)</span>
                                 </div>
                             </motion.div>
 
@@ -513,26 +535,79 @@ const ProductDetail = () => {
                                         )}
                                         {activeTab === 'reviews' && (
                                             <div className="space-y-6 max-w-2xl">
-                                                {product.reviews && product.reviews.length > 0 ? (
-                                                    product.reviews.map((review) => (
-                                                        <div key={review.id} className="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                                                {/* Summary Stats */}
+                                                {(realReviews && realReviews.length > 0) && (
+                                                    <div className="p-6 bg-amber-50 rounded-[2rem] border border-amber-100 mb-8 flex items-center justify-between">
+                                                        <div>
+                                                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Average Rating</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-3xl font-black text-slate-900 leading-none">
+                                                                    {(realReviews.reduce((acc, r) => acc + r.rating, 0) / realReviews.length).toFixed(1)}
+                                                                </span>
+                                                                <div className="flex items-center gap-0.5">
+                                                                    {[...Array(5)].map((_, i) => (
+                                                                        <Star key={i} size={14} className="fill-amber-500 text-amber-500" />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Total Reviews</p>
+                                                            <p className="text-2xl font-black text-slate-900 leading-none">{realReviews.length}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {realReviews && realReviews.length > 0 ? (
+                                                    realReviews.map((review) => (
+                                                        <div key={review.id} className="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                                                             <div className="flex justify-between items-start mb-4">
-                                                                <div>
-                                                                    <p className="text-sm font-black text-slate-900">{review.user}</p>
-                                                                    <div className="flex items-center gap-1 mt-1">
-                                                                        {[...Array(5)].map((_, i) => (
-                                                                            <Star key={i} size={10} className={`${i < review.rating ? 'fill-amber-500 text-amber-500' : 'text-slate-200'}`} />
-                                                                        ))}
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
+                                                                        {review.userPhoto ? (
+                                                                            <img src={review.userPhoto} alt={review.userName} className="w-full h-full object-cover" />
+                                                                        ) : (
+                                                                            <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs">
+                                                                                {review.userName?.charAt(0)}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-sm font-black text-slate-900 leading-none mb-1">{review.userName || 'Verified Buyer'}</p>
+                                                                        <div className="flex items-center gap-1">
+                                                                            {[...Array(5)].map((_, i) => (
+                                                                                <Star key={i} size={10} className={`${i < review.rating ? 'fill-amber-500 text-amber-500' : 'text-slate-200'}`} />
+                                                                            ))}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{review.date}</span>
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                                                    {new Date(review.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                                </span>
                                                             </div>
-                                                            <p className="text-sm text-slate-600 font-semibold italic">"{review.comment}"</p>
+                                                            <p className="text-sm text-slate-600 font-semibold mb-4 leading-relaxed">"{review.comment}"</p>
+                                                            
+                                                            {/* Review Images */}
+                                                            {review.images && review.images.length > 0 && (
+                                                                <div className="flex flex-wrap gap-2 mt-4">
+                                                                    {review.images.map((img, idx) => (
+                                                                        <a key={idx} href={img} target="_blank" rel="noopener noreferrer" className="block">
+                                                                            <div className="w-20 h-20 rounded-xl overflow-hidden border border-slate-100 hover:border-amber-500 transition-colors">
+                                                                                <img src={img} alt={`Review ${idx}`} className="w-full h-full object-cover" />
+                                                                            </div>
+                                                                        </a>
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     ))
                                                 ) : (
-                                                    <div className="text-center py-10 bg-white rounded-3xl border border-slate-100 border-dashed">
-                                                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No reviews yet. Be the first to review!</p>
+                                                    <div className="text-center py-20 bg-white rounded-[2.5rem] border border-slate-100 border-dashed">
+                                                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-200 mx-auto mb-4">
+                                                            <Star size={32} />
+                                                        </div>
+                                                        <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">No reviews yet.</p>
+                                                        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-1">Be the first to share your experience!</p>
                                                     </div>
                                                 )}
                                             </div>
