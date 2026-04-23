@@ -1,25 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Leaf, Truck, ShieldCheck, Users, Star, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import grandOpeningImg from '../assets/foundation/legacy/grand_opening.png';
+import { realtimeDb as db } from '../firebase';
+import { ref, onValue } from 'firebase/database';
+import grandOpeningImg from '../assets/foundation/legacy/grand_opening.webp';
 
 const About = () => {
     const navigate = useNavigate();
 
-    const values = [
-        { icon: <Leaf size={24} />, title: 'Farm Fresh', desc: 'Direct from local farms to your doorstep — no middlemen, no compromises.' },
-        { icon: <ShieldCheck size={24} />, title: 'Traced Purity', desc: 'Every product is quality-checked and traceable back to its source.' },
-        { icon: <Truck size={24} />, title: 'Swift Delivery', desc: 'Same-day delivery within Gorakhpur — because freshness can\'t wait.' },
-        { icon: <Heart size={24} />, title: 'Community First', desc: 'Empowering local farmers and building a healthier community together.' },
-    ];
+    const ICON_MAP = {
+        'leaf': <Leaf size={24} />,
+        'shield': <ShieldCheck size={24} />,
+        'truck': <Truck size={24} />,
+        'heart': <Heart size={24} />,
+    };
 
-    const stats = [
+    const [values, setValues] = useState([
+        { icon: 'leaf', title: 'Farm Fresh', desc: 'Direct from local farms to your doorstep — no middlemen, no compromises.' },
+        { icon: 'shield', title: 'Traced Purity', desc: 'Every product is quality-checked and traceable back to its source.' },
+        { icon: 'truck', title: 'Swift Delivery', desc: 'Same-day delivery within Gorakhpur — because freshness can\'t wait.' },
+        { icon: 'heart', title: 'Community First', desc: 'Empowering local farmers and building a healthier community together.' },
+    ]);
+
+    const [stats, setStats] = useState([
         { number: '500+', label: 'Products' },
         { number: '10K+', label: 'Happy Customers' },
         { number: '50+', label: 'Local Farmers' },
         { number: '24/7', label: 'Support' },
-    ];
+    ]);
+
+    useEffect(() => {
+        const valuesRef = ref(db, 'settings/about/values');
+        const statsRef = ref(db, 'settings/about/stats');
+
+        const unsubValues = onValue(valuesRef, (snap) => {
+            if (snap.exists()) setValues(Object.values(snap.val()));
+        });
+
+        const unsubStats = onValue(statsRef, (snap) => {
+            if (snap.exists()) setStats(Object.values(snap.val()));
+        });
+
+        return () => {
+            unsubValues();
+            unsubStats();
+        };
+    }, []);
 
     return (
         <div className="min-h-screen bg-white pt-28 pb-32 relative overflow-hidden">
@@ -45,8 +72,8 @@ const About = () => {
                         It's our <span className="text-amber-600 italic">identity.</span>
                     </h1>
                     <p className="text-slate-500 text-base sm:text-lg font-medium max-w-2xl mx-auto leading-relaxed">
-                        Born in the heart of Gorakhpur, Unnati Mart is more than a grocery store — 
-                        it's a movement to bring pure, farm-fresh produce to every household with 
+                        Born in the heart of Gorakhpur, Unnati Mart is more than a grocery store —
+                        it's a movement to bring pure, farm-fresh produce to every household with
                         honesty, transparency, and love.
                     </p>
                 </motion.div>
@@ -92,14 +119,14 @@ const About = () => {
                             Bridging the gap between <span className="text-amber-600 italic">farms</span> and <span className="text-amber-600 italic">families.</span>
                         </h2>
                         <p className="text-slate-500 leading-relaxed mb-4">
-                            At Unnati Mart, we believe every family deserves access to pure, 
-                            unadulterated groceries. We work directly with local farmers across 
-                            Uttar Pradesh to eliminate middlemen and ensure that what reaches your 
+                            At Unnati Mart, we believe every family deserves access to pure,
+                            unadulterated groceries. We work directly with local farmers across
+                            Uttar Pradesh to eliminate middlemen and ensure that what reaches your
                             kitchen is as fresh as it was on the farm.
                         </p>
                         <p className="text-slate-500 leading-relaxed">
-                            From hand-picked vegetables to cold-pressed oils, from organic spices 
-                            to farm-fresh dairy — every product on our shelves tells a story of 
+                            From hand-picked vegetables to cold-pressed oils, from organic spices
+                            to farm-fresh dairy — every product on our shelves tells a story of
                             quality, care, and commitment to your family's health.
                         </p>
                     </div>
@@ -147,7 +174,7 @@ const About = () => {
                                 className="group bg-white rounded-[1.8rem] p-8 border border-slate-100 hover:border-amber-200 shadow-sm hover:shadow-xl hover:shadow-amber-100/40 transition-all duration-500"
                             >
                                 <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 mb-5 group-hover:bg-amber-600 group-hover:text-white transition-all duration-500">
-                                    {value.icon}
+                                    {ICON_MAP[value.icon] || <Leaf size={24} />}
                                 </div>
                                 <h4 className="text-lg font-black text-slate-900 tracking-tight mb-2">{value.title}</h4>
                                 <p className="text-sm text-slate-500 leading-relaxed">{value.desc}</p>
@@ -178,8 +205,8 @@ const About = () => {
                             <span className="text-amber-500 italic">trust us daily.</span>
                         </h2>
                         <p className="text-slate-400 max-w-xl mx-auto mb-10 leading-relaxed">
-                            From humble beginnings in Gorakhpur to serving thousands of households, 
-                            our journey has been powered by one thing — your trust. Every order you 
+                            From humble beginnings in Gorakhpur to serving thousands of households,
+                            our journey has been powered by one thing — your trust. Every order you
                             place strengthens our mission to make pure food accessible to all.
                         </p>
                         <motion.button

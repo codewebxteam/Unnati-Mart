@@ -115,9 +115,6 @@ const Header = () => {
               <img src={Logo} alt="Unnati Mart" className="h-13 w-auto object-contain" />
               <span className="hidden md:inline">UNNATI <span className="text-amber-600 italic">MART</span></span>
             </span>
-            <span className="text-[7px] font-black uppercase tracking-[0.5em] text-slate-400 mt-1.5 hidden md:block">
-              Purely Fresh. Daily Delivered.
-            </span>
           </motion.div>
 
           {/* Search Bar - Hidden on small screens */}

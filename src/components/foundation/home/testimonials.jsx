@@ -1,15 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Quote, Star, CheckCircle2, Award, Users, ThumbsUp } from 'lucide-react';
+import { realtimeDb as db } from '../../../firebase';
+import { ref, onValue } from 'firebase/database';
 
 // Import local testimonial images
-import raviImg from '../../../assets/testimonials/ravi.png';
-import priyaImg from '../../../assets/testimonials/priya.png';
-import amitImg from '../../../assets/testimonials/amit.png';
-import avatarsImg from '../../../assets/testimonials/avatars.png';
+import raviImg from '../../../assets/testimonials/ravi.webp';
+import priyaImg from '../../../assets/testimonials/priya.webp';
+import amitImg from '../../../assets/testimonials/amit.webp';
+import avatarsImg from '../../../assets/testimonials/avatars.webp';
+
+const TESTIMONIAL_IMG_MAP = {
+  'ravi': raviImg,
+  'priya': priyaImg,
+  'amit': amitImg,
+  'avatars': avatarsImg
+};
 
 const Testimonials = () => {
-  const reviews = [
+  const [reviews, setReviews] = useState([
     {
       name: "Ravi Kumar",
       role: "Software Engineer",
@@ -37,14 +46,46 @@ const Testimonials = () => {
       accent: "from-amber-500 to-orange-500",
       delay: 0.3
     }
-  ];
+  ]);
 
-  const stats = [
-    { label: "Happy Customers", value: "10k+", icon: <Users size={20} /> },
-    { label: "Positive Reviews", value: "4.9/5", icon: <Star size={20} className="text-amber-500" /> },
-    { label: "Quality Checks", value: "100%", icon: <Award size={20} /> },
-    { label: "Fast Returns", value: "Easy", icon: <ThumbsUp size={20} /> }
-  ];
+  const [stats, setStats] = useState([
+    { label: "Happy Customers", value: "10k+", icon: 'users' },
+    { label: "Positive Reviews", value: "4.9/5", icon: 'star' },
+    { label: "Quality Checks", value: "100%", icon: 'award' },
+    { label: "Fast Returns", value: "Easy", icon: 'thumbs-up' }
+  ]);
+
+  const ICON_MAP = {
+    'users': <Users size={20} />,
+    'star': <Star size={20} className="text-amber-500" />,
+    'award': <Award size={20} />,
+    'thumbs-up': <ThumbsUp size={20} />
+  };
+
+  useEffect(() => {
+    const reviewsRef = ref(db, 'settings/testimonials/reviews');
+    const statsRef = ref(db, 'settings/testimonials/stats');
+
+    const unsubReviews = onValue(reviewsRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.val();
+        const resolved = Object.values(data).map(r => ({
+          ...r,
+          image: TESTIMONIAL_IMG_MAP[r.image] || (typeof r.image === 'string' ? r.image.replace('.png', '.webp') : r.image) || raviImg
+        }));
+        setReviews(resolved);
+      }
+    });
+
+    const unsubStats = onValue(statsRef, (snap) => {
+      if (snap.exists()) setStats(Object.values(snap.val()));
+    });
+
+    return () => {
+      unsubReviews();
+      unsubStats();
+    };
+  }, []);
 
   return (
     <section id="testimonials" className="w-full bg-slate-50 py-12 lg:py-16 overflow-hidden relative border-t border-slate-100">
@@ -97,7 +138,7 @@ const Testimonials = () => {
               className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white border border-slate-100 shadow-sm"
             >
               <div className="p-2 bg-amber-50 text-amber-600 rounded-lg mb-2">
-                {stat.icon}
+                {ICON_MAP[stat.icon] || <Star size={20} />}
               </div>
               <h5 className="text-xl font-black text-slate-900">{stat.value}</h5>
               <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{stat.label}</p>

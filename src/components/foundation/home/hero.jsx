@@ -6,9 +6,9 @@ import { realtimeDb as db } from '../../../firebase';
 import { ref, onValue } from 'firebase/database';
 
 // Local fallbacks
-import heroStorefront from '../../../assets/foundation/hero_storefront.png';
-import heroFresh from '../../../assets/foundation/hero_fresh_new.png';
-import heroLifestyle from '../../../assets/foundation/hero_lifestyle.png';
+import heroStorefront from '../../../assets/foundation/hero_storefront.webp';
+import heroFresh from '../../../assets/foundation/hero_fresh_new.webp';
+import heroLifestyle from '../../../assets/foundation/hero_lifestyle.webp';
 
 const ICON_MAP = {
   truck: <Truck size={18} className="text-slate-900" />,
@@ -40,7 +40,8 @@ const Hero = () => {
           ...prev,
           ...data,
           // Ensure slides are always an array even if data is partial
-          slides: data.slides || prev.slides,
+          // Automatically transform any .png from DB to .webp for consistency
+          slides: (data.slides || prev.slides).map(s => (typeof s === 'string' ? s.replace('.png', '.webp') : s)),
           badges: data.badges || prev.badges
         }));
       }
@@ -58,7 +59,7 @@ const Hero = () => {
 
     checkStatus();
     const interval = setInterval(checkStatus, 60000);
-    
+
     return () => {
       unsubHero();
       clearInterval(interval);
@@ -157,7 +158,7 @@ const Hero = () => {
                   <div className="w-7 h-7 min-[426px]:w-10 min-[426px]:h-10 rounded-full bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
                     {/* Render scaled icon */}
                     <div className="scale-75 min-[426px]:scale-100">
-                        {ICON_MAP[badge.icon] || <Star size={16} className="text-slate-900" />}
+                      {ICON_MAP[badge.icon] || <Star size={16} className="text-slate-900" />}
                     </div>
                   </div>
                   <p className="text-[8px] min-[426px]:text-[10px] font-black text-white uppercase tracking-[0.1em] sm:tracking-[0.2em]">{badge.text}</p>

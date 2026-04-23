@@ -1,42 +1,59 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Leaf, ShieldCheck, BadgePercent, Store, Sprout, Soup, Wheat } from 'lucide-react';
+import { realtimeDb as db } from '../../../firebase';
+import { ref, onValue } from 'firebase/database';
 const vegImg = 'https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=800&q=80';
 const fruitImg = 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=800&q=80';
 const spiceImg = 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&q=80';
 const grainImg = 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80';
-import unnatiHero from '../../../assets/foundation/hero_storefront.png';
+import unnatiHero from '../../../assets/foundation/hero_storefront.webp';
 
 const Story = () => {
-  const features = [
+  const ICON_MAP = {
+    'sprout': <Sprout size={22} />,
+    'leaf': <Leaf size={22} />,
+    'soup': <Soup size={22} />,
+    'wheat': <Wheat size={22} />,
+  };
+
+  const [features, setFeatures] = useState([
     {
       img: vegImg,
-      icon: <Sprout size={22} />,
+      icon: 'sprout',
       title: "Fresh Harvest",
       desc: "Daily Picked",
       theme: "bg-amber-50 border-amber-200 text-amber-700 shadow-amber-100"
     },
     {
       img: fruitImg,
-      icon: <Leaf size={22} />,
+      icon: 'leaf',
       title: "Premium Fruits",
       desc: "Grade A Only",
       theme: "bg-lime-50 border-lime-200 text-lime-700 shadow-lime-100"
     },
     {
       img: spiceImg,
-      icon: <Soup size={22} />,
+      icon: 'soup',
       title: "Authentic Spices",
       desc: "Pure & Raw",
       theme: "bg-amber-50 border-amber-200 text-amber-700 shadow-amber-100"
     },
     {
       img: grainImg,
-      icon: <Wheat size={22} />,
+      icon: 'wheat',
       title: "Quality Grains",
       desc: "Sun Dried",
       theme: "bg-orange-50 border-orange-200 text-orange-700 shadow-orange-100"
     },
-  ];
+  ]);
+
+  useEffect(() => {
+    const storyRef = ref(db, 'settings/story/features');
+    const unsub = onValue(storyRef, (snap) => {
+      if (snap.exists()) setFeatures(Object.values(snap.val()));
+    });
+    return () => unsub();
+  }, []);
 
   return (
     <section className="relative w-full bg-white py-8 lg:py-12 overflow-hidden">
@@ -90,7 +107,7 @@ const Story = () => {
 
                 {/* icon container */}
                 <div className="relative z-10 w-12 h-12 lg:w-14 lg:h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:scale-110 transition-transform">
-                  {item.icon}
+                  {ICON_MAP[item.icon] || <Sprout size={22} />}
                 </div>
 
                 {/* text content */}

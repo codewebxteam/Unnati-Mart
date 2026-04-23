@@ -34,7 +34,7 @@ export const compressImage = (file, maxWidth = 500, maxHeight = 500, quality = 0
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
-                const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                const dataUrl = canvas.toDataURL('image/webp', quality);
                 resolve(dataUrl);
             };
             img.onerror = reject;

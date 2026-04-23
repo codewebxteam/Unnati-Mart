@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Users, ArrowRight, PlayCircle, Plus, Sparkles, Globe, X, CheckCircle2 } from 'lucide-react';
 import { realtimeDb as db } from '../../../firebase';
-import { ref, push, serverTimestamp } from 'firebase/database';
+import { ref, push, serverTimestamp, onValue } from 'firebase/database';
 import useScrollLock from '../../../hooks/useScrollLock';
 
 // Import Legacy Images
-import legacy1 from '../../../assets/foundation/legacy/grand_opening.png';
-const legacy2 = 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&q=80';
-const legacy3 = 'https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=500&q=80';
-import legacy4 from '../../../assets/foundation/unnati_hero.png';
+import legacy1 from '../../../assets/foundation/legacy/grand_opening.webp';
+import legacy2 from '../../../assets/foundation/hero_fresh_new.webp';
+import legacy3 from '../../../assets/foundation/hero_lifestyle.webp';
+import legacy4 from '../../../assets/foundation/hero_storefront.webp';
+
+const LEGACY_MAP = {
+  'legacy1': legacy1,
+  'legacy2': legacy2,
+  'legacy3': legacy3,
+  'legacy4': legacy4,
+};
 
 const Events = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
@@ -23,7 +30,7 @@ const Events = () => {
   const [registerFormData, setRegisterFormData] = useState({ name: '', email: '', contact: '' });
   const [registerMessageSent, setRegisterMessageSent] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  
+
   useScrollLock(isModalOpen || isRegisterModalOpen);
 
   const handleChange = (e) => {
@@ -80,14 +87,14 @@ const Events = () => {
     setIsRegisterSubmitting(false);
   };
 
-  const legacyStories = [
-    { title: "The Grand Launch", category: "Big Celebration", img: legacy1 },
-    { title: "Supply Chain Growth", category: "Expansion", img: legacy2 },
-    { title: "Direct Produce Impact", category: "Community", img: legacy3 },
-    { title: "The Modern Mart Vision", category: "Sustainable", img: legacy4 },
-  ];
+  const [legacyStories, setLegacyStories] = useState([
+    { title: "The Grand Launch", category: "Big Celebration", img: 'legacy1' },
+    { title: "Supply Chain Growth", category: "Expansion", img: 'legacy2' },
+    { title: "Direct Produce Impact", category: "Community", img: 'legacy3' },
+    { title: "The Modern Mart Vision", category: "Sustainable", img: 'legacy4' },
+  ]);
 
-  const foundationEvents = [
+  const [foundationEvents, setFoundationEvents] = useState([
     {
       title: "Unnati Mart Grand Opening",
       date: "15",
@@ -108,7 +115,32 @@ const Events = () => {
       theme: "from-teal-700 to-teal-900",
       accent: "text-teal-400"
     }
-  ];
+  ]);
+
+  // Sync with RTDB
+  useEffect(() => {
+    const eventsRef = ref(db, 'settings/events');
+    const legacyRef = ref(db, 'settings/legacy');
+
+    const unsubEvents = onValue(eventsRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.val();
+        setFoundationEvents(Object.values(data));
+      }
+    });
+
+    const unsubLegacy = onValue(legacyRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.val();
+        setLegacyStories(Object.values(data));
+      }
+    });
+
+    return () => {
+      unsubEvents();
+      unsubLegacy();
+    };
+  }, []);
 
   return (
     <section className="w-full bg-white py-12 lg:py-16 overflow-hidden relative border-t border-slate-50">
@@ -127,7 +159,7 @@ const Events = () => {
             <span className="text-amber-500 italic lowercase">Aisle.</span>
           </h3>
           <p className="text-sm lg:text-base text-slate-500 font-medium max-w-xl leading-relaxed">
-            Unnati Mart sirf ek grocery store nahi hai. Hum community aur sustainability mein believe karte hain. 
+            Unnati Mart sirf ek grocery store nahi hai. Hum community aur sustainability mein believe karte hain.
             Hamare events aapko shuddhata aur behtar lifestyle se jodte hain.
           </p>
 
@@ -173,7 +205,7 @@ const Events = () => {
                     <p className="text-slate-500 text-xs font-medium mb-8 max-w-xs">
                       Join the core team to understand our vision for 2026 and how we are scaling purity.
                     </p>
-                    <button 
+                    <button
                       onClick={() => { setSelectedEvent(event); setIsRegisterModalOpen(true); }}
                       className="w-full lg:w-fit px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-amber-600 transition-colors active:scale-95"
                     >
@@ -195,7 +227,7 @@ const Events = () => {
                   <PlayCircle className="text-white/50 mt-4 group-hover:text-white transition-colors" size={32} strokeWidth={1} />
                 </div>
                 <img
-                  src={story.img}
+                  src={LEGACY_MAP[story.img] || (typeof story.img === 'string' ? story.img.replace('.png', '.webp') : story.img) || legacy1}
                   alt={story.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
@@ -215,7 +247,7 @@ const Events = () => {
                 Kya aap hamare farm tours ya sustainability drives ka hissa banna chahte hain? Humse judiye.
               </p>
             </div>
-            <button 
+            <button
               onClick={() => setIsModalOpen(true)}
               className="px-8 py-4 sm:px-12 sm:py-6 bg-white text-slate-900 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-widest hover:bg-amber-500 hover:text-white transition-all shadow-2xl flex items-center gap-3 sm:gap-4"
             >
@@ -230,8 +262,8 @@ const Events = () => {
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-md p-4">
             <div className="bg-white rounded-[2rem] w-full max-w-md p-8 relative shadow-2xl border border-slate-100">
-              <button 
-                onClick={() => setIsModalOpen(false)} 
+              <button
+                onClick={() => setIsModalOpen(false)}
                 className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all"
               >
                 <X size={18} />
@@ -255,16 +287,16 @@ const Events = () => {
                   <form onSubmit={handleJoin} className="space-y-4">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Full Name</label>
-                      <input 
+                      <input
                         name="name" value={formData.name} onChange={handleChange} required
                         placeholder="Aditya Kumar"
                         className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5 transition-all shadow-sm"
                       />
                     </div>
-                    
+
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Email Address</label>
-                      <input 
+                      <input
                         type="email" name="email" value={formData.email} onChange={handleChange} required
                         placeholder="email@example.com"
                         className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5 transition-all shadow-sm"
@@ -273,14 +305,14 @@ const Events = () => {
 
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Contact Number</label>
-                      <input 
+                      <input
                         name="contact" value={formData.contact} onChange={handleChange} required
                         placeholder="+91 9999999999"
                         className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5 transition-all shadow-sm"
                       />
                     </div>
 
-                    <button 
+                    <button
                       type="submit" disabled={isSubmitting}
                       className="w-full py-4 mt-6 bg-slate-900 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-lg flex items-center justify-center gap-2"
                     >
@@ -299,9 +331,9 @@ const Events = () => {
             <div className="bg-white rounded-[3rem] w-full max-w-md p-8 relative shadow-2xl border border-slate-100 overflow-hidden">
               {/* Top Gradient Bar */}
               <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-teal-500 to-amber-500"></div>
-              
-              <button 
-                onClick={() => setIsRegisterModalOpen(false)} 
+
+              <button
+                onClick={() => setIsRegisterModalOpen(false)}
                 className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all z-10"
               >
                 <X size={18} />
@@ -332,16 +364,16 @@ const Events = () => {
                   <form onSubmit={handleRegisterSubmit} className="space-y-4">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Full Name</label>
-                      <input 
+                      <input
                         name="name" value={registerFormData.name} onChange={handleRegisterChange} required
                         placeholder="Aditya Kumar"
                         className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5 transition-all shadow-sm"
                       />
                     </div>
-                    
+
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Email Address</label>
-                      <input 
+                      <input
                         type="email" name="email" value={registerFormData.email} onChange={handleRegisterChange} required
                         placeholder="email@example.com"
                         className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5 transition-all shadow-sm"
@@ -350,14 +382,14 @@ const Events = () => {
 
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Contact Number</label>
-                      <input 
+                      <input
                         name="contact" value={registerFormData.contact} onChange={handleRegisterChange} required
                         placeholder="+91 9999999999"
                         className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5 transition-all shadow-sm"
                       />
                     </div>
 
-                    <button 
+                    <button
                       type="submit" disabled={isRegisterSubmitting}
                       className="w-full py-4 mt-6 bg-amber-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-lg flex items-center justify-center gap-2"
                     >
