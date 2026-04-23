@@ -43,13 +43,13 @@ const CategoryProducts = () => {
                 filtered = allProducts.filter(p => {
                     const prodCat = (p.category || '').toLowerCase().trim();
                     const pathName = currentPath.toLowerCase().trim();
-                    
+
                     const prodSlug = prodCat.replace(/[^a-z0-9]+/g, '_');
                     const pathSlug = pathName.replace(/[^a-z0-9]+/g, '_');
 
                     // Standard slug match or direct string match
                     const isDirectMatch = prodSlug === pathSlug || prodCat === pathName;
-                    
+
                     // Specific legacy/alias matches
                     const isVegMatch = (pathSlug === 'vegetables' && prodSlug === 'veg') || (pathSlug === 'veg' && prodSlug === 'vegetables');
                     const isPersonalCareMatch = (pathSlug === 'personal_care' && prodSlug === 'personal_care');
