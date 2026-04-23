@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart, ArrowRight } from 'lucide-react';
+import { ShoppingCart, ArrowRight, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { realtimeDb as db } from '../../../firebase';
 import { ref, onValue, query, limitToLast } from 'firebase/database';
@@ -48,39 +48,40 @@ const FeaturedProducts = () => {
     }
 
     return (
-        <section className="py-20 bg-white overflow-hidden">
+        <section className="py-20 bg-slate-50/50 overflow-hidden">
             <div className="container mx-auto px-6">
-                {/* Header Section */}
-                <div className="text-center mb-16">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="inline-block px-4 py-1.5 rounded-full bg-slate-50 border border-slate-100 mb-6"
-                    >
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Featured Collection</span>
-                    </motion.div>
-                    
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.2 }}
-                        className="text-4xl lg:text-6xl font-black text-slate-900 tracking-tighter mb-6"
-                    >
-                        CURATED <span className="text-amber-500">FOR YOU</span>
-                    </motion.h2>
-                    
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.3 }}
-                        className="text-sm lg:text-base text-slate-400 font-medium max-w-2xl mx-auto leading-relaxed"
-                    >
-                        Discover a handpicked selection of our finest products across all categories. 
-                        Uncompromising quality, brought straight to your home.
-                    </motion.p>
+                {/* Header Section - Matched to Reference */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between items-start gap-8 mb-16">
+                    <div className="max-w-xl">
+                        <motion.span
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            className="text-[10px] font-black uppercase tracking-[0.4em] text-rose-500 mb-4 block"
+                        >
+                            Our Items
+                        </motion.span>
+                        
+                        <motion.h2
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.1 }}
+                            className="text-4xl lg:text-6xl font-black text-slate-900 tracking-tighter leading-[1.1]"
+                        >
+                            Always healthy <span className="text-amber-600">grocery</span> in our Grocery Shop.
+                        </motion.h2>
+                    </div>
+
+                    {/* Decorative Arrows from Reference */}
+                    <div className="hidden md:flex items-center gap-4">
+                        <button className="w-14 h-14 rounded-full border-2 border-slate-100 flex items-center justify-center text-slate-300 hover:text-amber-600 hover:border-amber-100 transition-all">
+                            <ChevronRight size={24} className="rotate-180" />
+                        </button>
+                        <button className="w-14 h-14 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-amber-600 transition-all shadow-xl shadow-slate-200">
+                            <ChevronRight size={24} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Product Grid */}

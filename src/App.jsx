@@ -120,17 +120,7 @@ function AppContent() {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/category/:categoryPath" element={<CategoryProducts />} />
           <Route path="/products" element={<CategoryProducts />} />
-          <Route path="/grocery" element={<CategoryProducts />} />
-          <Route path="/fruits" element={<CategoryProducts />} />
-          <Route path="/vegetables" element={<CategoryProducts />} />
-          <Route path="/dairy" element={<CategoryProducts />} />
-          <Route path="/snacks" element={<CategoryProducts />} />
-          <Route path="/beverages" element={<CategoryProducts />} />
-          <Route path="/personal-care" element={<CategoryProducts />} />
-          <Route path="/household" element={<CategoryProducts />} />
-          <Route path="/wellness" element={<CategoryProducts />} />
-          <Route path="/baby" element={<CategoryProducts />} />
-          <Route path="/dry-fruits" element={<CategoryProducts />} />
+
           <Route path="/success" element={<Success />} />
 
           {/* Admin Routes */}

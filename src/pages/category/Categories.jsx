@@ -44,10 +44,8 @@ const Categories = () => {
     }, []);
 
     const finalCategories = useMemo(() => {
-        // 1. Get unique category names from products and categories node
-        const fromProducts = Array.from(new Set(dbProducts.map(p => p.category).filter(Boolean)));
-        const fromCategories = dbCategories.map(c => c.name).filter(Boolean);
-        const dynamicNames = Array.from(new Set([...fromProducts, ...fromCategories]));
+        // 1. Get unique category names strictly from categories node (Admin Panel)
+        const dynamicNames = dbCategories.map(c => c.name).filter(Boolean);
 
         let combined = [];
 
@@ -89,8 +87,12 @@ const Categories = () => {
 
 
     return (
-        <div className="min-h-screen bg-white pt-28 pb-32 px-4 md:px-8">
-            <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen bg-slate-50/80 pt-28 pb-32 px-4 md:px-8 relative overflow-hidden">
+            {/* Background Aesthetic Blobs */}
+            <div className="absolute top-40 -left-20 w-96 h-96 bg-amber-50 rounded-full blur-[120px] -z-10 animate-pulse"></div>
+            <div className="absolute bottom-20 -right-10 w-72 h-72 bg-blue-50/50 rounded-full blur-[100px] -z-10"></div>
+
+            <div className="max-w-7xl mx-auto relative z-10">
                 <header className="mb-12">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
@@ -111,60 +113,69 @@ const Categories = () => {
                 </header>
 
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 mb-12">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12 mb-12">
                     <AnimatePresence mode="popLayout">
                         {(showAll ? finalCategories : finalCategories.slice(0, visibleLimit)).map((cat, idx) => (
                             <motion.div
                                 key={cat.id}
                                 layout
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 transition={{
-                                    opacity: { duration: 0.25 },
+                                    delay: idx * 0.05,
+                                    duration: 0.5,
                                     layout: { type: "spring", stiffness: 300, damping: 30 }
                                 }}
-                                whileHover={{ y: -6, scale: 1.02 }}
-                                whileTap={{ scale: 0.97 }}
+                                whileHover={{ y: -10 }}
                                 onClick={() => navigate(cat.path)}
-                                className={`group relative aspect-[3/4] bg-gradient-to-br ${cat.gradient || 'from-amber-700 via-amber-600 to-yellow-500'} rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 ring-0 hover:ring-2 hover:ring-white/40 ring-offset-0`}
+                                className="group relative bg-white rounded-[3rem] p-7 lg:p-10 cursor-pointer border-2 border-white shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12)] hover:shadow-[0_40px_100px_-20px_rgba(245,158,11,0.2)] transition-all duration-700 hover:border-amber-100 flex flex-col items-center text-center overflow-hidden"
                             >
-                                {/* Product Image — fills the card */}
-                                <div className="absolute inset-0 flex items-center justify-center p-5 sm:p-6 pt-4 pb-20">
+                                {/* Subtle Background Accent */}
+                                <div className="absolute top-0 right-0 w-40 h-40 bg-amber-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                
+                                {/* Wishlist-like icon placeholder */}
+                                <div className="absolute top-8 right-8 text-slate-200 group-hover:text-amber-300 transition-colors duration-500">
+                                    <Sparkles size={20} fill="currentColor" />
+                                </div>
+
+                                {/* Category Image Container */}
+                                <div className="relative w-full aspect-square mb-10 p-5 lg:p-8 bg-slate-50 rounded-[2.5rem] group-hover:bg-amber-50 group-hover:scale-105 transition-all duration-700 shadow-[inset_0_4px_12px_rgba(0,0,0,0.02)]">
                                     <motion.img
                                         src={cat.img}
                                         alt={cat.name}
-                                        className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-2"
+                                        className="w-full h-full object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.15)] transition-all duration-1000 group-hover:scale-110 group-hover:-rotate-3"
                                     />
                                 </div>
 
-                                {/* Top-right arrow indicator */}
-                                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 w-8 h-8 sm:w-9 sm:h-9 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:scale-100 scale-75 border border-white/30">
-                                    <ChevronRight size={16} className="text-white" />
-                                </div>
-
-                                {/* Bottom gradient overlay for text readability */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
-
-                                {/* Shimmer effect on hover */}
-                                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-500 pointer-events-none" />
-
-                                {/* Text at the bottom */}
-                                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 z-10">
-                                    <h3 className="text-sm sm:text-base font-black text-white tracking-tight leading-tight mb-0.5 line-clamp-2 drop-shadow-lg">
+                                {/* Text Content */}
+                                <div className="relative z-10 w-full">
+                                    <h3 className="text-lg lg:text-xl font-black text-slate-900 tracking-tight mb-2 group-hover:text-amber-600 transition-colors truncate px-2">
                                         {cat.name}
                                     </h3>
-                                    <p className="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase tracking-widest group-hover:hidden transition-all">
-                                        {cat.sub}
-                                    </p>
-                                    {/* "Explore" pill appears on hover */}
-                                    <div className="hidden group-hover:flex items-center gap-1.5 mt-1 transition-all">
-                                        <span className="text-[9px] sm:text-[10px] font-black text-amber-400 uppercase tracking-widest">
-                                            Explore Now
+                                    
+                                    <div className="flex items-center justify-center gap-3">
+                                        <div className="flex items-center gap-1">
+                                            <div className="w-1 h-1 rounded-full bg-amber-500" />
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                Premium
+                                            </span>
+                                        </div>
+                                        <div className="w-[1px] h-3 bg-slate-100" />
+                                        <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">
+                                            Handpicked
                                         </span>
-                                        <ChevronRight size={12} className="text-amber-400 animate-pulse" />
                                     </div>
                                 </div>
+
+                                {/* Hover CTA (Arrow) */}
+                                <motion.div 
+                                    initial={{ opacity: 0, x: -10 }}
+                                    whileHover={{ opacity: 1, x: 0 }}
+                                    className="absolute bottom-8 right-10 w-10 h-10 bg-amber-500 text-white rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg shadow-amber-500/30"
+                                >
+                                    <ChevronRight size={20} />
+                                </motion.div>
                             </motion.div>
                         ))}
                     </AnimatePresence>

@@ -85,7 +85,7 @@ const Header = () => {
 
 
   // Routes where the "Products" nav button should be active
-  const productRoutes = ['/products', '/categories', '/grocery', '/fruits', '/vegetables', '/dairy', '/snacks', '/beverages', '/personal-care', '/household', '/wellness', '/baby', '/dry-fruits', '/gallery'];
+  const productRoutes = ['/products', '/categories', '/gallery'];
 
   const navItems = [
     { name: 'Home', path: '/', icon: <Home size={22} /> },

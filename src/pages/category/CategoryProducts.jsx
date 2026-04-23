@@ -41,16 +41,21 @@ const CategoryProducts = () => {
                 setCategoryName('All Products');
             } else {
                 filtered = allProducts.filter(p => {
-                    const prodCat = (p.category || '').toLowerCase();
+                    const prodCat = (p.category || '').toLowerCase().trim();
+                    const pathName = currentPath.toLowerCase().trim();
+                    
                     const prodSlug = prodCat.replace(/[^a-z0-9]+/g, '_');
-                    const pathSlug = currentPath.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                    const pathSlug = pathName.replace(/[^a-z0-9]+/g, '_');
 
-                    // Handle special legacy path mappings
+                    // Standard slug match or direct string match
+                    const isDirectMatch = prodSlug === pathSlug || prodCat === pathName;
+                    
+                    // Specific legacy/alias matches
                     const isVegMatch = (pathSlug === 'vegetables' && prodSlug === 'veg') || (pathSlug === 'veg' && prodSlug === 'vegetables');
-                    const isPersonalCareMatch = (pathSlug === 'personal-care' || pathSlug === 'personal_care') && (prodSlug === 'personal_care' || prodSlug === 'personal-care');
-                    const isDryFruitsMatch = (pathSlug === 'dry-fruits' || pathSlug === 'dry_fruits') && (prodSlug === 'dry_fruits' || prodSlug === 'dry-fruits');
+                    const isPersonalCareMatch = (pathSlug === 'personal_care' && prodSlug === 'personal_care');
+                    const isDryFruitsMatch = (pathSlug === 'dry_fruits' && prodSlug === 'dry_fruits');
 
-                    return prodSlug === pathSlug || prodCat === currentPath.toLowerCase() || isVegMatch || isPersonalCareMatch || isDryFruitsMatch;
+                    return isDirectMatch || isVegMatch || isPersonalCareMatch || isDryFruitsMatch;
                 });
 
                 // Set the readable category name
@@ -82,7 +87,7 @@ const CategoryProducts = () => {
     }, [categoryPath]);
 
     return (
-        <div className="min-h-screen bg-white pt-36 pb-20 px-4 md:px-8">
+        <div className="min-h-screen bg-slate-50 pt-36 pb-20 px-4 md:px-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header Section */}
                 <header className="mb-12">
