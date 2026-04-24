@@ -126,7 +126,7 @@ const Hero = () => {
               <motion.div
                 animate={{ y: [0, -8, 0] }}
                 transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                className="absolute top-6 left-0 lg:-left-4 bg-white rounded-2xl px-4 py-2.5 shadow-xl shadow-slate-200/60 border border-slate-100 z-20 flex items-center gap-2"
+                className="absolute top-6 left-0 lg:-left-4 bg-white rounded-2xl px-3 py-2 min-[426px]:px-4 min-[426px]:py-2.5 shadow-xl shadow-slate-200/60 border border-slate-100 z-20 hidden min-[426px]:flex items-center gap-2"
               >
                 <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
                   <Leaf size={14} className="text-emerald-600" />
