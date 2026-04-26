@@ -6,9 +6,9 @@ import { realtimeDb as db } from '../../../firebase';
 import { ref, onValue } from 'firebase/database';
 
 // Hero images
-import deliveryHeroImg from '../../../assets/foundation/delivery_hero.png';
-import organicMarketImg from '../../../assets/foundation/organic_market.png';
-import nutCollectionImg from '../../../assets/foundation/nut_collection.png';
+import deliveryHeroImg from '../../../assets/foundation/delivery_hero.webp';
+import organicMarketImg from '../../../assets/foundation/organic_market.webp';
+import nutCollectionImg from '../../../assets/foundation/nut_collection.webp';
 
 const Hero = () => {
   const [isOpen, setIsOpen] = useState(true);
