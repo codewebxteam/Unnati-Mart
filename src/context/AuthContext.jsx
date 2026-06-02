@@ -81,7 +81,10 @@ export const AuthProvider = ({ children }) => {
             }
             setLoading(false);
         });
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            clearTimeout(safetyTimeout);
+        };
     }, []);
 
     const login = useCallback(async (email, password) => {
