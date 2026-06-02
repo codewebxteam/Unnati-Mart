@@ -11,7 +11,8 @@ import { useCart } from '../../context/CartContext';
 import { useOrders } from '../../context/OrderContext';
 import { realtimeDb as db } from '../../firebase';
 import useScrollLock from '../../hooks/useScrollLock';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue, update } from 'firebase/database';
+import { useAuth } from '../../context/AuthContext';
 
 const CheckoutModal = ({ onClose }) => {
     const { cartItems, subtotal, tax, gstPercentage, grandTotal, cartCount, clearCart, shippingFee } = useCart();
@@ -23,7 +24,7 @@ const CheckoutModal = ({ onClose }) => {
         fullName: '', mobile: '', email: '',
         pincode: '', locality: '', street: '', city: '', state: 'Uttar Pradesh', landmark: '', alternatePhone: '',
         addressType: 'home',
-        paymentMethod: 'cod',
+        paymentMethod: '',
         selectedBank: '',
         selectedWallet: '',
         upiId: '',
@@ -64,14 +65,6 @@ const CheckoutModal = ({ onClose }) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 setSettings(data);
-
-                // Auto-select first available payment method if COD is disabled
-                if (data.enableCOD === false) {
-                    if (data.enableUPI !== false) setFormData(prev => ({ ...prev, paymentMethod: 'upi' }));
-                    else if (data.enableCards !== false) setFormData(prev => ({ ...prev, paymentMethod: 'debit' }));
-                    else if (data.enableBank !== false) setFormData(prev => ({ ...prev, paymentMethod: 'bank' }));
-                    else if (data.enableWallet !== false) setFormData(prev => ({ ...prev, paymentMethod: 'wallet' }));
-                }
             }
         });
         return () => unsubscribe();
@@ -107,10 +100,57 @@ const CheckoutModal = ({ onClose }) => {
         { id: 'airtel', name: 'Airtel Money', icon: 'https://logo.clearbit.com/airtel.in' },
     ];
 
-    const savedAddresses = [];
-
-    const [isAddingNew, setIsAddingNew] = useState(savedAddresses.length === 0);
+    const { user } = useAuth();
+    const [savedAddresses, setSavedAddresses] = useState([]);
+    const [isAddingNew, setIsAddingNew] = useState(true);
     const [orderPlaced, setOrderPlaced] = useState(false);
+
+    useEffect(() => {
+        if (!user) return;
+        const addressRef = ref(db, `users/${user.id}/address`);
+        const unsubscribe = onValue(addressRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const addrData = snapshot.val();
+                const mappedAddress = {
+                    id: 1,
+                    name: addrData.fullName || user.name || '',
+                    mobile: addrData.mobile || '',
+                    pincode: addrData.pincode || '',
+                    locality: addrData.locality || '',
+                    street: addrData.street || '',
+                    city: addrData.city || '',
+                    state: addrData.state || 'Uttar Pradesh',
+                    landmark: addrData.landmark || '',
+                    alternatePhone: addrData.alternatePhone || '',
+                    type: addrData.addressType || 'home'
+                };
+                setSavedAddresses([mappedAddress]);
+                setIsAddingNew(false);
+                setFormData(prev => ({
+                    ...prev,
+                    fullName: prev.fullName || mappedAddress.name,
+                    mobile: prev.mobile || mappedAddress.mobile,
+                    email: prev.email || user.email || '',
+                    pincode: prev.pincode || mappedAddress.pincode,
+                    locality: prev.locality || mappedAddress.locality,
+                    street: prev.street || mappedAddress.street,
+                    city: prev.city || mappedAddress.city,
+                    state: prev.state || mappedAddress.state,
+                    landmark: prev.landmark || mappedAddress.landmark,
+                    alternatePhone: prev.alternatePhone || mappedAddress.alternatePhone,
+                    addressType: prev.addressType || mappedAddress.type,
+                }));
+            } else {
+                setIsAddingNew(true);
+                setFormData(prev => ({
+                    ...prev,
+                    fullName: prev.fullName || user.name || '',
+                    email: prev.email || user.email || ''
+                }));
+            }
+        });
+        return () => unsubscribe();
+    }, [user]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -198,6 +238,26 @@ const CheckoutModal = ({ onClose }) => {
                 status: 'Pending'
             };
             const newOrder = await placeOrder(orderData);
+
+            // Save the shipping address to user's profile on Firebase
+            if (user) {
+                const userAddressRef = ref(db, `users/${user.id}/address`);
+                const addressToSave = {
+                    fullName: formData.fullName,
+                    mobile: formData.mobile,
+                    pincode: formData.pincode,
+                    locality: formData.locality,
+                    street: formData.street,
+                    city: formData.city,
+                    state: formData.state,
+                    landmark: formData.landmark || '',
+                    alternatePhone: formData.alternatePhone || '',
+                    addressType: formData.addressType || 'home'
+                };
+                update(userAddressRef, addressToSave).catch(err => {
+                    console.warn("Could not save address to user profile:", err);
+                });
+            }
 
             if (formData.paymentMethod === 'whatsapp') {
                 const message = `*New Order via WhatsApp payment*
@@ -797,6 +857,13 @@ Please send the QR code for payment.`;
                                 </div>
 
                                 {/* 6 Grid Payment Methods - Horizontal Layout */}
+                                {!formData.paymentMethod && (
+                                    <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 text-amber-800 text-xs font-semibold">
+                                        <AlertCircle size={18} className="text-amber-600 shrink-0" />
+                                        <span>Please select a payment method below to complete your checkout. You can choose Cash on Delivery (COD) or online payment.</span>
+                                    </div>
+                                )}
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-10">
                                     {paymentMethods.map((method) => (
                                         <button
@@ -1078,10 +1145,13 @@ Please send the QR code for payment.`;
                     ) : (
                         <button
                             onClick={handlePlaceOrder}
-                            disabled={isProcessing}
-                            className="px-5 py-2.5 bg-[#111827] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all sm:hidden flex items-center gap-1 shadow-sm"
+                            disabled={isProcessing || !formData.paymentMethod}
+                            className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1 shadow-sm ${isProcessing || !formData.paymentMethod
+                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                : 'bg-[#111827] text-white hover:bg-amber-600'
+                            }`}
                         >
-                            {isProcessing ? 'Processing...' : 'Place Order'}
+                            {isProcessing ? 'Processing...' : !formData.paymentMethod ? 'Select Payment' : 'Place Order'}
                         </button>
                     )}
 
@@ -1103,11 +1173,11 @@ Please send the QR code for payment.`;
                             </motion.button>
                         ) : (
                             <motion.button
-                                whileHover={!isProcessing ? { scale: 1.02, y: -2 } : {}}
-                                whileTap={!isProcessing ? { scale: 0.98 } : {}}
+                                whileHover={!isProcessing && formData.paymentMethod ? { scale: 1.02, y: -2 } : {}}
+                                whileTap={!isProcessing && formData.paymentMethod ? { scale: 0.98 } : {}}
                                 onClick={handlePlaceOrder}
-                                disabled={isProcessing}
-                                className={`flex items-center gap-2 px-5 sm:px-16 py-2.5 sm:py-4 rounded-full text-xs sm:text-[16px] font-bold uppercase tracking-wider transition-all shadow-sm ${isProcessing
+                                disabled={isProcessing || !formData.paymentMethod}
+                                className={`flex items-center gap-2 px-5 sm:px-16 py-2.5 sm:py-4 rounded-full text-xs sm:text-[16px] font-bold uppercase tracking-wider transition-all shadow-sm ${isProcessing || !formData.paymentMethod
                                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                     : 'bg-[#00e676] text-[#111827] shadow-amber-200/50 hover:bg-white active:scale-95'
                                     }`}
@@ -1117,6 +1187,8 @@ Please send the QR code for payment.`;
                                         <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin transition-all" />
                                         PROCESSING...
                                     </>
+                                ) : !formData.paymentMethod ? (
+                                    <>SELECT PAYMENT METHOD</>
                                 ) : (
                                     <>PLACE ORDER (₹{grandTotal.toLocaleString('en-IN')})</>
                                 )}

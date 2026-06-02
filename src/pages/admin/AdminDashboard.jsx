@@ -285,17 +285,19 @@ const AdminDashboard = () => {
         const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
+        const activeOrders = orders.filter(o => o.status !== 'Cancelled' && o.status !== 'Returned');
+
         // Sales Logic
-        const totalSales = orders.reduce((sum, o) => sum + (o.grandTotal || 0), 0);
-        const curWeekSales = orders
+        const totalSales = activeOrders.reduce((sum, o) => sum + (o.grandTotal || o.amount || 0), 0);
+        const curWeekSales = activeOrders
             .filter(o => new Date(o.date) >= oneWeekAgo)
-            .reduce((sum, o) => sum + (o.grandTotal || 0), 0);
-        const prevWeekSales = orders
+            .reduce((sum, o) => sum + (o.grandTotal || o.amount || 0), 0);
+        const prevWeekSales = activeOrders
             .filter(o => {
                 const d = new Date(o.date);
                 return d >= twoWeeksAgo && d < oneWeekAgo;
             })
-            .reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+            .reduce((sum, o) => sum + (o.grandTotal || o.amount || 0), 0);
 
         // Orders Logic
         const totalOrders = orders.length;
@@ -346,40 +348,57 @@ const AdminDashboard = () => {
         const d = new Date();
         for (let i = 5; i >= 0; i--) {
             const monthDate = new Date(d.getFullYear(), d.getMonth() - i, 1);
-            months.push(monthDate.toLocaleString('default', { month: 'short' }));
+            months.push({
+                label: monthDate.toLocaleString('default', { month: 'short' }),
+                month: monthDate.getMonth(),
+                year: monthDate.getFullYear()
+            });
         }
         return months;
     }, []);
 
     const chartData = useMemo(() => {
-        return chartMonths.map(month => ({
-            name: month,
-            revenue: orders.filter(o => {
+        const activeOrders = orders.filter(o => o.status !== 'Cancelled' && o.status !== 'Returned');
+        return chartMonths.map(m => {
+            const monthlyRevenue = activeOrders.filter(o => {
                 if (!o.date) return false;
                 const date = new Date(o.date);
-                return date.toLocaleString('default', { month: 'short' }) === month;
-            }).reduce((sum, o) => sum + (o.grandTotal || 0), 0)
-        }));
+                return date.getMonth() === m.month && date.getFullYear() === m.year;
+            }).reduce((sum, o) => sum + (o.grandTotal || o.amount || 0), 0);
+            return {
+                name: m.label,
+                revenue: monthlyRevenue
+            };
+        });
     }, [orders, chartMonths]);
 
     const ordersChartData = useMemo(() => {
-        return chartMonths.map(month => ({
-            name: month,
-            orders: orders.filter(o => {
+        return chartMonths.map(m => {
+            const monthlyOrders = orders.filter(o => {
                 if (!o.date) return false;
                 const date = new Date(o.date);
-                return date.toLocaleString('default', { month: 'short' }) === month;
-            }).length
-        }));
+                return date.getMonth() === m.month && date.getFullYear() === m.year;
+            }).length;
+            return {
+                name: m.label,
+                orders: monthlyOrders
+            };
+        });
     }, [orders, chartMonths]);
 
     const taxonomyData = useMemo(() => {
         if (categories.length === 0) return [];
+        const counts = products.reduce((acc, p) => {
+            const cat = p.category || 'Uncategorized';
+            acc[cat] = (acc[cat] || 0) + 1;
+            return acc;
+        }, {});
         return categories.map(cat => ({
             name: cat.name || 'Unnamed Category',
-            value: 1
-        })).sort((a, b) => b.value - a.value);
-    }, [categories]);
+            value: counts[cat.name] || 0
+        })).filter(item => item.value > 0)
+        .sort((a, b) => b.value - a.value);
+    }, [categories, products]);
 
     const inventoryData = useMemo(() => {
         if (products.length === 0) return [];
@@ -403,13 +422,16 @@ const AdminDashboard = () => {
     }, [messages]);
 
     const bulkOrdersChartData = useMemo(() => {
-        return chartMonths.map(month => ({
-            name: month,
-            orders: bulkOrders.filter(m => {
-                const date = m.timestamp ? new Date(m.timestamp) : new Date();
-                return date.toLocaleString('default', { month: 'short' }) === month;
-            }).length
-        }));
+        return chartMonths.map(m => {
+            const monthlyBulk = bulkOrders.filter(msg => {
+                const date = msg.timestamp ? new Date(msg.timestamp) : new Date();
+                return date.getMonth() === m.month && date.getFullYear() === m.year;
+            }).length;
+            return {
+                name: m.label,
+                orders: monthlyBulk
+            };
+        });
     }, [bulkOrders, chartMonths]);
 
     const COLORS = [

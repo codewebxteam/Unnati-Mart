@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { realtimeDb } from '../firebase';
-import { ref, push, set, onValue, off } from 'firebase/database';
+import { ref, push, set, onValue, off, update } from 'firebase/database';
 import { useAuth } from './AuthContext';
 
 const OrderContext = createContext();
@@ -14,7 +14,7 @@ export const useOrders = () => {
 };
 
 export const OrderProvider = ({ children }) => {
-    const [orders, setOrders ] = useState([]); 
+    const [orders, setOrders] = useState([]);
     const { user } = useAuth();
 
     // Persist to localStorage whenever orders change
@@ -25,8 +25,7 @@ export const OrderProvider = ({ children }) => {
     }, [orders]);
 
     useEffect(() => {
-        // Even if user is not logged in, we might have local orders
-        // If user is logged in, we try to sync with Firebase
+
         if (!user) return;
 
         const ordersRef = ref(realtimeDb, 'orders');
@@ -100,12 +99,12 @@ export const OrderProvider = ({ children }) => {
                 phone: orderData.mobile
             },
             timeline: [
-                    { status: 'Pending', date: now.toISOString(), completed: true, desc: 'Awaiting confirmation from admin.' },
-                    { status: 'Placed', date: new Date(now.getTime() + 12 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'Order will be placed after confirmation.' },
-                    { status: 'Confirmed', date: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'We are confirming your order.' },
-                    { status: 'Shipped', date: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'Your order is on the way.' },
-                    { status: 'Delivered', date: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'Order delivered.' }
-                ]
+                { status: 'Pending', date: now.toISOString(), completed: true, desc: 'Awaiting confirmation from admin.' },
+                { status: 'Placed', date: new Date(now.getTime() + 12 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'Order will be placed after confirmation.' },
+                { status: 'Confirmed', date: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'We are confirming your order.' },
+                { status: 'Shipped', date: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'Your order is on the way.' },
+                { status: 'Delivered', date: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'Order delivered.' }
+            ]
         };
 
         // Optimistic update
@@ -121,8 +120,44 @@ export const OrderProvider = ({ children }) => {
 
     const getOrderById = (id) => orders.find(o => o.id === id || o.firebaseId === id);
 
+    const cancelOrder = async (firebaseId, reason = 'Cancelled by User') => {
+        const order = orders.find(o => o.firebaseId === firebaseId || o.id === firebaseId);
+
+        if (!order) {
+            console.error("Order not found for cancellation:", firebaseId);
+            return false;
+        }
+
+        const targetId = order.firebaseId || firebaseId;
+        const actualOrderRef = ref(realtimeDb, `orders/${targetId}`);
+
+        let updatedTimeline = order.timeline ? [...order.timeline] : [];
+        updatedTimeline = updatedTimeline.filter(s => s.status === 'Pending' || s.status === 'Placed');
+        updatedTimeline.push({
+            status: 'Cancelled',
+            date: new Date().toISOString(),
+            completed: true,
+            desc: `Order Cancelled (${reason})`
+        });
+
+        // Optimistically update local state
+        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'Cancelled', cancelReason: reason, timeline: updatedTimeline } : o));
+
+        try {
+            await update(actualOrderRef, {
+                status: 'Cancelled',
+                cancelReason: reason,
+                timeline: updatedTimeline
+            });
+            return true;
+        } catch (error) {
+            console.error("Firebase cancel order failed:", error);
+            return false;
+        }
+    };
+
     return (
-        <OrderContext.Provider value={{ orders, placeOrder, getOrderById }}>
+        <OrderContext.Provider value={{ orders, placeOrder, getOrderById, cancelOrder }}>
             {children}
         </OrderContext.Provider>
     );
