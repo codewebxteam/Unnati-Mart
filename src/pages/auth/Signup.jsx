@@ -48,6 +48,12 @@ const Signup = () => {
             return;
         }
 
+        if (isAdminEmail(email)) {
+            setError('This email is reserved for administrators.');
+            setIsLoading(false);
+            return;
+        }
+
         try {
             const result = await signup(name, email, password);
             if (result.success) {

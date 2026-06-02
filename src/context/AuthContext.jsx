@@ -8,7 +8,7 @@ import {
     updateProfile
 } from 'firebase/auth';
 import { auth, googleProvider, realtimeDb } from '../firebase';
-import { ref, update } from 'firebase/database';
+import { ref, update, get } from 'firebase/database';
 import Loader from '../components/common/Loader';
 
 
@@ -46,15 +46,26 @@ export const AuthProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             clearTimeout(safetyTimeout);
             if (currentUser) {
-                const isAdmin = isAdminEmail(currentUser.email);
+                let dbUserData = null;
+                try {
+                    const userRef = ref(realtimeDb, `users/${currentUser.uid}`);
+                    const snapshot = await get(userRef);
+                    if (snapshot.exists()) {
+                        dbUserData = snapshot.val();
+                    }
+                } catch (error) {
+                    console.warn("DB Fetch Error in auth change:", error.message);
+                }
+
+                const isAdmin = isAdminEmail(currentUser.email) || (dbUserData && dbUserData.role === 'admin');
                 
                 const userData = {
                     id: currentUser.uid,
                     email: currentUser.email,
-                    name: currentUser.displayName || currentUser.email.split('@')[0],
-                    photo: currentUser.photoURL,
+                    name: currentUser.displayName || (dbUserData && dbUserData.name) || currentUser.email.split('@')[0],
+                    photo: currentUser.photoURL || (dbUserData && dbUserData.photo),
                     role: isAdmin ? 'admin' : 'member',
-                    joinedAt: currentUser.metadata.creationTime,
+                    joinedAt: currentUser.metadata.creationTime || (dbUserData && dbUserData.joinedAt),
                     lastLogin: new Date().toISOString()
                 };
                 setUser(userData);

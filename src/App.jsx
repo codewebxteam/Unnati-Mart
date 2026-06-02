@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useNavigate } from "react-router-dom";
 
 // Layout Components
 import Header from "./components/Header";
@@ -59,8 +59,16 @@ const AdminProtectedRoute = ({ children }) => {
 function AppContent() {
   const { user, loading: authLoading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [settings, setSettings] = React.useState({});
   const [settingsLoading, setSettingsLoading] = React.useState(true);
+
+  // Redirect admin trying to access user-side pages
+  React.useEffect(() => {
+    if (user?.role === 'admin' && !location.pathname.startsWith('/admin')) {
+      navigate('/admin', { replace: true });
+    }
+  }, [user, location.pathname, navigate]);
 
   React.useEffect(() => {
     const settingsRef = ref(db, 'settings');
