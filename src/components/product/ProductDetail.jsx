@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Heart, Minus, Plus, ArrowLeft, Star, ShieldCheck, Truck, RefreshCw, Share2 } from 'lucide-react';
@@ -9,9 +9,8 @@ import ShareModal from '../common/ShareModal';
 import RecommendedProducts from './RecommendedProducts';
 import ProductSkeleton from './ProductSkeleton';
 import { realtimeDb as db } from '../../firebase';
-import { ref, get, onValue } from 'firebase/database';
+import { ref, onValue } from 'firebase/database';
 import { getSeededReviewCount } from '../../utils/productUtils';
-
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -21,13 +20,11 @@ const ProductDetail = () => {
     const { toggleWishlist, isInWishlist } = useWishlist();
 
     const [product, setProduct] = useState(null);
-
     const [isLoading, setIsLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
     const [isAdded, setIsAdded] = useState(false);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-    const [selectedSize, setSelectedSize] = useState(null);
     const [realReviews, setRealReviews] = useState([]);
 
     // Fetch Reviews from Firebase
@@ -49,61 +46,22 @@ const ProductDetail = () => {
         return () => unsubscribe();
     }, [id]);
 
-    const sizeOptions = {
-        'Litre': [
-            { label: "50ml", ratio: 0.05 },
-            { label: "100ml", ratio: 0.1 },
-            { label: "150ml", ratio: 0.15 },
-            { label: "200ml", ratio: 0.2 },
-            { label: "250ml", ratio: 0.25 },
-            { label: "500ml", ratio: 0.5 },
-            { label: "1L", ratio: 1 }
-        ],
-        'Kg': [
-            { label: "50g", ratio: 0.05 },
-            { label: "100g", ratio: 0.1 },
-            { label: "150g", ratio: 0.15 },
-            { label: "200g", ratio: 0.2 },
-            { label: "250g", ratio: 0.25 },
-            { label: "500g", ratio: 0.5 },
-            { label: "1Kg", ratio: 1 }
-        ],
-        'Bottle': [
-            { label: "Small", ratio: 0.5 },
-            { label: "Regular", ratio: 1 }
-        ],
-        'Bundle': [
-            { label: "Single", ratio: 1 },
-            { label: "Pack of 3", ratio: 2.8 },
-            { label: "Pack of 6", ratio: 5.5 }
-        ]
-    };
-
     const getActiveSize = () => {
         if (!product) return { label: '', ratio: 1 };
-
-        // Enable selection for any product that has a base unit defined in sizeOptions
-        const options = sizeOptions[product.unit];
-        if (options && selectedSize) {
-            return selectedSize;
-        }
-        return options ? options[options.length - 1] : { label: product.unit, ratio: 1 };
+        return { label: product.unit, ratio: 1 };
     };
 
     useEffect(() => {
         let isMounted = true;
         let unsubscribe = () => { };
 
-        // 1. CLEAR PREVIOUS STATE & SET LOADING
         setIsLoading(true);
         setProduct(null);
 
-        // 3. SAFETY TIMEOUT (Don't let the user wait forever)
         const safetyTimeout = setTimeout(() => {
             if (isMounted) setIsLoading(false);
-        }, 3000); // 3 seconds safety margin
+        }, 3000);
 
-        // 4. FIREBASE REALTIME LISTENER
         try {
             const productRef = ref(db, `products/${id}`);
             unsubscribe = onValue(productRef, (snapshot) => {
@@ -115,7 +73,6 @@ const ProductDetail = () => {
                     if (!data) {
                         setProduct(null);
                     } else {
-                        // Parse highlights (Support comma separated OR newline separated)
                         let parsedHighlights = [];
                         const rawHighlights = data.highlights || "";
                         if (typeof rawHighlights === 'string') {
@@ -124,7 +81,6 @@ const ProductDetail = () => {
                             parsedHighlights = rawHighlights;
                         }
 
-                        // Parse specifications (Structured label:value OR plain text)
                         let parsedSpecs = [];
                         const specsText = data.specification || data.specifications || "";
                         if (typeof specsText === 'string' && specsText.trim()) {
@@ -158,7 +114,6 @@ const ProductDetail = () => {
 
                         setProduct(enrichedProduct);
 
-                        // --- Track Recently Viewed ---
                         const recentKey = 'unnatimart_recently_viewed';
                         const saved = localStorage.getItem(recentKey);
                         let recentList = saved ? JSON.parse(saved) : [];
@@ -204,7 +159,6 @@ const ProductDetail = () => {
         return <ProductSkeleton />;
     }
 
-
     if (!product) {
         return (
             <div className="min-h-screen flex items-center justify-center p-4">
@@ -225,8 +179,8 @@ const ProductDetail = () => {
         const activeSize = getActiveSize();
         return {
             ...product,
-            id: activeSize.ratio !== 1 ? `${product.id}-${activeSize.label}` : product.id,
-            name: activeSize.ratio !== 1 ? `${product.name} (${activeSize.label})` : product.name,
+            id: product.id,
+            name: product.name,
             price: Math.round(product.price * activeSize.ratio),
             unit: activeSize.label,
             originalId: product.id
@@ -390,8 +344,8 @@ const ProductDetail = () => {
                                 transition={{ delay: 0.2 }}
                                 className="flex items-baseline gap-4 mb-8"
                             >
-                                <span className="text-5xl font-black text-amber-600 tracking-tighter">₹{Math.round(product.price * getActiveSize().ratio) * quantity}</span>
-                                <span className="text-lg font-bold text-slate-300 line-through">₹{Math.round(product.price * 1.5 * getActiveSize().ratio) * quantity}</span>
+                                <span className="text-5xl font-black text-amber-600 tracking-tighter">₹{product.price * quantity}</span>
+                                <span className="text-lg font-bold text-slate-300 line-through">₹{Math.round(product.price * 1.5) * quantity}</span>
                                 <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest">35% OFF</span>
                                 <span className="text-xs text-slate-400 font-bold ml-2">( / {getActiveSize().label} )</span>
                             </motion.div>
@@ -406,31 +360,8 @@ const ProductDetail = () => {
                             </motion.p>
                         </div>
 
-                        {/* Controls Section */}
+                        {/* Controls Section - Cleaned up to exclude weight/size selection */}
                         <div className="space-y-6 max-w-md">
-                            {sizeOptions[product.unit] && (
-                                <div className="bg-white rounded-2xl p-4 border border-slate-100">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Choose your {product.unit === 'Kg' ? 'Weight' : 'Size'}</span>
-                                    <div className="flex flex-wrap gap-2">
-                                        {sizeOptions[product.unit].map((sizeObj) => {
-                                            const isActive = getActiveSize().label === sizeObj.label;
-                                            return (
-                                                <button
-                                                    key={sizeObj.label}
-                                                    onClick={() => setSelectedSize(sizeObj)}
-                                                    className={`px-4 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all border-2 ${isActive
-                                                        ? 'bg-amber-600 text-white border-amber-600 shadow-lg shadow-amber-500/30'
-                                                        : 'bg-white text-slate-500 border-slate-200 hover:border-amber-300 hover:bg-amber-50'
-                                                        }`}
-                                                >
-                                                    {sizeObj.label}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {/* Quantity Selector */}
                                 <div className="flex items-center justify-between bg-white rounded-2xl p-4 border border-slate-100">
@@ -542,7 +473,6 @@ const ProductDetail = () => {
                                         )}
                                         {activeTab === 'reviews' && (
                                             <div className="space-y-6 max-w-2xl">
-                                                {/* Summary Stats */}
                                                 {realReviews && (
                                                     <div className="p-6 bg-amber-50 rounded-[2rem] border border-amber-100 mb-8 flex items-center justify-between">
                                                         <div>
@@ -596,7 +526,6 @@ const ProductDetail = () => {
                                                             </div>
                                                             <p className="text-sm text-slate-600 font-semibold mb-4 leading-relaxed">"{review.comment}"</p>
 
-                                                            {/* Review Images */}
                                                             {review.images && review.images.length > 0 && (
                                                                 <div className="flex flex-wrap gap-2 mt-4">
                                                                     {review.images.map((img, idx) => (
@@ -642,4 +571,3 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
-
