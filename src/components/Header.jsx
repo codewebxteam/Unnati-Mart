@@ -113,7 +113,7 @@ const Header = () => {
           >
             <span className="text-xl font-black tracking-tighter text-slate-900 leading-none uppercase flex items-center gap-1.5">
               <img src={Logo} alt="Unnati Mart" className="h-13 w-auto object-contain" />
-              <span className="hidden md:inline">UNNATI <span className="text-amber-600 italic">MART</span></span>
+              <span className="hidden md:inline">UNNATI <span className="text-amber-600">MART</span></span>
             </span>
           </motion.div>
 

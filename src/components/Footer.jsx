@@ -113,10 +113,10 @@ const Footer = () => {
                 support@unnatimart.com
               </a>
               <a href="tel:+919569603163" className="hover:text-amber-500 transition-colors">
-                +91 95696 03163
+                +91 9060982706
               </a>
               <p className="leading-relaxed opacity-60  hover:text-amber-500 transition-colors">
-                Village- Badua, Post- Marhatha, Tehsil- Campairganj, District- Gorakhpur. Pin- 273158 - UP, India
+                Samastu sthan Bihta refral hospital road near kishan bhawan Bihta sri Ram hospital ke bagal mein
               </p>
             </div>
           </div>

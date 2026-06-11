@@ -59,7 +59,7 @@ const FeaturedProducts = () => {
                             viewport={{ once: true }}
                             className="text-[10px] font-black uppercase tracking-[0.4em] text-rose-500 mb-4 block"
                         >
-                            Our Items
+                            Our products
                         </motion.span>
                         
                         <motion.h2
@@ -69,7 +69,7 @@ const FeaturedProducts = () => {
                             transition={{ delay: 0.1 }}
                             className="text-4xl lg:text-6xl font-black text-slate-900 tracking-tighter leading-[1.1]"
                         >
-                            Always healthy <span className="text-amber-600">grocery</span> in our Grocery Shop.
+                            we bring <span className="text-amber-600">everything </span>you need.
                         </motion.h2>
                     </div>
 

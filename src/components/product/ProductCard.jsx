@@ -38,12 +38,12 @@ const ProductCard = ({ product }) => {
         <motion.div
             whileHover={{ y: -10 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="group"
+            className="group h-full"
         >
             <Link
                 to={`/product/${product.id}`}
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="block bg-white rounded-3xl sm:rounded-[2.5rem] p-3 sm:p-6 lg:p-8 border border-slate-50 hover:border-amber-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_70px_rgba(245,158,11,0.12)] transition-all cursor-pointer h-full relative overflow-hidden text-center"
+                className="flex flex-col justify-between bg-white rounded-3xl sm:rounded-[2.5rem] p-4 sm:p-6 lg:p-8 border border-slate-50 hover:border-amber-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_70px_rgba(245,158,11,0.12)] transition-all cursor-pointer h-full relative overflow-hidden text-center"
             >
                 {/* Heart / Wishlist Button at Top Right */}
                 <button
@@ -58,13 +58,13 @@ const ProductCard = ({ product }) => {
                     />
                 </button>
 
-                {/* Main Product Image */}
-                <div className="relative aspect-square mb-2 sm:mb-8 p-4 sm:p-6 lg:p-8 flex items-center justify-center shrink-0">
+                {/* Fixed & Enhanced Large Product Image Container */}
+                <div className="relative w-full aspect-square mb-4 sm:mb-6 p-1 sm:p-2 flex items-center justify-center flex-grow min-h-[160px] sm:min-h-[220px] lg:min-h-[260px]">
                     <motion.img
                         src={product.img || product.image || product.compressedImage || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80'}
                         alt={product.name}
                         loading="lazy"
-                        className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-full max-h-full object-contain drop-shadow-xl transition-transform duration-700 group-hover:scale-105"
                         onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80'; }}
                     />
 
@@ -77,13 +77,13 @@ const ProductCard = ({ product }) => {
                 </div>
 
                 {/* Product Info */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4 mt-auto">
                     {/* Name */}
-                    <h4 className="text-sm sm:text-lg lg:text-xl font-black text-slate-900 leading-tight capitalize truncate px-1 sm:px-2 group-hover:text-amber-600 transition-colors">
+                    <h4 className="text-sm sm:text-lg lg:text-xl font-black text-slate-900 leading-tight capitalize truncate px-1 group-hover:text-amber-600 transition-colors">
                         {product.name.toLowerCase()}
                     </h4>
 
-                    {/* Rating & Secondary Info (Mimicking reference) */}
+                    {/* Rating & Secondary Info */}
                     <div className="flex items-center justify-center gap-1.5 sm:gap-3 text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400">
                         <div className="flex items-center gap-1.5">
                             <Star size={12} className="fill-amber-500 text-amber-500" />
@@ -95,7 +95,7 @@ const ProductCard = ({ product }) => {
                     </div>
 
                     {/* Price & Add to Cart */}
-                    <div className="flex flex-col items-center gap-4 pt-2">
+                    <div className="flex flex-col items-center gap-3 sm:gap-4 pt-1">
                         <div className="flex items-baseline gap-1">
                             <span className="text-lg sm:text-2xl lg:text-3xl font-black text-slate-900">₹{product.price}</span>
                             <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">/ {product.unit || 'Pc'}</span>

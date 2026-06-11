@@ -59,19 +59,20 @@ const Story = () => {
     <section className="relative w-full bg-white py-8 lg:py-12 overflow-hidden">
       <div className="container mx-auto px-6">
 
-        {/* 1. modern panoramic image frame (cropped effect) */}
-        <div className="relative w-full h-[220px] lg:h-[380px] rounded-[2.5rem] lg:rounded-[3.5rem] overflow-hidden shadow-2xl mb-10 group">
+        {/* 1. Fully Fixed Responsive Banner - No Side Gaps, No Clipping */}
+        <div className="relative w-full rounded-[1.5rem] md:rounded-[2.5rem] lg:rounded-[3.5rem] overflow-hidden shadow-2xl mb-10 group bg-slate-900">
           <img
             src={unnatiHero}
             alt="The Unnati Mart Store"
-            className="w-full h-full object-cover object-[center_35%] transition-transform duration-[2s] group-hover:scale-110"
+            className="w-full h-auto block transition-transform duration-[2s] group-hover:scale-105"
           />
-          {/* subtle dark overlay for text contrast */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20"></div>
+          {/* dark overlay for text contrast across the whole banner */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10 pointer-events-none"></div>
 
-          <div className="absolute bottom-6 left-8 lg:bottom-10 lg:left-12 text-white">
-            <h2 className="text-[9px] font-black tracking-[0.5em] uppercase text-amber-400 mb-2">Our Promise</h2>
-            <h3 className="text-3xl lg:text-5xl font-black tracking-tighter leading-none">
+          {/* Text Content overlay on the bottom left */}
+          <div className="absolute bottom-4 left-5 sm:bottom-6 sm:left-8 lg:bottom-10 lg:left-12 text-white">
+            <h2 className="text-[7px] sm:text-[9px] font-black tracking-[0.5em] uppercase text-amber-400 mb-1 sm:mb-2">Our Promise</h2>
+            <h3 className="text-xl sm:text-3xl lg:text-5xl font-black tracking-tighter leading-none">
               Uncompromising Quality. <br /> <span className="text-white/60">Every Single Day.</span>
             </h3>
           </div>

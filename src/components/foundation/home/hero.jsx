@@ -56,7 +56,7 @@ const Hero = () => {
 
               {/* Main Headline */}
               <h1 className="text-4xl min-[426px]:text-5xl lg:text-[56px] xl:text-[64px] font-black text-slate-900 leading-[1.05] tracking-tight mb-5">
-                FRESH FOOD, FAIR PRICES,{' '}
+                Your Everyday Superstore,{' '}
                 <span className="text-red-500">FAST DELIVERY</span>
               </h1>
 
