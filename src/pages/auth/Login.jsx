@@ -48,6 +48,12 @@ const Login = () => {
             return;
         }
 
+        if (isAdminEmail(email)) {
+            setError('Admin accounts must log in via the Admin Console.');
+            setIsLoading(false);
+            return;
+        }
+
         try {
             const result = await login(email, password);
             if (result.success) {

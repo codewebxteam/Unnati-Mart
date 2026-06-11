@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { isToday, isThisWeek, isThisMonth, isThisYear, parseISO, isValid, differenceInDays, format } from 'date-fns';
 import { realtimeDb as db } from '../../firebase';
 import { ref, onValue, update, remove } from 'firebase/database';
-import { Download, Eye, X, Check, ShoppingCart, FileText, Search, MoreVertical, AlertTriangle } from 'lucide-react';
+import { Download, Eye, X, Check, ShoppingCart, FileText, Search, MoreVertical, AlertTriangle, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import OrderDetailModal from './OrderDetailModal';
 import useScrollLock from '../../hooks/useScrollLock';
@@ -61,10 +61,10 @@ const AdminOrders = () => {
                         }
 
                         if (nextStatus) {
-                            const orderRef = ref(db, `orders/${order.firebaseId}`);
-                            let updatedTimeline = order.timeline ? [...order.timeline] : [];
-                            const statusHierarchy = { 'Pending': 0, 'Placed': 1, 'Shipped': 2, 'Delivered': 3 };
-                            const targetIndex = statusHierarchy[nextStatus];
+                             const orderRef = ref(db, `orders/${order.firebaseId}`);
+                             let updatedTimeline = order.timeline ? [...order.timeline] : [];
+                             const statusHierarchy = { 'Pending': 0, 'Placed': 1, 'Confirmed': 2, 'Shipped': 3, 'Delivered': 4 };
+                             const targetIndex = statusHierarchy[nextStatus];
 
                             if (updatedTimeline.length > 0 && targetIndex !== undefined) {
                                 updatedTimeline = updatedTimeline.map((step, idx) => {
@@ -104,10 +104,10 @@ const AdminOrders = () => {
     const handleStatusChange = (order, newStatus) => {
         const orderRef = ref(db, `orders/${order.firebaseId}`);
 
-        // Update timeline if it exists
-        let updatedTimeline = order.timeline ? [...order.timeline] : [];
-        const statusHierarchy = { 'Pending': 0, 'Placed': 1, 'Shipped': 2, 'Delivered': 3 };
-        const targetIndex = statusHierarchy[newStatus];
+         // Update timeline if it exists
+         let updatedTimeline = order.timeline ? [...order.timeline] : [];
+         const statusHierarchy = { 'Pending': 0, 'Placed': 1, 'Confirmed': 2, 'Shipped': 3, 'Delivered': 4 };
+         const targetIndex = statusHierarchy[newStatus];
 
         if (updatedTimeline.length > 0 && targetIndex !== undefined) {
             updatedTimeline = updatedTimeline.map((step, idx) => {
@@ -147,10 +147,17 @@ const AdminOrders = () => {
             });
         }
     };
-
-
-    // Re-implemented auto-update order status logic based on days passed.
-
+    
+    const handleDeleteOrder = (firebaseId) => {
+        if (window.confirm('Are you sure you want to permanently delete this order? This action cannot be undone.')) {
+            const orderRef = ref(db, `orders/${firebaseId}`);
+            remove(orderRef)
+                .catch((error) => {
+                    console.error("Error deleting order:", error);
+                    alert("Failed to delete order.");
+                });
+        }
+    };
 
     // Calculate stats
     const stats = {
@@ -307,9 +314,13 @@ const AdminOrders = () => {
                                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5 block">{item.customer || 'Guest User'}</span>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-1.5 shrink-0">
+                                         <div className="flex items-center gap-1.5 shrink-0">
                                             <button onClick={() => setSelectedOrder(item)} className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100"><Eye size={14} /></button>
-                                            <button onClick={() => handleCancelOrder(item.firebaseId)} className="p-2 bg-rose-50 text-rose-500 rounded-lg border border-rose-100"><X size={14} /></button>
+                                            {item.status === 'Cancelled' || item.status === 'Returned' ? (
+                                                <button onClick={() => handleDeleteOrder(item.firebaseId)} className="p-2 bg-rose-50 text-rose-500 rounded-lg border border-rose-100" title="Delete Order"><Trash2 size={14} /></button>
+                                            ) : (
+                                                <button onClick={() => handleCancelOrder(item.firebaseId)} className="p-2 bg-rose-50 text-rose-500 rounded-lg border border-rose-100" title="Cancel Order"><X size={14} /></button>
+                                            )}
                                         </div>
                                     </div>
 
@@ -420,13 +431,23 @@ const AdminOrders = () => {
                                             >
                                                 <Eye size={14} strokeWidth={3} />
                                             </button>
-                                            <button
-                                                onClick={() => handleCancelOrder(item.firebaseId)}
-                                                className="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white rounded-lg border border-rose-100 transition-colors active:scale-95"
-                                                title="Cancel Order"
-                                            >
-                                                <X size={14} strokeWidth={3} />
-                                            </button>
+                                             {item.status === 'Cancelled' || item.status === 'Returned' ? (
+                                                <button
+                                                    onClick={() => handleDeleteOrder(item.firebaseId)}
+                                                    className="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white rounded-lg border border-rose-100 transition-colors active:scale-95"
+                                                    title="Delete Order"
+                                                >
+                                                    <Trash2 size={14} strokeWidth={3} />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleCancelOrder(item.firebaseId)}
+                                                    className="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white rounded-lg border border-rose-100 transition-colors active:scale-95"
+                                                    title="Cancel Order"
+                                                >
+                                                    <X size={14} strokeWidth={3} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

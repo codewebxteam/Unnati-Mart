@@ -4,11 +4,12 @@ import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signOut,
-    signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     updateProfile
 } from 'firebase/auth';
 import { auth, googleProvider, realtimeDb } from '../firebase';
-import { ref, update } from 'firebase/database';
+import { ref, update, get } from 'firebase/database';
 import Loader from '../components/common/Loader';
 
 
@@ -36,6 +37,11 @@ export const AuthProvider = ({ children }) => {
     const closeAuthModal = () => setIsAuthModalOpen(false);
 
     useEffect(() => {
+        // Handle Google Redirect Result
+        getRedirectResult(auth).catch((error) => {
+            console.error("Google Redirect Login Error:", error.code, error.message);
+        });
+
         const safetyTimeout = setTimeout(() => {
             if (loading) {
                 console.warn("Auth initialization safety timeout reached.");
@@ -46,15 +52,26 @@ export const AuthProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             clearTimeout(safetyTimeout);
             if (currentUser) {
-                const isAdmin = isAdminEmail(currentUser.email);
+                let dbUserData = null;
+                try {
+                    const userRef = ref(realtimeDb, `users/${currentUser.uid}`);
+                    const snapshot = await get(userRef);
+                    if (snapshot.exists()) {
+                        dbUserData = snapshot.val();
+                    }
+                } catch (error) {
+                    console.warn("DB Fetch Error in auth change:", error.message);
+                }
+
+                const isAdmin = isAdminEmail(currentUser.email) || (dbUserData && dbUserData.role === 'admin');
                 
                 const userData = {
                     id: currentUser.uid,
-                    email: currentUser.email,
-                    name: currentUser.displayName || currentUser.email.split('@')[0],
-                    photo: currentUser.photoURL,
+                    email: currentUser.email || null,
+                    name: currentUser.displayName || (dbUserData && dbUserData.name) || currentUser.email.split('@')[0],
+                    photo: currentUser.photoURL || (dbUserData && dbUserData.photo) || null,
                     role: isAdmin ? 'admin' : 'member',
-                    joinedAt: currentUser.metadata.creationTime,
+                    joinedAt: currentUser.metadata.creationTime || (dbUserData && dbUserData.joinedAt) || null,
                     lastLogin: new Date().toISOString()
                 };
                 setUser(userData);
@@ -70,7 +87,10 @@ export const AuthProvider = ({ children }) => {
             }
             setLoading(false);
         });
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            clearTimeout(safetyTimeout);
+        };
     }, []);
 
     const login = useCallback(async (email, password) => {
@@ -129,18 +149,14 @@ export const AuthProvider = ({ children }) => {
 
     const loginWithGoogle = useCallback(async () => {
         try {
-            await signInWithPopup(auth, googleProvider);
+            await signInWithRedirect(auth, googleProvider);
             return { success: true };
         } catch (error) {
             console.error("Google Login Error:", error.code, error.message);
             let errorMessage = 'Google Login failed';
 
-            if (error.code === 'auth/popup-blocked') {
-                errorMessage = 'Popup blocked by browser. Please allow popups for this site.';
-            } else if (error.code === 'auth/unauthorized-domain') {
+            if (error.code === 'auth/unauthorized-domain') {
                 errorMessage = 'This domain is not authorized for Google Login. Please add your domain to Firebase console.';
-            } else if (error.code === 'auth/popup-closed-by-user') {
-                errorMessage = 'Login canceled by user.';
             }
 
             return { success: false, message: `${errorMessage} (${error.code})`, code: error.code };

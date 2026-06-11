@@ -66,7 +66,7 @@ const Footer = () => {
           {/* Quick Links */}
           <div className="col-span-1 flex flex-col gap-6 md:pl-12">
             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-2">Systems</h4>
-            {['Home', 'Categories', 'Deals', 'Orders', 'Admin Login'].map((item) => {
+            {['Home', 'Categories', 'Deals', 'Orders', 'Admin Login', 'About'].map((item) => {
               let route = `/${item.toLowerCase().replace(' ', '-')}`;
               if (item === 'Home') route = '/';
               if (item === 'Admin Login') route = '/admin/login';

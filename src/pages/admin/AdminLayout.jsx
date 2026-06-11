@@ -316,7 +316,7 @@ const AdminLayout = () => {
                         Settings
                     </button>
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={handleLogout}
                         className="w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[13px] font-bold transition-all duration-200 text-slate-400 hover:bg-white/5 hover:text-rose-400 group"
                     >
                         <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />

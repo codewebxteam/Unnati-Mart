@@ -64,7 +64,7 @@ const ProductCard = ({ product }) => {
                         src={product.img || product.image || product.compressedImage || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80'}
                         alt={product.name}
                         loading="lazy"
-                        className="w-full h-full max-h-full object-contain drop-shadow-xl transition-transform duration-700 group-hover:scale-105"
+                        className="w-full h-full max-h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
                         onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80'; }}
                     />
 

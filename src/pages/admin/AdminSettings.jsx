@@ -110,7 +110,7 @@ const AdminSettings = () => {
 
     // Define the tabs available
     const tabs = [
-        { id: 'general', label: 'General & Maintenance', icon: <Store size={18} /> },
+        { id: 'general', label: 'General Settings', icon: <Store size={18} /> },
         { id: 'shipping', label: 'Shipping & Delivery', icon: <MapPin size={18} /> },
         { id: 'payments', label: 'Payment Gateways', icon: <CreditCard size={18} /> },
         { id: 'notifications', label: 'Admin Alerts', icon: <Bell size={18} /> },
@@ -231,49 +231,7 @@ const AdminSettings = () => {
                                             </div>
                                         </div>
 
-                                        <div className="pt-8 border-t border-slate-100">
-                                            <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                                <ShieldCheck className="text-rose-500" size={24} /> Danger Zone
-                                            </h3>
 
-                                            <div className={`p-8 rounded-[2.5rem] border-2 transition-all ${formData.maintenanceMode ? 'bg-rose-50 border-rose-200 shadow-rose-100' : 'bg-slate-50 border-slate-100'} shadow-lg`}>
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${formData.maintenanceMode ? 'bg-rose-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
-                                                            <ShieldCheck size={28} />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="text-lg font-black text-slate-900">Global Maintenance Mode</h4>
-                                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Toggle store visibility for customers</p>
-                                                        </div>
-                                                    </div>
-                                                    <label className="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" name="maintenanceMode" checked={formData.maintenanceMode} onChange={handleToggle} className="sr-only peer" />
-                                                        <div className="w-14 h-7 bg-slate-300/50 border border-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:shadow-md after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
-                                                    </label>
-                                                </div>
-
-                                                {formData.maintenanceMode && (
-                                                    <div className="mt-6 space-y-4">
-                                                        <div className="space-y-2">
-                                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Maintenance Message</label>
-                                                            <textarea
-                                                                name="maintenanceMessage"
-                                                                value={formData.maintenanceMessage}
-                                                                onChange={handleChange}
-                                                                rows="3"
-                                                                className="w-full px-5 py-4 bg-white border border-rose-100 rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:border-rose-300 focus:ring-4 focus:ring-rose-500/5 transition-all resize-none shadow-sm"
-                                                                placeholder="Enter message for your customers..."
-                                                            />
-                                                        </div>
-                                                        <div className="p-4 bg-rose-100/50 rounded-2xl border border-rose-200 text-rose-700 text-[11px] font-black uppercase tracking-wider flex items-center gap-3">
-                                                            <AlertCircle size={16} />
-                                                            Only authorized administrators can access the store while this is enabled.
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
                                     </motion.div>
                                 )}
 

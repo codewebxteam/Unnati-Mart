@@ -12,7 +12,7 @@ import ReviewModal from '../../components/product/ReviewModal';
 import { useAuth } from '../../context/AuthContext';
 
 const OrdersPage = () => {
-    const { orders } = useOrders();
+    const { orders, cancelOrder } = useOrders();
     const navigate = useNavigate();
     const [selectedOrderId, setSelectedOrderId] = useState(null);
     const selectedOrder = orders.find(o => o.id === selectedOrderId);
@@ -54,7 +54,23 @@ const OrdersPage = () => {
         return formatted;
     };
 
-    const statusHierarchy = { 'Pending': 0, 'Placed': 1, 'Shipped': 2, 'Delivered': 3 };
+    const handleCancelClick = async (order) => {
+        if (window.confirm('Are you sure you want to cancel this order?')) {
+            const reason = window.prompt('Please enter a reason for cancellation (optional):', 'Changed my mind');
+            if (reason === null) return; // User clicked cancel on prompt
+            
+            const cancelReason = reason.trim() !== '' ? reason : 'Cancelled by User';
+            const targetId = order.firebaseId || order.id;
+            const success = await cancelOrder(targetId, cancelReason);
+            if (success) {
+                alert('Order cancelled successfully.');
+            } else {
+                alert('Failed to cancel order. Please try again.');
+            }
+        }
+    };
+
+    const statusHierarchy = { 'Pending': 0, 'Placed': 1, 'Confirmed': 2, 'Shipped': 3, 'Delivered': 4 };
 
     return (
         <div className="min-h-screen bg-[#fdfdfd] pb-24">
@@ -149,6 +165,16 @@ const OrdersPage = () => {
                                             <p className="text-xl font-bold font-serif text-[#313628]">₹{(order.grandTotal || order.amount || 0).toLocaleString('en-IN')}</p>
                                         </div>
                                         <div className="flex items-center gap-3">
+                                            {(order.status === 'Pending' || order.status === 'Placed') && (
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => handleCancelClick(order)}
+                                                    className="px-6 py-3 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest border border-red-100 transition-colors"
+                                                >
+                                                    Cancel Order
+                                                </motion.button>
+                                            )}
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}

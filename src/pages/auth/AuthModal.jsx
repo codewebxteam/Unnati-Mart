@@ -41,15 +41,22 @@ const AuthModal = ({ isOpen, onClose, initialView = 'login' }) => {
 
         try {
             if (view === 'login') {
+                if (isAdminEmail(formData.email)) {
+                    setError('Admin accounts must log in via the Admin Console.');
+                    setIsLoading(false);
+                    return;
+                }
                 const result = await login(formData.email, formData.password);
                 if (result.success) {
                     onClose();
-                    if (isAdminEmail(formData.email)) {
-                        navigate('/admin');
-                    }
                 }
                 else setError(result.message || 'Invalid email or password');
             } else {
+                if (isAdminEmail(formData.email)) {
+                    setError('This email is reserved for administrators.');
+                    setIsLoading(false);
+                    return;
+                }
                 if (formData.password !== formData.confirmPassword) {
                     setError('Passwords do not match');
                     setIsLoading(false);
