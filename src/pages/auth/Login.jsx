@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, Github } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Github, Eye, EyeOff } from 'lucide-react';
 import { useAuth, isAdminEmail } from '../../context/AuthContext';
 import { useEffect } from 'react';
 
@@ -14,6 +14,7 @@ const Login = () => {
     const [isAdminLogin, setIsAdminLogin] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     // Get origin path or default
     const from = location.state?.from?.pathname || '/';
@@ -144,12 +145,19 @@ const Login = () => {
                         <div className="relative group">
                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-amber-600 transition-colors" size={18} />
                             <input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
-                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-12 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-600 transition-colors"
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
                         </div>
                     </div>
 

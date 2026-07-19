@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import UserAvatar from '../common/UserAvatar';
 import { useOrders } from '../../context/OrderContext';
@@ -18,6 +18,8 @@ const ProfileSettings = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -147,21 +149,39 @@ const ProfileSettings = () => {
             <div className="space-y-4">
               {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold">{error}</div>}
               {success && <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl text-xs font-bold">{success}</div>}
-              <input
-                type="password"
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm font-bold outline-none"
-              />
-              {newPassword && (
+              <div className="relative group">
                 <input
-                  type="password"
-                  placeholder="Confirm New Password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm font-bold outline-none"
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="New Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm font-bold outline-none pr-12"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-600 transition-colors"
+                >
+                  {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {newPassword && (
+                <div className="relative group">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm New Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm font-bold outline-none pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-600 transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               )}
               <button
                 type="button"
