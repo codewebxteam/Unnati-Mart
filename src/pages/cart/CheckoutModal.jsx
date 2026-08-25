@@ -13,7 +13,7 @@ import { realtimeDb as db } from '../../firebase';
 import useScrollLock from '../../hooks/useScrollLock';
 import { ref, onValue, update } from 'firebase/database';
 import { useAuth } from '../../context/AuthContext';
-
+import logoImg from '../../assets/foundation/legacy/Logo.webp';
 const loadRazorpayScript = () => {
     return new Promise((resolve) => {
         if (window.Razorpay) {
@@ -25,6 +25,29 @@ const loadRazorpayScript = () => {
         script.onload = () => resolve(true);
         script.onerror = () => resolve(false);
         document.body.appendChild(script);
+    });
+};
+
+const getBase64Image = (imgUrl) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = imgUrl;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            try {
+                resolve(canvas.toDataURL('image/png'));
+            } catch (e) {
+                resolve(imgUrl);
+            }
+        };
+        img.onerror = () => {
+            resolve(imgUrl);
+        };
     });
 };
 
@@ -298,6 +321,8 @@ const CheckoutModal = ({ onClose }) => {
 
                 const razorpayOrder = await createRes.json();
                 
+                const logoBase64 = await getBase64Image(logoImg);
+                
                 // 3. Configure Razorpay modal options
                 const options = {
                     key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -305,7 +330,7 @@ const CheckoutModal = ({ onClose }) => {
                     currency: razorpayOrder.currency,
                     name: 'Unnati Mart',
                     description: 'Order Payment',
-                    image: 'https://unnati-mart.firebaseapp.com/favicon.ico',
+                    image: logoBase64 || 'https://unnati-mart.firebaseapp.com/favicon.ico',
                     order_id: razorpayOrder.id,
                     handler: async function (response) {
                         try {
