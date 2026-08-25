@@ -78,6 +78,10 @@ export const OrderProvider = ({ children }) => {
             grandTotal: orderData.grandTotal,
             userId: user?.id || 'guest',
             payment: orderData.paymentMethod || 'cod',
+            paymentStatus: orderData.paymentStatus || 'Pending',
+            razorpayOrderId: orderData.razorpayOrderId || '',
+            razorpayPaymentId: orderData.razorpayPaymentId || '',
+            razorpaySignature: orderData.razorpaySignature || '',
             address: {
                 fullName: orderData.fullName,
                 mobile: orderData.mobile,
@@ -100,10 +104,10 @@ export const OrderProvider = ({ children }) => {
             },
             timeline: [
                 { status: 'Pending', date: now.toISOString(), completed: true, desc: 'Awaiting confirmation from admin.' },
-                { status: 'Placed', date: new Date(now.getTime() + 12 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'Order will be placed after confirmation.' },
-                { status: 'Confirmed', date: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'We are confirming your order.' },
-                { status: 'Shipped', date: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'Your order is on the way.' },
-                { status: 'Delivered', date: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString(), completed: false, desc: 'Order delivered.' }
+                { status: 'Placed', date: '', completed: false, desc: 'Order will be placed after confirmation.' },
+                { status: 'Confirmed', date: '', completed: false, desc: 'We are confirming your order.' },
+                { status: 'Shipped', date: '', completed: false, desc: 'Your order is on the way.' },
+                { status: 'Delivered', date: '', completed: false, desc: 'Order delivered.' }
             ]
         };
 

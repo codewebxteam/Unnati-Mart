@@ -3,13 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Package, ChevronRight, Box, Calendar,
     CheckCircle2, Clock, Truck, Home,
-    ArrowLeft, Search, Filter, MoreVertical, X
+    ArrowLeft, Search, Filter, MoreVertical, X, Download
 } from 'lucide-react';
 import { useOrders } from '../../context/OrderContext';
 import { useNavigate } from 'react-router-dom';
 import useScrollLock from '../../hooks/useScrollLock';
 import ReviewModal from '../../components/product/ReviewModal';
 import { useAuth } from '../../context/AuthContext';
+import { downloadInvoice } from '../../utils/invoiceGenerator';
 
 const OrdersPage = () => {
     const { orders, cancelOrder } = useOrders();
@@ -138,7 +139,11 @@ const OrdersPage = () => {
                                     <div className="flex items-center gap-6 mb-8 overflow-x-auto pb-4 scrollbar-hide">
                                         {order.items.map((item, idx) => (
                                             <div key={idx} className="flex flex-col items-center gap-3 shrink-0">
-                                                <div className="w-40 h-40 bg-white rounded-[2.5rem] border border-slate-100 p-6 shadow-sm group-hover:border-amber-100 transition-all duration-500 relative overflow-hidden">
+                                                <div 
+                                                    onClick={() => navigate(`/product/${item.id}`)}
+                                                    className="w-40 h-40 bg-white rounded-[2.5rem] border border-slate-100 p-6 shadow-sm group-hover:border-amber-100 transition-all duration-500 relative overflow-hidden cursor-pointer"
+                                                    title={`View ${item.name}`}
+                                                >
                                                     <img src={item.img} alt={item.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                                                 </div>
                                                 {order.status === 'Delivered' && (
@@ -165,7 +170,7 @@ const OrdersPage = () => {
                                             <p className="text-xl font-bold font-serif text-[#313628]">₹{(order.grandTotal || order.amount || 0).toLocaleString('en-IN')}</p>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            {(order.status === 'Pending' || order.status === 'Placed') && (
+                                            {(order.status === 'Pending' || order.status === 'Placed') && order.paymentStatus !== 'Paid' && order.payment !== 'online' && (
                                                 <motion.button
                                                     whileHover={{ scale: 1.05 }}
                                                     whileTap={{ scale: 0.95 }}
@@ -173,6 +178,16 @@ const OrdersPage = () => {
                                                     className="px-6 py-3 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest border border-red-100 transition-colors"
                                                 >
                                                     Cancel Order
+                                                </motion.button>
+                                            )}
+                                            {order.status === 'Delivered' && (
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => downloadInvoice(order)}
+                                                    className="px-6 py-3 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest border border-emerald-100 transition-colors flex items-center gap-2"
+                                                >
+                                                    <Download size={14} /> Invoice
                                                 </motion.button>
                                             )}
                                             <motion.button
@@ -269,6 +284,109 @@ const OrdersPage = () => {
                                             </div>
                                         )
                                     })}
+                                    
+                                    {/* Order details & Payment Summary */}
+                                    <hr className="my-8 border-slate-100" />
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 pb-12">
+                                        {/* Left: Address & Payment */}
+                                        <div className="space-y-6">
+                                            <div>
+                                                <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Delivery Address</h5>
+                                                <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl">
+                                                    <p className="text-sm font-bold text-slate-800 mb-1">{selectedOrder.address?.fullName || selectedOrder.customer}</p>
+                                                    <p className="text-xs text-slate-500 font-medium mb-3">+91 {selectedOrder.address?.mobile || selectedOrder.mobile}</p>
+                                                    <p className="text-xs font-semibold text-slate-600 leading-relaxed">
+                                                        {selectedOrder.address?.street}, {selectedOrder.address?.locality}<br />
+                                                        {selectedOrder.address?.city}, {selectedOrder.address?.state} - {selectedOrder.address?.pincode}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div>
+                                                <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Payment Info</h5>
+                                                <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl space-y-2">
+                                                    <div className="flex justify-between items-center text-xs">
+                                                        <span className="font-semibold text-slate-500">Method</span>
+                                                        <span className="font-bold text-slate-800 uppercase">{selectedOrder.payment === 'online' ? 'Online Payment' : 'Cash on Delivery'}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center text-xs">
+                                                        <span className="font-semibold text-slate-500">Status</span>
+                                                        <span className={`font-black uppercase ${selectedOrder.paymentStatus === 'Paid' ? 'text-green-600' : 'text-amber-600'}`}>
+                                                            {selectedOrder.paymentStatus || 'Pending'}
+                                                        </span>
+                                                    </div>
+                                                    {selectedOrder.razorpayPaymentId && (
+                                                        <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-200/50">
+                                                            <span className="font-semibold text-slate-500">Transaction ID</span>
+                                                            <span className="font-mono text-slate-900 select-all font-bold">{selectedOrder.razorpayPaymentId}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Right: Items & Totals */}
+                                        <div className="space-y-6">
+                                            <div>
+                                                <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Items Ordered</h5>
+                                                <div className="border border-slate-100 rounded-2xl divide-y divide-slate-50 overflow-hidden bg-white shadow-sm">
+                                                    {selectedOrder.items?.map((item, idx) => (
+                                                        <div key={idx} className="p-4 flex items-center gap-4">
+                                                            <div 
+                                                                onClick={() => { setSelectedOrderId(null); navigate(`/product/${item.id}`); }}
+                                                                className="w-12 h-12 bg-slate-50 rounded-xl overflow-hidden shrink-0 border border-slate-100 p-1 flex items-center justify-center cursor-pointer hover:border-amber-400 transition-all"
+                                                                title={`View ${item.name}`}
+                                                            >
+                                                                <img src={item.img} alt={item.name} className="w-full h-full object-contain" />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p 
+                                                                    onClick={() => { setSelectedOrderId(null); navigate(`/product/${item.id}`); }}
+                                                                    className="text-xs font-bold text-slate-800 truncate cursor-pointer hover:text-amber-600 transition-colors"
+                                                                    title={`View ${item.name}`}
+                                                                >
+                                                                    {item.name}
+                                                                </p>
+                                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mt-0.5">x{item.quantity} • ₹{item.price.toLocaleString('en-IN')}</p>
+                                                            </div>
+                                                            <span className="text-xs font-black text-slate-900 shrink-0">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl space-y-2">
+                                                <div className="flex justify-between items-center text-xs font-semibold text-slate-500">
+                                                    <span>Subtotal</span>
+                                                    <span className="text-slate-800">₹{selectedOrder.subtotal?.toLocaleString('en-IN') || (selectedOrder.grandTotal - selectedOrder.tax).toLocaleString('en-IN')}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-xs font-semibold text-slate-500">
+                                                    <span>Tax & GST</span>
+                                                    <span className="text-slate-800">₹{selectedOrder.tax?.toLocaleString('en-IN') || 0}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-xs font-semibold text-slate-500">
+                                                    <span>Delivery</span>
+                                                    <span className="text-amber-600 italic uppercase">Free</span>
+                                                </div>
+                                                <div className="h-px bg-slate-200/60 my-2" />
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs font-black text-slate-800 uppercase">Total Amount</span>
+                                                    <span className="text-base font-black text-amber-600">₹{selectedOrder.grandTotal?.toLocaleString('en-IN')}</span>
+                                                </div>
+                                            </div>
+                                            {selectedOrder.status === 'Delivered' && (
+                                                <motion.button
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    onClick={() => downloadInvoice(selectedOrder)}
+                                                    className="w-full flex items-center justify-center gap-2 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[1.8rem] text-sm font-bold uppercase tracking-wider shadow-lg shadow-emerald-100 transition-all mt-4"
+                                                >
+                                                    <Download size={18} /> Download Tax Invoice
+                                                </motion.button>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div className="h-4 bg-white shrink-0" />

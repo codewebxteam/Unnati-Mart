@@ -66,14 +66,17 @@ const AdminOrders = () => {
                              const statusHierarchy = { 'Pending': 0, 'Placed': 1, 'Confirmed': 2, 'Shipped': 3, 'Delivered': 4 };
                              const targetIndex = statusHierarchy[nextStatus];
 
-                            if (updatedTimeline.length > 0 && targetIndex !== undefined) {
-                                updatedTimeline = updatedTimeline.map((step, idx) => {
-                                    if (idx <= targetIndex) {
-                                        return { ...step, completed: true };
-                                    }
-                                    return step;
-                                });
-                            }
+                             if (updatedTimeline.length > 0 && targetIndex !== undefined) {
+                                 updatedTimeline = updatedTimeline.map((step, idx) => {
+                                     if (idx <= targetIndex) {
+                                         const stepDate = (idx === targetIndex || !step.completed || !step.date)
+                                             ? new Date().toISOString()
+                                             : step.date;
+                                         return { ...step, completed: true, date: stepDate };
+                                     }
+                                     return step;
+                                 });
+                             }
 
                             const updates = { status: nextStatus };
                             if (updatedTimeline.length > 0) updates.timeline = updatedTimeline;
@@ -102,6 +105,11 @@ const AdminOrders = () => {
     }, []);
 
     const handleStatusChange = (order, newStatus) => {
+        if (newStatus === 'Delivered') {
+            const confirmed = window.confirm("क्या आप sure हैं कि product deliver हो गया है?");
+            if (!confirmed) return;
+        }
+
         const orderRef = ref(db, `orders/${order.firebaseId}`);
 
          // Update timeline if it exists
@@ -112,13 +120,19 @@ const AdminOrders = () => {
         if (updatedTimeline.length > 0 && targetIndex !== undefined) {
             updatedTimeline = updatedTimeline.map((step, idx) => {
                 if (idx <= targetIndex) {
-                    return { ...step, completed: true };
+                    const stepDate = (idx === targetIndex || !step.completed || !step.date)
+                        ? new Date().toISOString()
+                        : step.date;
+                    return { ...step, completed: true, date: stepDate };
                 }
                 return step;
             });
         }
 
         const updates = { status: newStatus };
+        if (newStatus === 'Delivered') {
+            updates.paymentStatus = 'Paid';
+        }
         if (updatedTimeline.length > 0) {
             updates.timeline = updatedTimeline;
         }
@@ -318,7 +332,7 @@ const AdminOrders = () => {
                                             <button onClick={() => setSelectedOrder(item)} className="p-2 bg-amber-50 text-amber-600 rounded-lg border border-amber-100"><Eye size={14} /></button>
                                             {item.status === 'Cancelled' || item.status === 'Returned' ? (
                                                 <button onClick={() => handleDeleteOrder(item.firebaseId)} className="p-2 bg-rose-50 text-rose-500 rounded-lg border border-rose-100" title="Delete Order"><Trash2 size={14} /></button>
-                                            ) : (
+                                            ) : (item.status === 'Delivered' || item.status === 'Success') ? null : (
                                                 <button onClick={() => handleCancelOrder(item.firebaseId)} className="p-2 bg-rose-50 text-rose-500 rounded-lg border border-rose-100" title="Cancel Order"><X size={14} /></button>
                                             )}
                                         </div>
@@ -334,10 +348,11 @@ const AdminOrders = () => {
                                             <select
                                                 value={item.status === 'Success' ? 'Delivered' : item.status}
                                                 onChange={(e) => handleStatusChange(item, e.target.value)}
-                                                className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full border-none focus:ring-0 cursor-pointer appearance-none text-center ${(item.status === 'Delivered' || item.status === 'Success') ? 'bg-amber-600 text-white' :
-                                                    (item.status === 'Pending' || item.status === 'Placed') ? 'bg-amber-500 text-white' :
-                                                        (item.status === 'Cancelled' || item.status === 'Returned') ? 'bg-rose-500 text-white' :
-                                                            'bg-amber-600 text-white'
+                                                disabled={item.status === 'Delivered' || item.status === 'Success'}
+                                                className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full border-none focus:ring-0 appearance-none text-center ${(item.status === 'Delivered' || item.status === 'Success') ? 'bg-amber-600 text-white cursor-not-allowed opacity-90' :
+                                                    (item.status === 'Pending' || item.status === 'Placed') ? 'bg-amber-500 text-white cursor-pointer' :
+                                                        (item.status === 'Cancelled' || item.status === 'Returned') ? 'bg-rose-500 text-white cursor-pointer' :
+                                                            'bg-amber-600 text-white cursor-pointer'
                                                     }`}
                                             >
                                                 <option value="Pending">Pending</option>
@@ -399,10 +414,11 @@ const AdminOrders = () => {
                                         <select
                                             value={item.status === 'Success' ? 'Delivered' : item.status}
                                             onChange={(e) => handleStatusChange(item, e.target.value)}
-                                            className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full inline-block min-w-[120px] border-none focus:ring-4 focus:ring-amber-500/10 cursor-pointer transition-all ${(item.status === 'Delivered' || item.status === 'Success') ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' :
-                                                (item.status === 'Pending' || item.status === 'Placed') ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' :
-                                                        (item.status === 'Cancelled' || item.status === 'Returned') ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' :
-                                                            'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
+                                            disabled={item.status === 'Delivered' || item.status === 'Success'}
+                                            className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full inline-block min-w-[120px] border-none focus:ring-4 focus:ring-amber-500/10 transition-all ${(item.status === 'Delivered' || item.status === 'Success') ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20 cursor-not-allowed opacity-90' :
+                                                (item.status === 'Pending' || item.status === 'Placed') ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20 cursor-pointer' :
+                                                        (item.status === 'Cancelled' || item.status === 'Returned') ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20 cursor-pointer' :
+                                                            'bg-amber-600 text-white shadow-lg shadow-amber-600/20 cursor-pointer'
                                                 }`}
                                         >
                                             <option value="Pending">Pending</option>
@@ -439,7 +455,7 @@ const AdminOrders = () => {
                                                 >
                                                     <Trash2 size={14} strokeWidth={3} />
                                                 </button>
-                                            ) : (
+                                            ) : (item.status === 'Delivered' || item.status === 'Success') ? null : (
                                                 <button
                                                     onClick={() => handleCancelOrder(item.firebaseId)}
                                                     className="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white rounded-lg border border-rose-100 transition-colors active:scale-95"

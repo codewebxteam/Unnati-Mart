@@ -85,10 +85,11 @@ const Wishlist = () => {
                                             onClick={() => {
                                                 addToCart(item, 1);
                                                 removeFromWishlist(item.id, item.category);
+                                                navigate('/cart');
                                             }}
-                                            className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-amber-600 transition-all"
+                                            className="flex-1 py-2.5 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-amber-700 transition-all shadow-md shadow-amber-500/10"
                                         >
-                                            <ShoppingCart size={14} /> Add to Cart
+                                            <ShoppingCart size={14} /> Buy Now
                                         </button>
                                         <button
                                             onClick={() => handleRemove(item)}

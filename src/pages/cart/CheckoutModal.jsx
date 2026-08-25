@@ -14,6 +14,20 @@ import useScrollLock from '../../hooks/useScrollLock';
 import { ref, onValue, update } from 'firebase/database';
 import { useAuth } from '../../context/AuthContext';
 
+const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+        if (window.Razorpay) {
+            resolve(true);
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
+
 const CheckoutModal = ({ onClose }) => {
     const { cartItems, subtotal, tax, gstPercentage, grandTotal, cartCount, clearCart, shippingFee } = useCart();
     const { placeOrder } = useOrders();
@@ -22,7 +36,7 @@ const CheckoutModal = ({ onClose }) => {
     const [settings, setSettings] = useState({});
     const [formData, setFormData] = useState({
         fullName: '', mobile: '', email: '',
-        pincode: '', locality: '', street: '', city: '', state: 'Uttar Pradesh', landmark: '', alternatePhone: '',
+        pincode: '', locality: '', street: '', city: '', state: 'Bihar', landmark: '', alternatePhone: '',
         addressType: 'home',
         paymentMethod: '',
         selectedBank: '',
@@ -224,40 +238,164 @@ const CheckoutModal = ({ onClose }) => {
         setStep(step + 1);
     };
 
+    const saveAddressToProfile = () => {
+        if (user) {
+            const userAddressRef = ref(db, `users/${user.id}/address`);
+            const addressToSave = {
+                fullName: formData.fullName,
+                mobile: formData.mobile,
+                pincode: formData.pincode,
+                locality: formData.locality,
+                street: formData.street,
+                city: formData.city,
+                state: formData.state,
+                landmark: formData.landmark || '',
+                alternatePhone: formData.alternatePhone || '',
+                addressType: formData.addressType || 'home'
+            };
+            update(userAddressRef, addressToSave).catch(err => {
+                console.warn("Could not save address to user profile:", err);
+            });
+        }
+    };
+
     const handlePlaceOrder = async () => {
         setIsProcessing(true);
         setError(null);
         try {
             const itemsToPass = [...cartItems];
+            
+            // Check if online payment method is selected
+            const isOnlinePayment = !['cod', 'whatsapp'].includes(formData.paymentMethod);
+            
+            if (isOnlinePayment) {
+                // 1. Load Razorpay script
+                const isLoaded = await loadRazorpayScript();
+                if (!isLoaded) {
+                    setError("Failed to load Razorpay payment gateway. Please try again.");
+                    setIsProcessing(false);
+                    return;
+                }
+
+                // 2. Create order on backend
+                const createRes = await fetch('/api/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: Math.round(grandTotal * 100), // in paise
+                        currency: 'INR',
+                        receipt: `receipt_${Date.now()}`
+                    })
+                });
+
+                if (!createRes.ok) {
+                    const errorText = await createRes.text();
+                    console.error("Order creation failed:", errorText);
+                    setError("Failed to initialize payment. Please try again.");
+                    setIsProcessing(false);
+                    return;
+                }
+
+                const razorpayOrder = await createRes.json();
+                
+                // 3. Configure Razorpay modal options
+                const options = {
+                    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                    amount: razorpayOrder.amount,
+                    currency: razorpayOrder.currency,
+                    name: 'Unnati Mart',
+                    description: 'Order Payment',
+                    image: 'https://unnati-mart.firebaseapp.com/favicon.ico',
+                    order_id: razorpayOrder.id,
+                    handler: async function (response) {
+                        try {
+                            // 4. Verify payment signature
+                            const verifyRes = await fetch('/api/verify-payment', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature
+                                })
+                            });
+
+                            const verifyData = await verifyRes.json();
+                            if (!verifyRes.ok || !verifyData.success) {
+                                setError("Payment verification failed. Your order has not been placed.");
+                                setIsProcessing(false);
+                                return;
+                            }
+
+                            // 5. Place order in Firebase database with payment details
+                            const orderData = {
+                                items: itemsToPass,
+                                subtotal,
+                                tax,
+                                grandTotal,
+                                ...formData,
+                                status: 'Pending',
+                                paymentStatus: 'Paid',
+                                razorpayOrderId: response.razorpay_order_id,
+                                razorpayPaymentId: response.razorpay_payment_id,
+                                razorpaySignature: response.razorpay_signature
+                            };
+
+                            const newOrder = await placeOrder(orderData);
+                            
+                            saveAddressToProfile();
+                            clearCart();
+
+                            setOrderPlaced(true);
+                            setIsProcessing(false);
+                            onClose();
+                            navigate('/success', { state: { items: itemsToPass, orderDetails: newOrder || orderData } });
+                        } catch (err) {
+                            console.error("Verification callback error:", err);
+                            setError("An error occurred during verification. Please contact support.");
+                            setIsProcessing(false);
+                        }
+                    },
+                    prefill: {
+                        name: formData.fullName || '',
+                        email: formData.email || '',
+                        contact: formData.mobile || ''
+                    },
+                    theme: {
+                        color: '#d97706'
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            setError("Payment cancelled by user.");
+                            setIsProcessing(false);
+                        }
+                    }
+                };
+
+                const rzp = new window.Razorpay(options);
+                rzp.on('payment.failed', function (resp) {
+                    console.error("Razorpay Payment failed:", resp.error);
+                    setError(`Payment failed: ${resp.error.description || 'Unknown error'}`);
+                    setIsProcessing(false);
+                });
+                rzp.open();
+                return;
+            }
+
+            // Fallback to normal flow for COD or WhatsApp
             const orderData = {
                 items: itemsToPass,
                 subtotal,
                 tax,
                 grandTotal,
                 ...formData,
-                status: 'Pending'
+                status: 'Pending',
+                paymentStatus: 'Pending'
             };
             const newOrder = await placeOrder(orderData);
 
-            // Save the shipping address to user's profile on Firebase
-            if (user) {
-                const userAddressRef = ref(db, `users/${user.id}/address`);
-                const addressToSave = {
-                    fullName: formData.fullName,
-                    mobile: formData.mobile,
-                    pincode: formData.pincode,
-                    locality: formData.locality,
-                    street: formData.street,
-                    city: formData.city,
-                    state: formData.state,
-                    landmark: formData.landmark || '',
-                    alternatePhone: formData.alternatePhone || '',
-                    addressType: formData.addressType || 'home'
-                };
-                update(userAddressRef, addressToSave).catch(err => {
-                    console.warn("Could not save address to user profile:", err);
-                });
-            }
+            saveAddressToProfile();
+            clearCart();
 
             if (formData.paymentMethod === 'whatsapp') {
                 const message = `*New Order via WhatsApp payment*
@@ -304,24 +442,13 @@ Please send the QR code for payment.`;
 
     const paymentMethods = [
         { id: 'cod', label: 'Cash on Delivery', icon: <Banknote size={20} />, activeBorder: 'border-amber-500', activeBg: 'bg-amber-50', iconBg: 'bg-amber-100', iconColor: 'text-amber-600', dot: true, isDisabled: settings.enableCOD === false },
-        { id: 'whatsapp', label: 'WhatsApp via Payment', icon: <MessageCircle size={20} />, activeBorder: 'border-amber-500', activeBg: 'bg-amber-50', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
-        { id: 'upi', label: 'UPI / QR Code', icon: <Smartphone size={20} />, activeBorder: 'border-amber-500', activeBg: 'bg-amber-50', iconBg: 'bg-amber-100', iconColor: 'text-amber-600', isDisabled: settings.enableUPI === false },
-        { id: 'debit', label: 'Debit Card', icon: <CreditCard size={20} />, activeBorder: 'border-amber-500', activeBg: 'bg-amber-50', iconBg: 'bg-amber-100', iconColor: 'text-amber-600', isDisabled: settings.enableCards === false },
-        { id: 'credit', label: 'Credit Card', icon: <CreditCard size={20} />, activeBorder: 'border-amber-500', activeBg: 'bg-amber-50', iconBg: 'bg-amber-100', iconColor: 'text-amber-600', isDisabled: settings.enableCards === false },
-        { id: 'bank', label: 'Net Banking', icon: <Landmark size={20} />, activeBorder: 'border-amber-500', activeBg: 'bg-amber-50', iconBg: 'bg-amber-100', iconColor: 'text-amber-600', isDisabled: settings.enableBank === false },
-        { id: 'wallet', label: 'Digital Wallet', icon: <Wallet size={20} />, activeBorder: 'border-amber-500', activeBg: 'bg-amber-50', iconBg: 'bg-amber-100', iconColor: 'text-amber-600', isDisabled: settings.enableWallet === false },
+        { id: 'online', label: 'Online Payment', icon: <CreditCard size={20} />, activeBorder: 'border-amber-500', activeBg: 'bg-amber-50', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' }
     ];
 
     const getPaymentDetails = () => {
-        const method = paymentMethods.find(m => m.id === formData.paymentMethod);
         switch (formData.paymentMethod) {
             case 'cod': return `Pay ₹${grandTotal.toLocaleString('en-IN')} in cash when the product arrives.`;
-            case 'whatsapp': return `You will be redirected to WhatsApp to complete payment of ₹${grandTotal.toLocaleString('en-IN')}.`;
-            case 'upi': return formData.upiId ? `Paying via ${formData.upiId}` : "Enter your UPI ID to proceed.";
-            case 'debit':
-            case 'credit': return formData.cardDetails.number ? `Card ending in ${formData.cardDetails.number.slice(-4)}` : "Enter your card details safely.";
-            case 'bank': return formData.selectedBank ? `Paying via ${banks.find(b => b.id === formData.selectedBank)?.name}` : "Select your bank to continue.";
-            case 'wallet': return formData.selectedWallet ? `Paying via ${wallets.find(w => w.id === formData.selectedWallet)?.name}` : "Select your favorite wallet.";
+            case 'online': return `Pay securely using Cards, UPI, Netbanking or Wallet via Razorpay.`;
             default: return "";
         }
     };
@@ -864,7 +991,7 @@ Please send the QR code for payment.`;
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-10">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
                                     {paymentMethods.map((method) => (
                                         <button
                                             key={method.id}
@@ -901,183 +1028,31 @@ Please send the QR code for payment.`;
                                                     <div className="w-2 h-2 bg-amber-500 rounded-full" />
                                                 </div>
                                             )}
-
-                                            {method.isDisabled && (
-                                                <div className="absolute right-2 top-2">
-                                                    <span className="text-[8px] font-black uppercase tracking-wider text-white bg-rose-500 px-2 py-0.5 rounded-full shadow-sm">Temporarily Unavailable</span>
-                                                </div>
-                                            )}
                                         </button>
                                     ))}
                                 </div>
 
-                                {/* Selected Method Detail Box */}
-                                <motion.div
-                                    key={formData.paymentMethod}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="p-8 bg-[#f8f9f4] rounded-[3rem] border border-dashed border-[#dce0bc] mb-10"
-                                >
-                                    <div className="flex items-center gap-5 mb-6">
-                                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-amber-600 shadow-sm shrink-0">
-                                            {paymentMethods.find(m => m.id === formData.paymentMethod)?.icon}
+                                {formData.paymentMethod && (
+                                    <motion.div
+                                        key={formData.paymentMethod}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="p-8 bg-[#f8f9f4] rounded-[3rem] border border-dashed border-[#dce0bc] mb-10"
+                                    >
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-amber-600 shadow-sm shrink-0">
+                                                {paymentMethods.find(m => m.id === formData.paymentMethod)?.icon}
+                                            </div>
+                                            <div className="leading-tight">
+                                                <h5 className="text-sm font-bold text-[#3a3f30] mb-1">
+                                                    {paymentMethods.find(m => m.id === formData.paymentMethod)?.label} Details
+                                                </h5>
+                                                <p className="text-xs text-slate-500 font-medium">{getPaymentDetails()}</p>
+                                            </div>
                                         </div>
-                                        <div className="leading-tight">
-                                            <h5 className="text-sm font-bold text-[#3a3f30] mb-1">
-                                                {paymentMethods.find(m => m.id === formData.paymentMethod)?.label} Details
-                                            </h5>
-                                            <p className="text-xs text-slate-500 font-medium">{getPaymentDetails()}</p>
-                                        </div>
-                                    </div>
+                                    </motion.div>
+                                )}
 
-                                    {/* Sub-options UI */}
-                                    <div className="pt-2">
-                                        {/* Bank Selection Dropdown */}
-                                        {formData.paymentMethod === 'bank' && (
-                                            <div className="relative">
-                                                <button
-                                                    onClick={() => setIsBankDropdownOpen(!isBankDropdownOpen)}
-                                                    className="w-full flex items-center justify-between p-4 bg-white border border-white rounded-[1.8rem] shadow-sm hover:shadow-md transition-all group"
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        {formData.selectedBank ? (
-                                                            <>
-                                                                <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-50 p-1">
-                                                                    <img src={banks.find(b => b.id === formData.selectedBank)?.icon} alt="" className="w-full h-full object-contain" />
-                                                                </div>
-                                                                <span className="text-sm font-bold text-slate-800">{banks.find(b => b.id === formData.selectedBank)?.name}</span>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
-                                                                    <Landmark size={20} />
-                                                                </div>
-                                                                <span className="text-sm font-bold text-slate-400">Select Your Bank</span>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                    <ChevronRight className={`text-slate-400 transition-transform ${isBankDropdownOpen ? 'rotate-90' : ''}`} size={18} />
-                                                </button>
-
-                                                {isBankDropdownOpen && (
-                                                    <div className="absolute top-full left-0 right-0 mt-3 bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-4 z-20 max-h-[350px] overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2">
-                                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                                            {banks.map(bank => (
-                                                                <button
-                                                                    key={bank.id}
-                                                                    onClick={() => { setFormData(prev => ({ ...prev, selectedBank: bank.id })); setIsBankDropdownOpen(false); }}
-                                                                    className={`flex flex-col items-center justify-center p-3 rounded-2xl border transition-all text-center ${formData.selectedBank === bank.id ? 'border-amber-500 bg-amber-50/50 text-amber-700' : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50 text-slate-600'}`}
-                                                                >
-                                                                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-white p-2 mb-1.5 flex items-center justify-center border border-slate-100/80 shadow-sm">
-                                                                        <img src={bank.icon} alt={bank.name} className="w-full h-full object-contain" />
-                                                                    </div>
-                                                                    <span className="text-[10px] font-black leading-tight tracking-tight uppercase">{bank.name}</span>
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {/* Wallet Selection Dropdown */}
-                                        {formData.paymentMethod === 'wallet' && (
-                                            <div className="relative">
-                                                <button
-                                                    onClick={() => setIsWalletDropdownOpen(!isWalletDropdownOpen)}
-                                                    className="w-full flex items-center justify-between p-4 bg-white border border-white rounded-[1.8rem] shadow-sm hover:shadow-md transition-all group"
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        {formData.selectedWallet ? (
-                                                            <>
-                                                                <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-50 p-1">
-                                                                    <img src={wallets.find(w => w.id === formData.selectedWallet)?.icon} alt="" className="w-full h-full object-contain" />
-                                                                </div>
-                                                                <span className="text-sm font-bold text-slate-800">{wallets.find(w => w.id === formData.selectedWallet)?.name}</span>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
-                                                                    <Wallet size={20} />
-                                                                </div>
-                                                                <span className="text-sm font-bold text-slate-400">Select Digital Wallet</span>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                    <ChevronRight className={`text-slate-400 transition-transform ${isWalletDropdownOpen ? 'rotate-90' : ''}`} size={18} />
-                                                </button>
-
-                                                {isWalletDropdownOpen && (
-                                                    <div className="absolute top-full left-0 right-0 mt-3 bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-4 z-20 animate-in fade-in slide-in-from-top-2">
-                                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                                            {wallets.map(wallet => (
-                                                                <button
-                                                                    key={wallet.id}
-                                                                    onClick={() => { setFormData(prev => ({ ...prev, selectedWallet: wallet.id })); setIsWalletDropdownOpen(false); }}
-                                                                    className={`flex flex-col items-center justify-center p-3 rounded-2xl border transition-all text-center ${formData.selectedWallet === wallet.id ? 'border-amber-500 bg-amber-50/50 text-amber-700' : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50 text-slate-600'}`}
-                                                                >
-                                                                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-white p-2 mb-1.5 flex items-center justify-center border border-slate-100/80 shadow-sm">
-                                                                        <img src={wallet.icon} alt={wallet.name} className="w-full h-full object-contain" />
-                                                                    </div>
-                                                                    <span className="text-[10px] font-black leading-tight tracking-tight uppercase">{wallet.name}</span>
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {/* UPI Input */}
-                                        {formData.paymentMethod === 'upi' && (
-                                            <div className="relative">
-                                                <Smartphone className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                                <input
-                                                    name="upiId" value={formData.upiId} onChange={handleChange}
-                                                    placeholder="Enter your UPI ID (e.g., user@okhdfcbank)"
-                                                    className="w-full pl-14 pr-6 py-4 bg-white border border-white rounded-[1.8rem] text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
-                                                />
-                                            </div>
-                                        )}
-
-                                        {/* Card Details */}
-                                        {(formData.paymentMethod === 'debit' || formData.paymentMethod === 'credit') && (
-                                            <div className="space-y-4">
-                                                <div className="relative">
-                                                    <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                                    <input
-                                                        name="card.number" value={formData.cardDetails.number} onChange={handleChange}
-                                                        placeholder="Card Number"
-                                                        maxLength={16}
-                                                        className="w-full pl-14 pr-6 py-4 bg-white border border-white rounded-[1.8rem] text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm tracking-[0.2em]"
-                                                    />
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="relative">
-                                                        <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                                        <input
-                                                            name="card.expiry" value={formData.cardDetails.expiry} onChange={handleChange}
-                                                            placeholder="MM/YY"
-                                                            maxLength={5}
-                                                            className="w-full pl-14 pr-6 py-4 bg-white border border-white rounded-[1.8rem] text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
-                                                        />
-                                                    </div>
-                                                    <div className="relative">
-                                                        <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                                        <input
-                                                            name="card.cvv" value={formData.cardDetails.cvv} onChange={handleChange}
-                                                            placeholder="CVV"
-                                                            maxLength={3}
-                                                            className="w-full pl-14 pr-6 py-4 bg-white border border-white rounded-[1.8rem] text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </motion.div>
-
-                                {/* Secure Badge */}
                                 <div className="p-5 bg-slate-50 border border-slate-100 rounded-[2rem] flex items-center gap-4 mb-10">
                                     <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
                                         <ShieldCheck size={20} />
@@ -1151,7 +1126,7 @@ Please send the QR code for payment.`;
                                 : 'bg-[#111827] text-white hover:bg-amber-600'
                             }`}
                         >
-                            {isProcessing ? 'Processing...' : !formData.paymentMethod ? 'Select Payment' : 'Place Order'}
+                            {isProcessing ? 'Processing...' : !formData.paymentMethod ? 'Select Payment' : (formData.paymentMethod === 'online' ? 'Pay Now' : 'Place Order')}
                         </button>
                     )}
 
@@ -1189,6 +1164,8 @@ Please send the QR code for payment.`;
                                     </>
                                 ) : !formData.paymentMethod ? (
                                     <>SELECT PAYMENT METHOD</>
+                                ) : formData.paymentMethod === 'online' ? (
+                                    <>PAY NOW (₹{grandTotal.toLocaleString('en-IN')})</>
                                 ) : (
                                     <>PLACE ORDER (₹{grandTotal.toLocaleString('en-IN')})</>
                                 )}

@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
-import { ArrowLeft, User, MapPin, Package, CreditCard, Clock, Phone, Mail, Navigation } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, User, MapPin, Package, CreditCard, Clock, Phone, Mail, Navigation, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useScrollLock from '../../hooks/useScrollLock';
+import { downloadInvoice } from '../../utils/invoiceGenerator';
 
 const OrderDetailModal = ({ order, onClose }) => {
+    const navigate = useNavigate();
     useScrollLock(!!order);
 
     if (!order) return null;
@@ -60,12 +63,22 @@ const OrderDetailModal = ({ order, onClose }) => {
                             <p className="text-[9px] md:text-xs font-bold text-indigo-600 mt-1 uppercase tracking-widest truncate overflow-hidden">ID: {order.orderId}</p>
                         </div>
                     </div>
-                    <div className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[8px] md:text-xs font-black uppercase tracking-widest border shrink-0 ${
-                        order.status === 'Delivered' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                        order.status === 'Cancelled' ? 'bg-red-50 text-red-700 border-red-200' :
-                        'bg-indigo-50 text-indigo-700 border-indigo-200'
-                    }`}>
-                        {order.status}
+                    <div className="flex items-center gap-3 shrink-0">
+                        {order.status === 'Delivered' && (
+                            <button
+                                onClick={() => downloadInvoice(order)}
+                                className="px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[8px] md:text-xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-600 hover:text-white transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+                            >
+                                <Download size={12} /> Invoice
+                            </button>
+                        )}
+                        <div className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[8px] md:text-xs font-black uppercase tracking-widest border ${
+                            order.status === 'Delivered' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                            order.status === 'Cancelled' ? 'bg-red-50 text-red-700 border-red-200' :
+                            'bg-indigo-50 text-indigo-700 border-indigo-200'
+                        }`}>
+                            {order.status}
+                        </div>
                     </div>
                 </div>
 
@@ -148,6 +161,16 @@ const OrderDetailModal = ({ order, onClose }) => {
                                         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Payment Method</span>
                                         <span className="text-xs font-black text-slate-900 uppercase">{order.paymentMethod || order.payment}</span>
                                     </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Payment Status</span>
+                                        <span className={`text-xs font-black uppercase ${order.paymentStatus === 'Paid' ? 'text-green-600' : 'text-amber-600'}`}>{order.paymentStatus || 'Pending'}</span>
+                                    </div>
+                                    {order.razorpayPaymentId && (
+                                        <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Transaction ID</span>
+                                            <span className="text-xs font-black text-slate-900 select-all font-mono">{order.razorpayPaymentId}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </section>
                         </div>
@@ -166,12 +189,22 @@ const OrderDetailModal = ({ order, onClose }) => {
                                             <div key={idx} className="p-4 flex flex-col gap-3">
                                                 <div className="flex gap-3">
                                                     {item.img && (
-                                                        <div className="w-12 h-12 bg-slate-50 rounded-xl overflow-hidden shrink-0 border border-slate-100 p-1">
+                                                        <div 
+                                                            onClick={() => { onClose(); navigate(`/product/${item.id}`); }}
+                                                            className="w-12 h-12 bg-slate-50 rounded-xl overflow-hidden shrink-0 border border-slate-100 p-1 cursor-pointer hover:border-amber-400 transition-all"
+                                                            title={`View ${item.name}`}
+                                                        >
                                                             <img src={item.img} alt={item.name} className="w-full h-full object-contain" />
                                                         </div>
                                                     )}
                                                     <div className="min-w-0">
-                                                        <p className="text-xs font-bold text-slate-800 leading-tight truncate">{item.name}</p>
+                                                        <p 
+                                                            onClick={() => { onClose(); navigate(`/product/${item.id}`); }}
+                                                            className="text-xs font-bold text-slate-800 leading-tight truncate cursor-pointer hover:text-amber-600 transition-colors"
+                                                            title={`View ${item.name}`}
+                                                        >
+                                                            {item.name}
+                                                        </p>
                                                         <p className="text-[9px] font-bold text-slate-400 mt-0.5">{item.category}</p>
                                                     </div>
                                                 </div>
@@ -200,12 +233,22 @@ const OrderDetailModal = ({ order, onClose }) => {
                                                         <td className="py-4 px-6">
                                                             <div className="flex items-center gap-4">
                                                                 {item.img && (
-                                                                    <div className="w-12 h-12 bg-slate-50 rounded-xl overflow-hidden shrink-0 border border-slate-100 p-1">
+                                                                    <div 
+                                                                        onClick={() => { onClose(); navigate(`/product/${item.id}`); }}
+                                                                        className="w-12 h-12 bg-slate-50 rounded-xl overflow-hidden shrink-0 border border-slate-100 p-1 cursor-pointer hover:border-amber-400 transition-all"
+                                                                        title={`View ${item.name}`}
+                                                                    >
                                                                         <img src={item.img} alt={item.name} className="w-full h-full object-contain" />
                                                                     </div>
                                                                 )}
                                                                 <div>
-                                                                    <p className="text-sm font-bold text-slate-800 leading-tight">{item.name}</p>
+                                                                    <p 
+                                                                        onClick={() => { onClose(); navigate(`/product/${item.id}`); }}
+                                                                        className="text-sm font-bold text-slate-800 leading-tight cursor-pointer hover:text-amber-600 transition-colors"
+                                                                        title={`View ${item.name}`}
+                                                                    >
+                                                                        {item.name}
+                                                                    </p>
                                                                     <p className="text-[10px] font-bold text-slate-400 mt-0.5">{item.category}</p>
                                                                 </div>
                                                             </div>

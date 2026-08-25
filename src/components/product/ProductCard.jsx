@@ -13,7 +13,7 @@ const ProductCard = ({ product }) => {
     const { user, openAuthModal } = useAuth();
     const { toggleWishlist, isInWishlist } = useWishlist();
 
-    const handleAddToCart = (e) => {
+    const handleBuyNow = (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!user) {
@@ -21,7 +21,7 @@ const ProductCard = ({ product }) => {
             return;
         }
         addToCart(product, 1);
-        addNotification(product);
+        navigate('/cart');
     };
 
     const handleWishlistToggle = (e) => {
@@ -103,11 +103,11 @@ const ProductCard = ({ product }) => {
                         
                         <motion.button
                             whileTap={{ scale: 0.95 }}
-                            onClick={handleAddToCart}
-                            className="w-full py-3 sm:py-4 bg-slate-900 text-white rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 sm:gap-3 hover:bg-amber-600 transition-all shadow-xl shadow-slate-900/10 active:bg-amber-700 font-black text-[8px] sm:text-[10px] uppercase tracking-widest"
+                            onClick={handleBuyNow}
+                            className="w-full py-3 sm:py-4 bg-amber-600 text-white rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 sm:gap-3 hover:bg-amber-700 transition-all shadow-xl shadow-amber-500/20 active:bg-amber-800 font-black text-[8px] sm:text-[10px] uppercase tracking-widest"
                         >
                             <ShoppingCart size={14} className="sm:w-4 sm:h-4" />
-                            Add to Cart
+                            Buy Now
                         </motion.button>
                     </div>
                 </div>
